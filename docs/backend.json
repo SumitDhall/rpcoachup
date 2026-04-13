@@ -122,47 +122,61 @@
         },
         "studentId": {
           "type": "string",
-          "description": "Reference to the student who submitted these interests. (Relationship: Student 1:N StudentInterest)"
+          "description": "Reference to the student account who submitted these interests."
+        },
+        "studentName": {
+          "type": "string",
+          "description": "The name of the student needing tuition."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Mandatory contact phone number."
+        },
+        "school": {
+          "type": "string",
+          "description": "The school the student currently attends."
+        },
+        "gradeOrClass": {
+          "type": "string",
+          "description": "The current class or grade level of the student."
+        },
+        "address": {
+          "type": "string",
+          "description": "The address of the student."
         },
         "subject": {
           "type": "string",
-          "description": "The main subject of interest (e.g., 'Mathematics', 'Physics', 'English')."
+          "description": "The main subject of interest."
         },
-        "level": {
+        "affordableRange": {
           "type": "string",
-          "description": "The academic level for the subject (e.g., 'High School', 'College', 'Advanced Placement')."
+          "description": "The range of tuition fees affordable for the student."
         },
-        "topics": {
-          "type": "array",
-          "description": "A list of specific topics or areas within the subject the student wants to focus on.",
-          "items": {
-            "type": "string"
-          }
+        "intendedStartDate": {
+          "type": "string",
+          "description": "The date when the student intends to start classes.",
+          "format": "date"
         },
         "submissionDate": {
           "type": "string",
-          "description": "Timestamp when the student interest form was submitted.",
+          "description": "Timestamp when the interest form was submitted.",
           "format": "date-time"
         },
         "status": {
           "type": "string",
-          "description": "The current status of the interest submission (e.g., 'Pending', 'Reviewed', 'Matched').",
-          "format": "string",
-          "items": {
-            "type": "string"
-          }
+          "description": "The current status of the interest submission."
         },
         "notes": {
           "type": "string",
-          "description": "Additional notes or specific requirements from the student."
+          "description": "Additional notes or specific requirements."
         }
       },
       "required": [
         "id",
         "studentId",
+        "studentName",
+        "phone",
         "subject",
-        "level",
-        "topics",
         "submissionDate",
         "status"
       ]
@@ -179,213 +193,48 @@
         },
         "teacherId": {
           "type": "string",
-          "description": "Reference to the teacher who submitted these interests and availability. (Relationship: Teacher 1:N TeacherInterest)"
+          "description": "Reference to the teacher who submitted these interests."
         },
         "subject": {
           "type": "string",
-          "description": "The main subject the teacher is interested in teaching (e.g., 'Mathematics', 'Physics', 'English')."
+          "description": "The main subject the teacher is interested in teaching."
         },
         "level": {
           "type": "string",
-          "description": "The academic level for the subject the teacher can teach (e.g., 'High School', 'College', 'Advanced Placement')."
+          "description": "The academic level for the subject."
         },
         "topics": {
           "type": "array",
-          "description": "A list of specific topics or areas within the subject the teacher is proficient in teaching.",
+          "description": "A list of specific topics or areas.",
           "items": {
             "type": "string"
           }
         },
         "availability": {
           "type": "string",
-          "description": "Teacher's general availability for classes (e.g., 'Weekdays evenings', 'Weekends mornings', 'Flexible')."
+          "description": "Teacher's general availability."
         },
         "submissionDate": {
           "type": "string",
-          "description": "Timestamp when the teacher interest and availability form was submitted.",
+          "description": "Timestamp when the interest form was submitted.",
           "format": "date-time"
         },
         "status": {
           "type": "string",
-          "description": "The current status of the interest submission (e.g., 'Pending', 'Reviewed', 'Matched').",
-          "format": "string",
-          "items": {
-            "type": "string"
-          }
+          "description": "The current status of the interest submission."
         },
         "notes": {
           "type": "string",
-          "description": "Additional notes or specific conditions from the teacher."
+          "description": "Additional notes."
         }
       },
       "required": [
         "id",
         "teacherId",
         "subject",
-        "level",
-        "topics",
         "availability",
         "submissionDate",
         "status"
-      ]
-    },
-    "Program": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Program",
-      "type": "object",
-      "description": "Represents an available educational program or course offered on the platform.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Program entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The official name of the program or course."
-        },
-        "description": {
-          "type": "string",
-          "description": "A detailed description of the program's content and objectives."
-        },
-        "subject": {
-          "type": "string",
-          "description": "The main subject area of the program."
-        },
-        "level": {
-          "type": "string",
-          "description": "The academic level for which the program is designed."
-        },
-        "durationHours": {
-          "type": "number",
-          "description": "Estimated total duration of the program in hours."
-        },
-        "prerequisites": {
-          "type": "string",
-          "description": "Required prior knowledge or courses for the program."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the program was added to the catalog.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the program details were last updated.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "description",
-        "subject",
-        "level",
-        "createdAt",
-        "updatedAt"
-      ]
-    },
-    "MatchProposal": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "MatchProposal",
-      "type": "object",
-      "description": "Stores a suggested pairing between a student's interest and a teacher's interest or a specific program, typically generated by the AI tool or an admin.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the MatchProposal entity."
-        },
-        "studentInterestId": {
-          "type": "string",
-          "description": "Reference to the student's interest submission involved in this match proposal. (Relationship: StudentInterest 1:N MatchProposal)"
-        },
-        "teacherInterestId": {
-          "type": "string",
-          "description": "Reference to a teacher's interest submission if this is a student-teacher match proposal. (Relationship: TeacherInterest 1:N MatchProposal)"
-        },
-        "programId": {
-          "type": "string",
-          "description": "Reference to a Program if this is a student-program match proposal. (Relationship: Program 1:N MatchProposal)"
-        },
-        "suggestedBy": {
-          "type": "string",
-          "description": "Indicates whether the match was suggested by 'AI' or an 'Admin'.",
-          "format": "string",
-          "items": {
-            "type": "string"
-          }
-        },
-        "suggestionDate": {
-          "type": "string",
-          "description": "Timestamp when this match proposal was created.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the match proposal (e.g., 'Suggested', 'Approved', 'Rejected', 'Completed').",
-          "format": "string",
-          "items": {
-            "type": "string"
-          }
-        },
-        "adminNotes": {
-          "type": "string",
-          "description": "Notes added by an administrator regarding this match proposal."
-        }
-      },
-      "required": [
-        "id",
-        "studentInterestId",
-        "suggestedBy",
-        "suggestionDate",
-        "status"
-      ]
-    },
-    "Feedback": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Feedback",
-      "type": "object",
-      "description": "Records feedback submitted by registered students or teachers about courses, teachers, or the platform itself.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Feedback entity."
-        },
-        "userProfileId": {
-          "type": "string",
-          "description": "Reference to the UserProfile of the person who provided the feedback. (Relationship: UserProfile 1:N Feedback)"
-        },
-        "feedbackType": {
-          "type": "string",
-          "description": "The category of feedback (e.g., 'Platform', 'Course', 'Teacher', 'Student').",
-          "format": "string",
-          "items": {
-            "type": "string"
-          }
-        },
-        "targetEntityId": {
-          "type": "string",
-          "description": "ID of the specific entity (e.g., Program, Teacher, Student) that the feedback is about, if applicable. This allows flexible targeting of feedback."
-        },
-        "rating": {
-          "type": "number",
-          "description": "A numerical rating provided by the user, typically on a scale (e.g., 1 to 5)."
-        },
-        "comment": {
-          "type": "string",
-          "description": "The detailed text content of the feedback."
-        },
-        "submissionDate": {
-          "type": "string",
-          "description": "Timestamp when the feedback was submitted.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userProfileId",
-        "feedbackType",
-        "comment",
-        "submissionDate"
       ]
     },
     "Notification": {

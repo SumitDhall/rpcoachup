@@ -9,7 +9,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BookOpen, Send, LayoutDashboard, MessageSquare, History, Loader2, LogOut, Globe } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { 
+  BookOpen, 
+  Send, 
+  LayoutDashboard, 
+  MessageSquare, 
+  History, 
+  Loader2, 
+  LogOut, 
+  Globe,
+  User,
+  Phone,
+  School,
+  MapPin,
+  Calendar as CalendarIcon,
+  DollarSign
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -31,8 +47,17 @@ export default function StudentDashboard() {
 
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
-  const [interest, setInterest] = useState('');
-  const [details, setDetails] = useState('');
+  // Form State
+  const [studentName, setStudentName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [school, setSchool] = useState('');
+  const [gradeOrClass, setGradeOrClass] = useState('');
+  const [address, setAddress] = useState('');
+  const [subject, setSubject] = useState('');
+  const [notes, setNotes] = useState('');
+  const [affordableRange, setAffordableRange] = useState('');
+  const [intendedStartDate, setIntendedStartDate] = useState('');
+  
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -43,25 +68,39 @@ export default function StudentDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!interest || !user || !profile) return;
+    if (!subject || !phone || !studentName || !user || !profile) {
+      toast({
+        variant: "destructive",
+        title: "Incomplete Form",
+        description: "Please fill in all mandatory fields (Name, Phone, Subject)."
+      });
+      return;
+    }
     setIsSubmitting(true);
     
     try {
-      await addDoc(collection(db, 'studentInterests'), {
+      const submissionData = {
         studentId: user.uid,
-        subject: interest,
-        level: 'N/A',
-        topics: [],
+        studentName,
+        phone,
+        school,
+        gradeOrClass,
+        address,
+        subject,
+        affordableRange,
+        intendedStartDate,
         submissionDate: serverTimestamp(),
         status: 'Pending',
-        notes: details
-      });
+        notes
+      };
+
+      await addDoc(collection(db, 'studentInterests'), submissionData);
 
       // Create Notification for Admin Portal
       await addDoc(collection(db, 'notifications'), {
         type: 'interest',
-        subject: `New Interest Submission: ${interest}`,
-        body: `Student ${profile.firstName} ${profile.lastName} has submitted a new interest.\nSubject: ${interest}\nNotes: ${details}`,
+        subject: `New Interest Submission from ${studentName}: ${subject}`,
+        body: `Student: ${studentName}\nSubject: ${subject}\nPhone: ${phone}\nSchool: ${school}\nClass: ${gradeOrClass}\nAddress: ${address}\nStart Date: ${intendedStartDate}\nFees: ${affordableRange}\nNotes: ${notes}`,
         userEmail: profile.email,
         userName: `${profile.firstName} ${profile.lastName}`,
         timestamp: serverTimestamp(),
@@ -74,14 +113,23 @@ export default function StudentDashboard() {
         userType: 'Student',
         userName: `${profile.firstName} ${profile.lastName}`,
         userEmail: profile.email,
-        details: `Subject: ${interest}. Notes: ${details}`
+        details: `Student Name: ${studentName}. Subject: ${subject}. Phone: ${phone}. Start Date: ${intendedStartDate}.`
       });
       
-      setInterest('');
-      setDetails('');
+      // Reset Form
+      setStudentName('');
+      setPhone('');
+      setSchool('');
+      setGradeOrClass('');
+      setAddress('');
+      setSubject('');
+      setNotes('');
+      setAffordableRange('');
+      setIntendedStartDate('');
+
       toast({
         title: "Interest Submitted!",
-        description: "Administrators will review your interests to find the best courses for you.",
+        description: "Administrators will review your details to find the best match for you.",
       });
     } catch (error) {
       toast({
@@ -181,10 +229,10 @@ export default function StudentDashboard() {
             <Badge variant="outline" className="w-fit text-primary border-primary">Student Account</Badge>
           </header>
 
-          <Tabs defaultValue="overview" className="space-y-6">
+          <Tabs defaultValue="interests" className="space-y-6">
             <TabsList className="bg-muted w-full md:w-auto grid grid-cols-3">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="interests">Submit Interests</TabsTrigger>
+              <TabsTrigger value="overview">My Profile</TabsTrigger>
               <TabsTrigger value="feedback">Feedback</TabsTrigger>
             </TabsList>
 
@@ -216,40 +264,147 @@ export default function StudentDashboard() {
             </TabsContent>
 
             <TabsContent value="interests">
-              <Card className="max-w-2xl mx-auto shadow-lg">
-                <CardHeader>
-                  <CardTitle>What do you want to learn next?</CardTitle>
+              <Card className="max-w-3xl mx-auto shadow-lg border-primary/10">
+                <CardHeader className="bg-primary/5 rounded-t-lg">
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-primary" />
+                    Student Tuition Requirement Form
+                  </CardTitle>
                   <CardDescription>
-                    Describe your learning goals, preferred subjects, or specific topics you need help with.
+                    Provide complete details to help us find the perfect teacher for you.
                   </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmitInterest}>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-6 py-8">
+                    {/* Chronological Order Requested */}
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="student-name" className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          Name of Student <span className="text-destructive">*</span>
+                        </Label>
+                        <Input 
+                          id="student-name" 
+                          placeholder="Full name of the student" 
+                          value={studentName}
+                          onChange={(e) => setStudentName(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone" className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          Phone Number <span className="text-destructive">*</span>
+                        </Label>
+                        <Input 
+                          id="phone" 
+                          type="tel"
+                          placeholder="e.g. +1 234 567 890" 
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="school" className="flex items-center gap-2">
+                          <School className="h-4 w-4 text-muted-foreground" />
+                          School of Student
+                        </Label>
+                        <Input 
+                          id="school" 
+                          placeholder="e.g. Westside High School" 
+                          value={school}
+                          onChange={(e) => setSchool(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="class" className="flex items-center gap-2">
+                          <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
+                          Class / Grade
+                        </Label>
+                        <Input 
+                          id="class" 
+                          placeholder="e.g. Grade 10, Class A" 
+                          value={gradeOrClass}
+                          onChange={(e) => setGradeOrClass(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="interest-input">Interest / Subject Name</Label>
+                      <Label htmlFor="address" className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        Address
+                      </Label>
+                      <Input 
+                        id="address" 
+                        placeholder="Street address for home tuition or proximity matching" 
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="interest-input" className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                        Interest / Subject Name <span className="text-destructive">*</span>
+                      </Label>
                       <Input 
                         id="interest-input" 
-                        placeholder="e.g. Quantum Physics, React Development, Academic Writing" 
-                        value={interest}
-                        onChange={(e) => setInterest(e.target.value)}
+                        placeholder="e.g. Quantum Physics, Academic Writing" 
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
                         required
                       />
                     </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="details">Additional Details (Optional)</Label>
+                      <Label htmlFor="details">Additional Details (Specific Topics or Needs)</Label>
                       <Textarea 
                         id="details" 
-                        placeholder="Tell us more about your current level or specific needs..." 
-                        className="min-h-[100px]" 
-                        value={details}
-                        onChange={(e) => setDetails(e.target.value)}
+                        placeholder="Tell us more about current level or specific needs..." 
+                        className="min-h-[80px]" 
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
                       />
                     </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="fees" className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 text-muted-foreground" />
+                          Affordable Fees Range
+                        </Label>
+                        <Input 
+                          id="fees" 
+                          placeholder="e.g. $20-$40 / hour" 
+                          value={affordableRange}
+                          onChange={(e) => setAffordableRange(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="start-date" className="flex items-center gap-2">
+                          <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                          Intended Start Date
+                        </Label>
+                        <Input 
+                          id="start-date" 
+                          type="date"
+                          value={intendedStartDate}
+                          onChange={(e) => setIntendedStartDate(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
                   </CardContent>
-                  <CardFooter>
-                    <Button type="submit" className="w-full gap-2" disabled={isSubmitting}>
-                      {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                      Submit Interest
+                  <CardFooter className="bg-secondary/10 rounded-b-lg p-6">
+                    <Button type="submit" className="w-full gap-2 h-12 text-lg font-bold" disabled={isSubmitting}>
+                      {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                      Submit Tuition Requirement
                     </Button>
                   </CardFooter>
                 </form>
@@ -301,8 +456,4 @@ export default function StudentDashboard() {
       </main>
     </div>
   );
-}
-
-function Label({ children, ...props }: any) {
-  return <label className="text-sm font-medium leading-none" {...props}>{children}</label>;
 }

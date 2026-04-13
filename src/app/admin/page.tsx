@@ -37,12 +37,13 @@ import {
   User,
   ClipboardList,
   Clock,
-  AlertCircle,
-  Bell,
   Trash2,
-  ArrowLeft,
   LogOut,
-  ShieldAlert
+  ShieldAlert,
+  Phone,
+  School,
+  MapPin,
+  DollarSign
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
@@ -82,12 +83,12 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
       <div className="space-y-4 pt-4 border-t">
         <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           {userType === 'Student' ? <BookMarked className="h-4 w-4" /> : <Award className="h-4 w-4" />}
-          {userType} Specific Information
+          Base Account Information
         </h4>
         <div className="grid grid-cols-1 gap-3">
           {userType === 'Student' ? (
             <div className="bg-secondary/30 p-3 rounded-lg">
-              <p className="text-xs text-muted-foreground">Grade Level</p>
+              <p className="text-xs text-muted-foreground">Registered Grade Level</p>
               <p className="font-medium">{details?.gradeLevel || 'Not specified'}</p>
             </div>
           ) : (
@@ -109,19 +110,71 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
       <div className="space-y-4">
         <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
-          Submitted Interests
+           Tuition Interests / Raised Requirements
         </h4>
         {interests && interests.length > 0 ? (
           <div className="space-y-3">
-            {interests.map((int: any) => (
-              <div key={int.id} className="p-3 border rounded-lg bg-card space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-sm">{int.subject}</span>
-                  <Badge variant="outline" className="text-[10px]">{int.status}</Badge>
+            {[...interests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map((int: any) => (
+              <div key={int.id} className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-colors shadow-sm space-y-3">
+                <div className="flex justify-between items-center pb-2 border-b">
+                  <span className="font-bold text-primary">{int.subject}</span>
+                  <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className="text-[10px]">{int.status}</Badge>
                 </div>
-                {int.notes && <p className="text-xs text-muted-foreground line-clamp-2">{int.notes}</p>}
-                {int.availability && <p className="text-xs font-medium text-accent">Availability: {int.availability}</p>}
-                <p className="text-[10px] text-muted-foreground">Submitted: {int.submissionDate?.toDate?.()?.toLocaleDateString()}</p>
+                
+                {userType === 'Student' && (
+                  <div className="grid grid-cols-1 gap-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <User className="h-3 w-3 text-muted-foreground" />
+                      <span className="font-medium text-xs">Student: {int.studentName}</span>
+                    </div>
+                    {int.phone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs">{int.phone}</span>
+                      </div>
+                    )}
+                    {int.school && (
+                      <div className="flex items-center gap-2">
+                        <School className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs">School: {int.school} ({int.gradeOrClass})</span>
+                      </div>
+                    )}
+                    {int.address && (
+                      <div className="flex items-start gap-2">
+                        <MapPin className="h-3 w-3 text-muted-foreground mt-0.5" />
+                        <span className="text-xs">{int.address}</span>
+                      </div>
+                    )}
+                    {int.affordableRange && (
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs">Budget: {int.affordableRange}</span>
+                      </div>
+                    )}
+                    {int.intendedStartDate && (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs">Start Date: {int.intendedStartDate}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {int.availability && (
+                  <p className="text-xs font-medium text-accent flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> Availability: {int.availability}
+                  </p>
+                )}
+
+                {int.notes && (
+                  <div className="bg-secondary/20 p-2 rounded-lg text-xs italic text-muted-foreground">
+                    "{int.notes}"
+                  </div>
+                )}
+                
+                <p className="text-[10px] text-muted-foreground text-right">
+                  Raised on: {int.submissionDate?.toDate?.()?.toLocaleDateString()}
+                </p>
               </div>
             ))}
           </div>
@@ -397,11 +450,11 @@ export default function AdminPortal() {
 
       {/* User Details Dialog */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="h-5 w-5 text-primary" />
-              User Profile Details
+              Comprehensive User Profile
             </DialogTitle>
           </DialogHeader>
           
@@ -430,7 +483,7 @@ export default function AdminPortal() {
           )}
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>Close Portal View</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
