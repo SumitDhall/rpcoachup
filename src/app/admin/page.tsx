@@ -68,10 +68,12 @@ import {
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
 
 // Component to fetch and display role-specific profile details and interests
 function UserDetailsContent({ userId, userType }: { userId: string; userType: string }) {
   const db = useFirestore();
+  const { toast } = useToast();
   const [statusChangeTarget, setStatusChangeTarget] = useState<{id: string, currentStatus: string, collection: string} | null>(null);
   
   const profilePath = userType === 'Student' 
@@ -106,6 +108,25 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
     
     updateDocumentNonBlocking(interestRef, { status: newStatus });
     setStatusChangeTarget(null);
+  };
+
+  const handleDownloadResume = (fileName: string) => {
+    // Simulate the download flow for a prototype.
+    // In production, this would use window.open(storageUrl) or a direct download from Firebase Storage.
+    const blob = new Blob([`Simulated content for resume: ${fileName}`], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    toast({
+      title: "Download Started",
+      description: `Downloading simulation of ${fileName}. Real file retrieval requires Firebase Storage.`,
+    });
   };
 
   if (isLoadingProfile || isLoadingInterests) {
@@ -166,7 +187,6 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
                 </div>
                 
                 <div className="grid grid-cols-1 gap-2 text-sm">
-                  {/* Name & Phone (Common) */}
                   <div className="flex items-center gap-2">
                     <User className="h-3 w-3 text-muted-foreground" />
                     <span className="font-medium text-xs">Name: {int.studentName || int.teacherName}</span>
@@ -178,7 +198,6 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
                     </div>
                   )}
 
-                  {/* Student Specifics */}
                   {userType === 'Student' && (
                     <>
                       {int.school && (
@@ -196,7 +215,6 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
                     </>
                   )}
 
-                  {/* Teacher Specifics */}
                   {userType === 'Teacher' && (
                     <>
                       {int.qualifications && (
@@ -226,7 +244,12 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
                               <p className="text-xs text-green-800 font-medium truncate max-w-[200px]">{int.resumeName}</p>
                             </div>
                           </div>
-                          <Button size="icon" variant="ghost" className="h-8 w-8 text-green-700 hover:bg-green-100">
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-8 w-8 text-green-700 hover:bg-green-100"
+                            onClick={() => handleDownloadResume(int.resumeName)}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </div>
@@ -234,7 +257,6 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
                     </>
                   )}
 
-                  {/* Budget/Salary */}
                   {(int.affordableRange || int.expectedSalary) && (
                     <div className="flex items-center gap-2 text-accent mt-1">
                       <IndianRupee className="h-3 w-3" />
@@ -242,12 +264,6 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
                     </div>
                   )}
                 </div>
-
-                {int.availability && (
-                  <p className="text-xs font-medium text-accent flex items-center gap-1">
-                    <Clock className="h-3 w-3" /> Availability: {int.availability}
-                  </p>
-                )}
 
                 {int.notes && (
                   <div className="bg-secondary/20 p-2 rounded-lg text-xs italic text-muted-foreground">
@@ -268,7 +284,6 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
         )}
       </div>
 
-      {/* Confirmation Dialog for Status Change */}
       <AlertDialog open={!!statusChangeTarget} onOpenChange={(open) => !open && setStatusChangeTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -303,7 +318,6 @@ export default function AdminPortal() {
   const [mounted, setMounted] = useState(false);
   const [notificationToDelete, setNotificationToDelete] = useState<string | null>(null);
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
@@ -311,17 +325,15 @@ export default function AdminPortal() {
     setMounted(true);
   }, []);
 
-  // Admin access check via sentinel collection
   const adminDocRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
     return doc(db, 'roles_admin', user.uid);
   }, [db, user?.uid]);
   const { data: adminDoc, isLoading: isAdminLoading } = useDoc(adminDocRef);
 
-  // Queries are only enabled if the user is verified as an admin
   const usersQuery = useMemoFirebase(() => {
     if (!db || !adminDoc) return null;
-    return query(collection(db, 'users'), limit(500)); // Larger limit for admin
+    return query(collection(db, 'users'), limit(500));
   }, [db, adminDoc]);
   const { data: users, isLoading: isLoadingUsers } = useCollection(usersQuery);
 
@@ -348,7 +360,6 @@ export default function AdminPortal() {
     setIsDetailsOpen(true);
   };
 
-  // Filter users based on active tab
   const filteredUsers = useMemo(() => {
     if (!users) return [];
     if (activeTab === 'students') return users.filter(u => u.userType === 'Student');
@@ -356,12 +367,10 @@ export default function AdminPortal() {
     return [];
   }, [users, activeTab]);
 
-  // Pagination logic
   const totalUsers = filteredUsers.length;
   const totalPages = Math.ceil(totalUsers / pageSize) || 1;
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  // Wait for auth to initialize
   if (isUserLoading || isAdminLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -373,7 +382,6 @@ export default function AdminPortal() {
     );
   }
 
-  // Redirect if not admin (and not loading)
   if (!user || !adminDoc) {
     return (
       <div className="flex h-screen items-center justify-center bg-background p-4">
@@ -409,7 +417,6 @@ export default function AdminPortal() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Admin Sidebar */}
       <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
         <div className="p-6 flex items-center gap-2">
           <div className="bg-primary p-1 rounded-lg">
@@ -469,7 +476,6 @@ export default function AdminPortal() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 lg:ml-64 p-4 lg:p-8">
         <div className="max-w-6xl mx-auto space-y-8">
           <header className="flex items-center justify-between">
@@ -585,7 +591,6 @@ export default function AdminPortal() {
                         </Table>
                       </div>
 
-                      {/* Pagination Controls */}
                       <div className="flex items-center justify-between pt-6 border-t mt-4">
                         <p className="text-sm text-muted-foreground">
                           Displaying {paginatedUsers.length} of {totalUsers} registered {activeTab}
@@ -626,7 +631,6 @@ export default function AdminPortal() {
         </div>
       </main>
 
-      {/* User Details Dialog */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -666,7 +670,6 @@ export default function AdminPortal() {
         </DialogContent>
       </Dialog>
 
-      {/* Notification Delete Confirmation Alert Dialog */}
       <AlertDialog open={!!notificationToDelete} onOpenChange={(open) => !open && setNotificationToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
