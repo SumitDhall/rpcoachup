@@ -45,15 +45,13 @@ service cloud.firestore {
     }
 
     match /studentInterests/{studentInterestId} {
-      allow get: if isAdmin() || isDataOwner(resource.data.studentId);
-      allow list: if isAdmin() || (isSignedIn() && request.query.limit <= 100); 
+      allow get, list: if isAdmin() || isDataOwner(resource.data.studentId);
       allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
       allow update, delete: if isAdmin() || isDataOwner(resource.data.studentId);
     }
 
     match /teacherInterests/{teacherInterestId} {
-      allow get: if isAdmin() || isDataOwner(resource.data.teacherId);
-      allow list: if isAdmin() || (isSignedIn() && request.query.limit <= 100);
+      allow get, list: if isAdmin() || isDataOwner(resource.data.teacherId);
       allow create: if isSignedIn() && request.resource.data.teacherId == request.auth.uid;
       allow update, delete: if isAdmin() || isDataOwner(resource.data.teacherId);
     }
