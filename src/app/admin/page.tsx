@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import Link from 'next/navigation';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
