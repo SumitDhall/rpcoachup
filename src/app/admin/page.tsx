@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -58,7 +59,10 @@ import {
   RotateCcw,
   ChevronLeft,
   ChevronRight,
-  LayoutDashboard
+  LayoutDashboard,
+  Briefcase,
+  FileText,
+  IndianRupee
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
@@ -122,7 +126,7 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
       <div className="space-y-4 pt-4 border-t">
         <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           {userType === 'Student' ? <BookMarked className="h-4 w-4" /> : <Award className="h-4 w-4" />}
-          Base Account Information
+          Account Summary
         </h4>
         <div className="grid grid-cols-1 gap-3">
           {userType === 'Student' ? (
@@ -133,7 +137,7 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
           ) : (
             <>
               <div className="bg-secondary/30 p-3 rounded-lg">
-                <p className="text-xs text-muted-foreground">Experience</p>
+                <p className="text-xs text-muted-foreground">General Experience</p>
                 <p className="font-medium">{details?.experienceYears || 0} Years</p>
               </div>
               <div className="bg-secondary/30 p-3 rounded-lg">
@@ -149,14 +153,14 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
       <div className="space-y-4">
         <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
-           Tuition Interests / Raised Requirements
+           {userType === 'Student' ? 'Tuition Requirements' : 'Professional Specializations'}
         </h4>
         {interests && interests.length > 0 ? (
           <div className="space-y-3">
             {[...interests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map((int: any) => (
               <div key={int.id} className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-colors shadow-sm space-y-3">
                 <div className="flex justify-between items-center pb-2 border-b">
-                  <span className="font-bold text-primary">{int.subject}</span>
+                  <span className="font-bold text-primary">{int.subject || int.subjects || 'General Interest'}</span>
                   <button 
                     onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: interestCollection })}
                     className="focus:outline-none transition-transform hover:scale-105 active:scale-95"
@@ -171,50 +175,75 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
                   </button>
                 </div>
                 
-                {userType === 'Student' && (
-                  <div className="grid grid-cols-1 gap-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <User className="h-3 w-3 text-muted-foreground" />
-                      <span className="font-medium text-xs">Student: {int.studentName}</span>
-                    </div>
-                    {int.phone && (
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs">{int.phone}</span>
-                      </div>
-                    )}
-                    {int.school && (
-                      <div className="flex items-center gap-2">
-                        <School className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs">School: {int.school} ({int.gradeOrClass})</span>
-                      </div>
-                    )}
-                    {int.school && (
-                      <div className="flex items-center gap-2">
-                        <LayoutDashboard className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs">Class/Grade: {int.gradeOrClass}</span>
-                      </div>
-                    )}
-                    {int.address && (
-                      <div className="flex items-start gap-2">
-                        <MapPin className="h-3 w-3 text-muted-foreground mt-0.5" />
-                        <span className="text-xs">{int.address}</span>
-                      </div>
-                    )}
-                    {int.affordableRange && (
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs">Budget: {int.affordableRange}</span>
-                      </div>
-                    )}
-                    {int.intendedStartDate && (
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs">Start Date: {int.intendedStartDate}</span>
-                      </div>
-                    )}
+                <div className="grid grid-cols-1 gap-2 text-sm">
+                  {/* Name & Phone (Common) */}
+                  <div className="flex items-center gap-2">
+                    <User className="h-3 w-3 text-muted-foreground" />
+                    <span className="font-medium text-xs">Name: {int.studentName || int.teacherName}</span>
                   </div>
-                )}
+                  {int.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs">{int.phone}</span>
+                    </div>
+                  )}
+
+                  {/* Student Specifics */}
+                  {userType === 'Student' && (
+                    <>
+                      {int.school && (
+                        <div className="flex items-center gap-2">
+                          <School className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-xs">School: {int.school} ({int.gradeOrClass})</span>
+                        </div>
+                      )}
+                      {int.address && (
+                        <div className="flex items-start gap-2">
+                          <MapPin className="h-3 w-3 text-muted-foreground mt-0.5" />
+                          <span className="text-xs">{int.address}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Teacher Specifics */}
+                  {userType === 'Teacher' && (
+                    <>
+                      {int.qualifications && (
+                        <div className="flex items-center gap-2">
+                          <GraduationCap className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-xs">Edu: {int.qualifications}</span>
+                        </div>
+                      )}
+                      {int.experienceYears && (
+                        <div className="flex items-center gap-2">
+                          <Briefcase className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-xs">Exp: {int.experienceYears}</span>
+                        </div>
+                      )}
+                      {int.hoursPerWeek && (
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-xs">Commitment: {int.hoursPerWeek}</span>
+                        </div>
+                      )}
+                      {int.resumeName && (
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-3 w-3 text-green-600" />
+                          <span className="text-xs text-green-700 font-medium">Resume: {int.resumeName}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Budget/Salary */}
+                  {(int.affordableRange || int.expectedSalary) && (
+                    <div className="flex items-center gap-2 text-accent">
+                      <IndianRupee className="h-3 w-3" />
+                      <span className="text-xs font-bold">{int.affordableRange || `Salary Expectation: ${int.expectedSalary}`}</span>
+                    </div>
+                  )}
+                </div>
 
                 {int.availability && (
                   <p className="text-xs font-medium text-accent flex items-center gap-1">
@@ -229,7 +258,7 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
                 )}
                 
                 <p className="text-[10px] text-muted-foreground text-right">
-                  Raised on: {int.submissionDate?.toDate?.()?.toLocaleDateString()}
+                  Submitted on: {int.submissionDate?.toDate?.()?.toLocaleDateString()}
                 </p>
               </div>
             ))}

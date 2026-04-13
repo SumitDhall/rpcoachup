@@ -195,24 +195,37 @@
           "type": "string",
           "description": "Reference to the teacher who submitted these interests."
         },
-        "subject": {
+        "teacherName": {
           "type": "string",
-          "description": "The main subject the teacher is interested in teaching."
+          "description": "Full name of the teacher."
         },
-        "level": {
+        "phone": {
           "type": "string",
-          "description": "The academic level for the subject."
+          "description": "Mandatory contact phone number."
         },
-        "topics": {
-          "type": "array",
-          "description": "A list of specific topics or areas.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "availability": {
+        "qualifications": {
           "type": "string",
-          "description": "Teacher's general availability."
+          "description": "Educational background."
+        },
+        "experienceYears": {
+          "type": "string",
+          "description": "Years of working experience."
+        },
+        "subjects": {
+          "type": "string",
+          "description": "Subjects the teacher specializes in."
+        },
+        "hoursPerWeek": {
+          "type": "string",
+          "description": "Commitment in hours per week."
+        },
+        "expectedSalary": {
+          "type": "string",
+          "description": "Monthly salary expectations."
+        },
+        "resumeName": {
+          "type": "string",
+          "description": "Name of the uploaded resume file."
         },
         "submissionDate": {
           "type": "string",
@@ -231,8 +244,8 @@
       "required": [
         "id",
         "teacherId",
-        "subject",
-        "availability",
+        "teacherName",
+        "phone",
         "submissionDate",
         "status"
       ]
