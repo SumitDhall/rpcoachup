@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
-import Link from 'next/navigation';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -64,7 +64,8 @@ import {
   Download,
   UserPlus,
   UserMinus,
-  Search
+  Search,
+  Bell
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, getDocs } from 'firebase/firestore';
@@ -348,7 +349,7 @@ function UserDetailsContent({ user }: { user: any }) {
     return doc(db, profilePath);
   }, [db, profilePath]);
 
-  const { data: details, isLoading: isLoadingProfile, error: profileError } = useDoc(docRef);
+  const { data: details, isLoading: isLoadingProfile } = useDoc(docRef);
 
   // Fetch interests related to this user
   const interestCollection = user.userType === 'Student' ? 'studentInterests' : 'teacherInterests';
@@ -362,7 +363,7 @@ function UserDetailsContent({ user }: { user: any }) {
     );
   }, [db, user.id, interestCollection, interestField]);
 
-  const { data: interests, isLoading: isLoadingInterests, error: interestsError } = useCollection(interestsQuery);
+  const { data: interests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
 
   const handleStatusToggle = () => {
     if (!statusChangeTarget) return;
