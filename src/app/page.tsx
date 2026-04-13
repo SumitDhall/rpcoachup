@@ -13,6 +13,7 @@ import { useUser } from '@/firebase';
 export default function Home() {
   const { user, isUserLoading } = useUser();
   const heroImg = PlaceHolderImages.find(img => img.id === 'hero-education');
+  const adImg = PlaceHolderImages.find(img => img.id === 'home-tuition-ad');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -31,7 +32,7 @@ export default function Home() {
             <span className="font-headline font-bold text-xl tracking-tight text-primary">RP Coach-Up</span>
           </div>
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="#programs" className="text-sm font-medium hover:text-primary transition-colors">Programs</Link>
+            <Link href="/programs/dashboard" className="text-sm font-medium hover:text-primary transition-colors">Programs</Link>
             <Link href="#features" className="text-sm font-medium hover:text-primary transition-colors">How it Works</Link>
             <Link href="/about" className="text-sm font-medium hover:text-primary transition-colors">About Us</Link>
           </nav>
@@ -76,49 +77,20 @@ export default function Home() {
                     <Link href="/register?role=teacher">Join as Teacher</Link>
                   </Button>
                 </div>
-                <div className="flex items-center gap-6 pt-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <ShieldCheck className="h-5 w-5 text-primary" />
-                    <span>Verified Tutors</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Star className="h-5 w-5 text-accent" />
-                    <span>4.9/5 Rating</span>
-                  </div>
-                </div>
               </div>
               <div className="relative group">
                 <div className="absolute -inset-4 bg-accent/20 rounded-2xl blur-2xl transition group-hover:bg-accent/30" />
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border">
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border aspect-[4/3]">
                   <Image 
-                    src={heroImg?.imageUrl || "https://picsum.photos/seed/edu1/1200/600"} 
-                    alt={heroImg?.description || "Educational hero"}
+                    src={adImg?.imageUrl || heroImg?.imageUrl || "https://picsum.photos/seed/edu1/800/600"} 
+                    alt="RP Coach-Up Program Flyer"
                     width={800}
-                    height={600}
+                    height={1000}
                     className="object-cover w-full h-full"
-                    data-ai-hint="students studying"
+                    data-ai-hint="tuition flyer"
                   />
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="py-12 border-y bg-background">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {[
-                { label: "Active Students", value: "2,500+" },
-                { label: "Expert Teachers", value: "350+" },
-                { label: "Success Rate", value: "98%" },
-                { label: "Courses Offered", value: "120+" }
-              ].map((stat, i) => (
-                <div key={i} className="text-center">
-                  <div className="text-3xl font-headline font-bold text-primary">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </div>
-              ))}
             </div>
           </div>
         </section>
@@ -127,7 +99,7 @@ export default function Home() {
         <section id="features" className="py-24 bg-background">
           <div className="container mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-              <h2 className="text-4xl font-headline font-bold">Expert Education Matching</h2>
+              <h2 className="text-4xl font-headline font-bold">How It Works</h2>
               <p className="text-lg text-muted-foreground">
                 Our platform streamlines the search for quality education. We facilitate meaningful connections to ensure the best learning outcomes.
               </p>
@@ -165,86 +137,12 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        {/* CTA Section */}
-        <section className="py-24">
-          <div className="container mx-auto px-4">
-            <div className="bg-primary rounded-3xl p-12 lg:p-20 relative overflow-hidden shadow-2xl">
-              <div className="absolute top-0 right-0 w-1/3 h-full bg-accent/20 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
-              <div className="relative z-10 grid lg:grid-cols-2 gap-12 items-center text-primary-foreground">
-                <div className="space-y-6">
-                  <h2 className="text-4xl lg:text-5xl font-headline font-bold">Ready to Elevate Your Learning Journey?</h2>
-                  <p className="text-lg text-primary-foreground/80 max-w-lg">
-                    Join thousands of students and teachers who are already using RP Coach-Up to find their perfect match.
-                  </p>
-                  <div className="flex gap-4">
-                    <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 px-8 rounded-xl font-bold" asChild>
-                      <Link href="/register">Start for Free <ArrowRight className="ml-2 h-5 w-5" /></Link>
-                    </Button>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl space-y-2">
-                    <Star className="text-accent h-6 w-6" />
-                    <p className="text-sm font-medium italic">"The match was spot on. My physics tutor is exactly what I needed."</p>
-                    <p className="text-xs text-primary-foreground/60">— Sarah J., Student</p>
-                  </div>
-                  <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl space-y-2 mt-8">
-                    <Users className="text-accent h-6 w-6" />
-                    <p className="text-sm font-medium italic">"I love teaching students who share my passion for advanced calculus."</p>
-                    <p className="text-xs text-primary-foreground/60">— Dr. Robert, Teacher</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* Footer */}
       <footer className="bg-secondary/30 border-t py-12">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-12 mb-12">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="bg-primary p-1 rounded-lg">
-                  <BookOpen className="text-primary-foreground h-5 w-5" />
-                </div>
-                <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Transforming the landscape of private education through intelligence and human connection.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Platform</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="#" className="hover:text-primary transition-colors">Find Tutors</Link></li>
-                <li><Link href="#" className="hover:text-primary transition-colors">Become a Teacher</Link></li>
-                <li><Link href="#" className="hover:text-primary transition-colors">Success Stories</Link></li>
-                <li><Link href="#" className="hover:text-primary transition-colors">Pricing</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Support</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="#" className="hover:text-primary transition-colors">Help Center</Link></li>
-                <li><Link href="#" className="hover:text-primary transition-colors">Terms of Service</Link></li>
-                <li><Link href="#" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-                <li><Link href="#" className="hover:text-primary transition-colors">Cookie Policy</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Connect</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="#" className="hover:text-primary transition-colors">Twitter</Link></li>
-                <li><Link href="#" className="hover:text-primary transition-colors">LinkedIn</Link></li>
-                <li><Link href="#" className="hover:text-primary transition-colors">Instagram</Link></li>
-                <li><Link href="#" className="hover:text-primary transition-colors">Facebook</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="pt-8 border-t text-center text-sm text-muted-foreground">
+          <div className="pt-8 text-center text-sm text-muted-foreground">
             © {mounted ? new Date().getFullYear() : '2025'} RP Coach-Up. All rights reserved.
           </div>
         </div>

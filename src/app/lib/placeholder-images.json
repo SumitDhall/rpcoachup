@@ -21,9 +21,9 @@
     },
     {
       "id": "home-tuition-ad",
-      "description": "Professional home tuition advertisement flyer",
-      "imageUrl": "https://picsum.photos/seed/tutorad1/800/800",
-      "imageHint": "teacher student"
+      "description": "Professional home tuition advertisement flyer for RP Coach-Up",
+      "imageUrl": "https://picsum.photos/seed/tutorad_final/800/1000",
+      "imageHint": "tuition flyer"
     }
   ]
 }
