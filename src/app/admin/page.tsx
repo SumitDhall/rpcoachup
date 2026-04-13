@@ -62,7 +62,8 @@ import {
   LayoutDashboard,
   Briefcase,
   FileText,
-  IndianRupee
+  IndianRupee,
+  Download
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
@@ -122,35 +123,24 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
 
   return (
     <div className="space-y-8">
-      {/* Role Specific Info */}
-      <div className="space-y-4 pt-4 border-t">
-        <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-          {userType === 'Student' ? <BookMarked className="h-4 w-4" /> : <Award className="h-4 w-4" />}
-          Account Summary
-        </h4>
-        <div className="grid grid-cols-1 gap-3">
-          {userType === 'Student' ? (
+      {/* Role Specific Info - Only for Students now per requirements */}
+      {userType === 'Student' && (
+        <div className="space-y-4 pt-4 border-t">
+          <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <BookMarked className="h-4 w-4" />
+            Account Summary
+          </h4>
+          <div className="grid grid-cols-1 gap-3">
             <div className="bg-secondary/30 p-3 rounded-lg">
               <p className="text-xs text-muted-foreground">Registered Grade Level</p>
               <p className="font-medium">{details?.gradeLevel || 'Not specified'}</p>
             </div>
-          ) : (
-            <>
-              <div className="bg-secondary/30 p-3 rounded-lg">
-                <p className="text-xs text-muted-foreground">General Experience</p>
-                <p className="font-medium">{details?.experienceYears || 0} Years</p>
-              </div>
-              <div className="bg-secondary/30 p-3 rounded-lg">
-                <p className="text-xs text-muted-foreground">Qualifications</p>
-                <p className="font-medium whitespace-pre-wrap">{details?.qualifications || 'Not specified'}</p>
-              </div>
-            </>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Interests List */}
-      <div className="space-y-4">
+      <div className={`space-y-4 ${userType === 'Teacher' ? 'pt-4 border-t' : ''}`}>
         <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
            {userType === 'Student' ? 'Tuition Requirements' : 'Professional Specializations'}
@@ -228,9 +218,17 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
                         </div>
                       )}
                       {int.resumeName && (
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-3 w-3 text-green-600" />
-                          <span className="text-xs text-green-700 font-medium">Resume: {int.resumeName}</span>
+                        <div className="mt-2 p-3 bg-green-50 rounded-lg border border-green-200 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-green-600" />
+                            <div>
+                              <p className="text-[10px] text-green-700 font-bold uppercase">Attached Resume</p>
+                              <p className="text-xs text-green-800 font-medium truncate max-w-[200px]">{int.resumeName}</p>
+                            </div>
+                          </div>
+                          <Button size="icon" variant="ghost" className="h-8 w-8 text-green-700 hover:bg-green-100">
+                            <Download className="h-4 w-4" />
+                          </Button>
                         </div>
                       )}
                     </>
@@ -238,7 +236,7 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
 
                   {/* Budget/Salary */}
                   {(int.affordableRange || int.expectedSalary) && (
-                    <div className="flex items-center gap-2 text-accent">
+                    <div className="flex items-center gap-2 text-accent mt-1">
                       <IndianRupee className="h-3 w-3" />
                       <span className="text-xs font-bold">{int.affordableRange || `Salary Expectation: ${int.expectedSalary}`}</span>
                     </div>
