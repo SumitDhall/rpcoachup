@@ -1,10 +1,13 @@
-
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { BookOpen, Users, Star, ArrowRight, ShieldCheck, Zap, Search } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+
+// This is a server component, so Date is calculated once during the build/request.
+// Static year for consistency.
+const CURRENT_YEAR = 2025;
 
 export default function Home() {
   const heroImg = PlaceHolderImages.find(img => img.id === 'hero-education');
@@ -225,7 +228,7 @@ export default function Home() {
             </div>
           </div>
           <div className="pt-8 border-t text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} RP Coach-Up. All rights reserved.
+            © {CURRENT_YEAR} RP Coach-Up. All rights reserved.
           </div>
         </div>
       </footer>

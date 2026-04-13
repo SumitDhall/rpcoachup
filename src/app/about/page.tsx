@@ -1,6 +1,6 @@
-
 "use client"
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,11 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function AboutPage() {
   const mentorImg = PlaceHolderImages.find(img => img.id === 'teacher-mentoring');
+  const [currentYear, setCurrentYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -174,7 +179,7 @@ export default function AboutPage() {
             <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
           </div>
           <p className="text-sm text-muted-foreground mb-8">
-            © {new Date().getFullYear()} RP Coach-Up. Empowering education through technology.
+            © {currentYear || '...'} RP Coach-Up. Empowering education through technology.
           </p>
         </div>
       </footer>

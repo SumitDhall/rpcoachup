@@ -1,7 +1,6 @@
-
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +41,11 @@ import { collection, query, limit, doc, where, orderBy } from 'firebase/firestor
 // Component to fetch and display submitted interests for a specific user
 function UserInterestsSection({ userId, userType }: { userId: string; userType: string }) {
   const db = useFirestore();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   const collectionName = userType === 'Student' ? 'studentInterests' : 'teacherInterests';
   const idField = userType === 'Student' ? 'studentId' : 'teacherId';
@@ -89,7 +93,7 @@ function UserInterestsSection({ userId, userType }: { userId: string; userType: 
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  <span>{interest.submissionDate?.toDate ? interest.submissionDate.toDate().toLocaleDateString() : 'Recent'}</span>
+                  <span>{mounted && interest.submissionDate?.toDate ? interest.submissionDate.toDate().toLocaleDateString() : 'Recent'}</span>
                 </div>
               </div>
               {interest.notes && (
@@ -171,6 +175,11 @@ export default function AdminPortal() {
   const [activeTab, setActiveTab] = useState('users');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch real users from Firestore
   const usersQuery = useMemoFirebase(() => {
@@ -330,7 +339,7 @@ export default function AdminPortal() {
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span className="text-muted-foreground">Joined:</span>
-                    <span>{selectedUser.createdAt?.toDate ? selectedUser.createdAt.toDate().toLocaleDateString() : 'N/A'}</span>
+                    <span>{mounted && selectedUser.createdAt?.toDate ? selectedUser.createdAt.toDate().toLocaleDateString() : 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Settings className="h-4 w-4 text-muted-foreground" />
