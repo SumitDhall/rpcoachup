@@ -28,7 +28,8 @@ import {
   Phone, 
   GraduationCap, 
   Briefcase, 
-  Edit2
+  Edit2,
+  History
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
@@ -66,19 +67,6 @@ export default function TeacherDashboard() {
   const [subjects, setSubjects] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
-
-  useEffect(() => {
-    if (interests && interests.length > 0 && !hasLoadedInitial) {
-      const latest = interests[0];
-      setTeacherName(latest.teacherName || '');
-      setPhone(latest.phone || '');
-      setQualifications(latest.qualifications || '');
-      setSubjects(latest.subjects || '');
-      setIsSubmitted(true);
-      setHasLoadedInitial(true);
-    }
-  }, [interests, hasLoadedInitial]);
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -162,7 +150,10 @@ export default function TeacherDashboard() {
 
             <TabsContent value="interests">
               <Card>
-                <CardHeader><CardTitle>Professional Profile</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle>Professional Profile</CardTitle>
+                  <CardDescription>Share your educational background and expertise.</CardDescription>
+                </CardHeader>
                 <form onSubmit={handleSubmitInterest}>
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
@@ -177,11 +168,11 @@ export default function TeacherDashboard() {
                     </div>
                     <div className="space-y-1">
                       <Label>Qualifications</Label>
-                      <Input disabled={isSubmitted} value={qualifications} onChange={e => setQualifications(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
+                      <Input disabled={isSubmitted} value={qualifications} onChange={e => setQualifications(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} placeholder="e.g., M.Sc Mathematics, B.Ed" />
                     </div>
                     <div className="space-y-1">
                       <Label>Specialty Subjects</Label>
-                      <Input disabled={isSubmitted} value={subjects} onChange={e => setSubjects(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
+                      <Input disabled={isSubmitted} value={subjects} onChange={e => setSubjects(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} placeholder="e.g., Physics, Chemistry, Calculus" />
                     </div>
                   </CardContent>
                   <CardFooter className="gap-4">
@@ -193,7 +184,18 @@ export default function TeacherDashboard() {
             </TabsContent>
 
             <TabsContent value="feedback">
-              <Card><CardHeader><CardTitle>Feedback</CardTitle></CardHeader><CardContent><Textarea placeholder="Share your experience..." /></CardContent></Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Feedback</CardTitle>
+                  <CardDescription>Tell us about your experience as a teacher on the platform.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Textarea placeholder="Share your experience..." />
+                </CardContent>
+                <CardFooter>
+                  <Button variant="secondary">Submit Feedback</Button>
+                </CardFooter>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

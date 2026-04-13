@@ -79,27 +79,8 @@ export default function StudentDashboard() {
   const [affordableRange, setAffordableRange] = useState('');
   const [intendedStartDate, setIntendedStartDate] = useState('');
   
-  const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
-
-  useEffect(() => {
-    if (interests && interests.length > 0 && !hasLoadedInitial) {
-      const latest = interests[0];
-      setStudentName(latest.studentName || '');
-      setPhone(latest.phone || '');
-      setSchool(latest.school || '');
-      setGradeOrClass(latest.gradeOrClass || '');
-      setAddress(latest.address || '');
-      setSubject(latest.subject || '');
-      setNotes(latest.notes || '');
-      setAffordableRange(latest.affordableRange || '');
-      setIntendedStartDate(latest.intendedStartDate || '');
-      setIsSubmitted(true);
-      setHasLoadedInitial(true);
-    }
-  }, [interests, hasLoadedInitial]);
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -225,6 +206,10 @@ export default function StudentDashboard() {
                         <Input type="date" disabled={isSubmitted} value={intendedStartDate} onChange={e => setIntendedStartDate(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
                       </div>
                     </div>
+                    <div className="space-y-1">
+                      <Label>Notes / Special Requirements</Label>
+                      <Textarea disabled={isSubmitted} value={notes} onChange={e => setNotes(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} placeholder="e.g., Preferred timings, school name, specific topics..." />
+                    </div>
                   </CardContent>
                   <CardFooter className="gap-4">
                     <Button type="submit" disabled={isSubmitting || isSubmitted} className="flex-1">Submit</Button>
@@ -236,23 +221,55 @@ export default function StudentDashboard() {
 
             <TabsContent value="progress">
               <Card>
-                <CardHeader><CardTitle>My Progress</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle>My Progress</CardTitle>
+                  <CardDescription>Track the status of your tuition requirement submissions.</CardDescription>
+                </CardHeader>
                 <CardContent className="space-y-4">
-                  {interests?.map(i => (
-                    <div key={i.id} className="p-4 border rounded-xl flex items-center justify-between">
-                      <div>
-                        <p className="font-bold">{i.subject}</p>
-                        <p className="text-xs text-muted-foreground">{i.submissionDate?.toDate?.()?.toLocaleDateString()}</p>
+                  {isLoadingInterests ? (
+                    <div className="flex justify-center py-8"><Loader2 className="animate-spin text-primary" /></div>
+                  ) : interests && interests.length > 0 ? (
+                    interests.map(i => (
+                      <div key={i.id} className="p-4 border rounded-xl flex items-center justify-between bg-card shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <div className="mt-1 bg-primary/10 p-2 rounded-lg">
+                            <ClipboardList className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm">{i.subject}</p>
+                            <p className="text-[10px] text-muted-foreground">Submitted: {i.submissionDate?.toDate?.()?.toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Badge variant={i.status === 'Completed' ? 'default' : 'outline'} className={i.status === 'Completed' ? 'bg-green-600' : ''}>
+                            {i.status}
+                          </Badge>
+                        </div>
                       </div>
-                      <Badge variant={i.status === 'Completed' ? 'default' : 'outline'}>{i.status}</Badge>
+                    ))
+                  ) : (
+                    <div className="text-center py-12 border rounded-xl border-dashed">
+                      <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">No submissions found yet.</p>
                     </div>
-                  ))}
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
 
             <TabsContent value="feedback">
-              <Card><CardHeader><CardTitle>Feedback</CardTitle></CardHeader><CardContent><Textarea placeholder="How can we improve?" /></CardContent></Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Feedback</CardTitle>
+                  <CardDescription>We value your thoughts on our platform.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Textarea placeholder="How can we improve your learning experience?" />
+                </CardContent>
+                <CardFooter>
+                  <Button variant="secondary">Send Feedback</Button>
+                </CardFooter>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>
