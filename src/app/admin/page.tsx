@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -321,6 +321,19 @@ export default function AdminPortal() {
     setIsDetailsOpen(true);
   };
 
+  // Filter users based on active tab
+  const filteredUsers = useMemo(() => {
+    if (!users) return [];
+    if (activeTab === 'students') return users.filter(u => u.userType === 'Student');
+    if (activeTab === 'teachers') return users.filter(u => u.userType === 'Teacher');
+    return [];
+  }, [users, activeTab]);
+
+  // Pagination logic
+  const totalUsers = filteredUsers.length;
+  const totalPages = Math.ceil(totalUsers / pageSize) || 1;
+  const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   // Wait for auth to initialize
   if (isUserLoading || isAdminLoading) {
     return (
@@ -367,58 +380,10 @@ export default function AdminPortal() {
     return timeB - timeA;
   });
 
-  // Pagination logic
-  const totalUsers = users?.length || 0;
-  const totalPages = Math.ceil(totalUsers / pageSize) || 1;
-  const paginatedUsers = users?.slice((currentPage - 1) * pageSize, currentPage * pageSize) || [];
-
   return (
     <div className="flex min-h-screen bg-background">
-      <style jsx global>{`
-        @media print {
-          aside, header, .no-print, button, .pagination-controls, .tabs-list {
-            display: none !important;
-          }
-          main {
-            margin: 0 !important;
-            padding: 20px !important;
-            width: 100% !important;
-            background: white !important;
-          }
-          .printable-area {
-            border: none !important;
-            box-shadow: none !important;
-            width: 100% !important;
-          }
-          table {
-            width: 100% !important;
-            border-collapse: collapse !important;
-          }
-          th, td {
-            border: 1px solid #eee !important;
-            padding: 10px !important;
-            text-align: left !important;
-          }
-          .printable-header {
-            display: block !important;
-            margin-bottom: 30px !important;
-            text-align: center !important;
-            border-bottom: 2px solid #266EDB !important;
-            padding-bottom: 15px !important;
-          }
-          .badge-print {
-            border: 1px solid #ccc !important;
-            padding: 2px 8px !important;
-            border-radius: 4px !important;
-          }
-        }
-        .printable-header {
-          display: none;
-        }
-      `}</style>
-
       {/* Admin Sidebar */}
-      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50 no-print">
+      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
         <div className="p-6 flex items-center gap-2">
           <div className="bg-primary p-1 rounded-lg">
             <BookOpen className="text-primary-foreground h-5 w-5" />
@@ -439,15 +404,26 @@ export default function AdminPortal() {
             )}
           </Button>
           <Button 
-            variant={activeTab === 'users' ? 'secondary' : 'ghost'} 
+            variant={activeTab === 'students' ? 'secondary' : 'ghost'} 
             className="w-full justify-start gap-3"
             onClick={() => {
-                setActiveTab('users');
+                setActiveTab('students');
                 setCurrentPage(1);
             }}
           >
-            <Users className="h-4 w-4" />
-            Manage Users
+            <UserCheck className="h-4 w-4" />
+            Manage Students
+          </Button>
+          <Button 
+            variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} 
+            className="w-full justify-start gap-3"
+            onClick={() => {
+                setActiveTab('teachers');
+                setCurrentPage(1);
+            }}
+          >
+            <GraduationCap className="h-4 w-4" />
+            Manage Teachers
           </Button>
           <Button 
             variant={activeTab === 'settings' ? 'secondary' : 'ghost'} 
@@ -469,7 +445,7 @@ export default function AdminPortal() {
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 p-4 lg:p-8">
         <div className="max-w-6xl mx-auto space-y-8">
-          <header className="flex items-center justify-between no-print">
+          <header className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div>
                 <h1 className="text-3xl font-headline font-bold">Admin Portal</h1>
@@ -526,32 +502,18 @@ export default function AdminPortal() {
             </div>
           )}
 
-          {activeTab === 'users' && (
+          {(activeTab === 'students' || activeTab === 'teachers') && (
             <div className="space-y-6">
-              <Card className="printable-area overflow-hidden">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7 border-b no-print">
+              <Card className="overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7 border-b">
                   <div>
-                    <CardTitle>User Accounts Management</CardTitle>
-                    <CardDescription>View, manage, and export user records.</CardDescription>
+                    <CardTitle>{activeTab === 'students' ? 'Manage Students' : 'Manage Teachers'}</CardTitle>
+                    <CardDescription>View and manage registered {activeTab === 'students' ? 'student' : 'teacher'} accounts.</CardDescription>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-6">
-                  {/* Print-only Report Header */}
-                  <div className="printable-header">
-                    <div className="flex items-center justify-center gap-2 mb-4">
-                        <BookOpen className="h-8 w-8 text-primary" />
-                        <h1 className="text-3xl font-bold text-primary">RP Coach-Up</h1>
-                    </div>
-                    <h2 className="text-2xl font-bold mb-2">User Accounts Administration Report</h2>
-                    <div className="flex justify-center gap-8 text-sm text-muted-foreground">
-                        <p>Generated: {mounted ? new Date().toLocaleString() : ''}</p>
-                        <p>Records on Page: {paginatedUsers.length}</p>
-                        <p>Page {currentPage} of {totalPages}</p>
-                    </div>
-                  </div>
-
                   {isLoadingUsers ? (
-                    <div className="flex justify-center p-8 no-print"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                    <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
                   ) : (
                     <div className="space-y-4">
                       <div className="overflow-x-auto">
@@ -561,7 +523,7 @@ export default function AdminPortal() {
                               <TableHead>Full Name</TableHead>
                               <TableHead>Email Address</TableHead>
                               <TableHead>Account Type</TableHead>
-                              <TableHead className="text-right no-print">Actions</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -569,7 +531,7 @@ export default function AdminPortal() {
                               <TableRow key={u.id}>
                                 <TableCell className="font-medium">
                                   <div className="flex items-center gap-2">
-                                    <span className="no-print">
+                                    <span>
                                       {u.userType === 'Student' ? <UserCheck className="h-4 w-4 text-primary" /> : <GraduationCap className="h-4 w-4 text-accent" />}
                                     </span>
                                     {u.firstName} {u.lastName}
@@ -577,13 +539,11 @@ export default function AdminPortal() {
                                 </TableCell>
                                 <TableCell className="text-muted-foreground">{u.email}</TableCell>
                                 <TableCell>
-                                  <div className="badge-print">
-                                    <Badge variant={u.userType === 'Student' ? 'outline' : 'secondary'}>
-                                        {u.userType}
-                                    </Badge>
-                                  </div>
+                                  <Badge variant={u.userType === 'Student' ? 'outline' : 'secondary'}>
+                                      {u.userType}
+                                  </Badge>
                                 </TableCell>
-                                <TableCell className="text-right no-print">
+                                <TableCell className="text-right">
                                   <Button 
                                     variant="ghost" 
                                     size="sm"
@@ -599,9 +559,9 @@ export default function AdminPortal() {
                       </div>
 
                       {/* Pagination Controls */}
-                      <div className="flex items-center justify-between no-print pt-6 border-t mt-4">
+                      <div className="flex items-center justify-between pt-6 border-t mt-4">
                         <p className="text-sm text-muted-foreground">
-                          Displaying {paginatedUsers.length} of {totalUsers} total registered users
+                          Displaying {paginatedUsers.length} of {totalUsers} registered {activeTab}
                         </p>
                         <div className="flex items-center gap-3">
                           <Button
