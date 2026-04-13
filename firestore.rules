@@ -16,21 +16,13 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isDataOwner(ownerId) {
-      return isSignedIn() && request.auth.uid == ownerId;
-    }
-
-    function isImmutable(field) {
-      return !(field in request.resource.data) || request.resource.data[field] == resource.data[field];
-    }
-
     // --- COLLECTION RULES ---
 
     match /users/{userId} {
       allow get: if isSignedIn();
       allow list: if isAdmin();
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId) && isImmutable('id') && isImmutable('userType');
+      allow update: if isOwner(userId);
       allow delete: if isAdmin();
 
       match /studentProfile/{profileId} {
@@ -45,15 +37,15 @@ service cloud.firestore {
     }
 
     match /studentInterests/{studentInterestId} {
-      allow get, list: if isAdmin() || isDataOwner(resource.data.studentId);
+      allow get, list: if isAdmin() || (isSignedIn() && resource.data.studentId == request.auth.uid);
       allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
-      allow update, delete: if isAdmin() || isDataOwner(resource.data.studentId);
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.studentId == request.auth.uid);
     }
 
     match /teacherInterests/{teacherInterestId} {
-      allow get, list: if isAdmin() || isDataOwner(resource.data.teacherId);
+      allow get, list: if isAdmin() || (isSignedIn() && resource.data.teacherId == request.auth.uid);
       allow create: if isSignedIn() && request.resource.data.teacherId == request.auth.uid;
-      allow update, delete: if isAdmin() || isDataOwner(resource.data.teacherId);
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.teacherId == request.auth.uid);
     }
 
     match /notifications/{notificationId} {
@@ -61,31 +53,24 @@ service cloud.firestore {
       allow read, list, update, delete: if isAdmin();
     }
 
-    match /programs/{programId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /matchProposals/{matchProposalId} {
-      allow get, list: if isAdmin() || isDataOwner(resource.data.studentId) || isDataOwner(resource.data.teacherId);
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /feedback/{feedbackId} {
-      allow get: if isAdmin() || isDataOwner(resource.data.userProfileId);
-      allow list: if isAdmin();
-      allow create: if isSignedIn() && request.resource.data.userProfileId == request.auth.uid;
-      allow update, delete: if isAdmin() || isDataOwner(resource.data.userProfileId);
-    }
-
     match /systemLogs/{logId} {
       allow create: if isAdmin();
       allow read, list: if isAdmin();
     }
 
+    match /matchProposals/{matchProposalId} {
+      allow get, list: if isAdmin() || (isSignedIn() && (resource.data.studentId == request.auth.uid || resource.data.teacherId == request.auth.uid));
+      allow create, update, delete: if isAdmin();
+    }
+
     match /roles_admin/{adminId} {
       allow get: if isSignedIn();
       allow list, create, update, delete: if isAdmin();
+    }
+    
+    match /feedback/{feedbackId} {
+      allow create: if isSignedIn();
+      allow read, list, update, delete: if isAdmin();
     }
   }
 }

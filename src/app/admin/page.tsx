@@ -66,11 +66,10 @@ import {
   UserMinus,
   Search,
   Bell,
-  Activity,
   History
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -168,25 +167,25 @@ function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: strin
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input 
-          placeholder="Search students by name or email..." 
+          placeholder="Search students..." 
           className="pl-9 h-9 text-xs"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-      <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2">
+      <div className="max-h-[250px] overflow-y-auto space-y-2 pr-2">
         {filteredStudents.length > 0 ? (
           filteredStudents.map((student) => {
             const isAssigned = matchedStudentIds.has(student.id);
             return (
-              <div key={student.id} className="flex items-center justify-between p-3 rounded-lg border bg-secondary/5 group hover:border-primary/30 transition-colors">
-                <div className="flex items-center gap-3">
+              <div key={student.id} className="flex items-center justify-between p-2 rounded-lg border bg-secondary/5">
+                <div className="flex items-center gap-2">
                   <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${isAssigned ? 'bg-accent text-accent-foreground' : 'bg-muted'}`}>
                     {student.firstName[0]}{student.lastName[0]}
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{student.firstName} {student.lastName}</p>
+                    <p className="text-xs font-medium">{student.firstName} {student.lastName}</p>
                     <p className="text-[10px] text-muted-foreground">{student.email}</p>
                   </div>
                 </div>
@@ -194,28 +193,26 @@ function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: strin
                   <Button 
                     size="sm" 
                     variant="ghost" 
-                    className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10 gap-1"
+                    className="h-8 text-destructive"
                     onClick={() => handleUnassignStudent(student.id)}
                   >
-                    <UserMinus className="h-3.5 w-3.5" />
-                    <span className="text-[10px]">Unassign</span>
+                    <UserMinus className="h-3 w-3" />
                   </Button>
                 ) : (
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="h-8 text-primary border-primary/20 hover:border-primary hover:bg-primary/5 gap-1"
+                    className="h-8 text-primary"
                     onClick={() => handleAssignStudent(student)}
                   >
-                    <UserPlus className="h-3.5 w-3.5" />
-                    <span className="text-[10px]">Assign</span>
+                    <UserPlus className="h-3 w-3" />
                   </Button>
                 )}
               </div>
             );
           })
         ) : (
-          <p className="text-center py-8 text-xs text-muted-foreground italic">No students found.</p>
+          <p className="text-center py-4 text-xs text-muted-foreground italic">No students found.</p>
         )}
       </div>
     </div>
@@ -303,25 +300,25 @@ function TeacherAssignmentManager({ studentId, studentName }: { studentId: strin
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input 
-          placeholder="Search teachers by name or email..." 
+          placeholder="Search teachers..." 
           className="pl-9 h-9 text-xs"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-      <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2">
+      <div className="max-h-[250px] overflow-y-auto space-y-2 pr-2">
         {filteredTeachers.length > 0 ? (
           filteredTeachers.map((teacher) => {
             const isAssigned = matchedTeacherIds.has(teacher.id);
             return (
-              <div key={teacher.id} className="flex items-center justify-between p-3 rounded-lg border bg-secondary/5 group hover:border-primary/30 transition-colors">
-                <div className="flex items-center gap-3">
+              <div key={teacher.id} className="flex items-center justify-between p-2 rounded-lg border bg-secondary/5">
+                <div className="flex items-center gap-2">
                   <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${isAssigned ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                     {teacher.firstName[0]}{teacher.lastName[0]}
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{teacher.firstName} {teacher.lastName}</p>
+                    <p className="text-xs font-medium">{teacher.firstName} {teacher.lastName}</p>
                     <p className="text-[10px] text-muted-foreground">{teacher.email}</p>
                   </div>
                 </div>
@@ -329,28 +326,26 @@ function TeacherAssignmentManager({ studentId, studentName }: { studentId: strin
                   <Button 
                     size="sm" 
                     variant="ghost" 
-                    className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10 gap-1"
+                    className="h-8 text-destructive"
                     onClick={() => handleUnassignTeacher(teacher.id)}
                   >
-                    <UserMinus className="h-3.5 w-3.5" />
-                    <span className="text-[10px]">Unassign</span>
+                    <UserMinus className="h-3 w-3" />
                   </Button>
                 ) : (
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="h-8 text-primary border-primary/20 hover:border-primary hover:bg-primary/5 gap-1"
+                    className="h-8 text-primary"
                     onClick={() => handleAssignTeacher(teacher)}
                   >
-                    <UserPlus className="h-3.5 w-3.5" />
-                    <span className="text-[10px]">Assign</span>
+                    <UserPlus className="h-3 w-3" />
                   </Button>
                 )}
               </div>
             );
           })
         ) : (
-          <p className="text-center py-8 text-xs text-muted-foreground italic">No teachers found.</p>
+          <p className="text-center py-4 text-xs text-muted-foreground italic">No teachers found.</p>
         )}
       </div>
     </div>
@@ -401,7 +396,7 @@ function UserDetailsContent({ user }: { user: any }) {
       toast({
         variant: "destructive",
         title: "Download Failed",
-        description: "The original file content was not found for this record.",
+        description: "The original file content was not found.",
       });
       return;
     }
@@ -413,16 +408,11 @@ function UserDetailsContent({ user }: { user: any }) {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      toast({
-        title: "Download Complete",
-        description: `Successfully retrieved ${fileName}.`,
-      });
     } catch (e) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "An error occurred while attempting to reconstruct the file.",
+        description: "An error occurred while downloading the file.",
       });
     }
   };
@@ -433,22 +423,7 @@ function UserDetailsContent({ user }: { user: any }) {
 
   return (
     <div className="space-y-8">
-      {user.userType === 'Student' && (
-        <div className="space-y-4 pt-4 border-t">
-          <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-            <BookMarked className="h-4 w-4" />
-            Account Summary
-          </h4>
-          <div className="grid grid-cols-1 gap-3">
-            <div className="bg-secondary/30 p-3 rounded-lg">
-              <p className="text-xs text-muted-foreground">Registered Grade Level</p>
-              <p className="font-medium">{details?.gradeLevel || 'Not specified'}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className={`space-y-4 ${user.userType === 'Teacher' ? 'pt-4 border-t' : ''}`}>
+      <div className="space-y-4 pt-4 border-t">
         <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
            {user.userType === 'Student' ? 'Tuition Requirements' : 'Professional Specializations'}
@@ -456,18 +431,17 @@ function UserDetailsContent({ user }: { user: any }) {
         {interests && interests.length > 0 ? (
           <div className="space-y-3">
             {[...interests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map((int: any) => (
-              <div key={int.id} className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-colors shadow-sm space-y-3">
+              <div key={int.id} className="p-4 border rounded-xl bg-card shadow-sm space-y-3">
                 <div className="flex justify-between items-center pb-2 border-b">
-                  <span className="font-bold text-primary">{int.subject || int.subjects || 'General Interest'}</span>
+                  <span className="font-bold text-primary">{int.subject || int.subjects}</span>
                   <button 
                     onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: interestCollection })}
-                    className="focus:outline-none transition-transform hover:scale-105 active:scale-95"
+                    className="focus:outline-none"
                   >
                     <Badge 
                       variant={int.status === 'Pending' ? 'outline' : 'default'} 
-                      className={`text-[10px] cursor-pointer gap-1 py-1 px-2 ${int.status === 'Completed' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                      className={`text-[10px] cursor-pointer ${int.status === 'Completed' ? 'bg-green-600' : ''}`}
                     >
-                      {int.status === 'Completed' ? <CheckCircle2 className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
                       {int.status}
                     </Badge>
                   </button>
@@ -476,7 +450,7 @@ function UserDetailsContent({ user }: { user: any }) {
                 <div className="grid grid-cols-1 gap-2 text-sm">
                   <div className="flex items-center gap-2">
                     <User className="h-3 w-3 text-muted-foreground" />
-                    <span className="font-medium text-xs">Name: {int.studentName || int.teacherName}</span>
+                    <span className="text-xs">For: {int.studentName || int.teacherName}</span>
                   </div>
                   {int.phone && (
                     <div className="flex items-center gap-2">
@@ -490,7 +464,7 @@ function UserDetailsContent({ user }: { user: any }) {
                       {int.school && (
                         <div className="flex items-center gap-2">
                           <School className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs">School: {int.school} ({int.gradeOrClass})</span>
+                          <span className="text-xs">{int.school} ({int.gradeOrClass})</span>
                         </div>
                       )}
                       {int.address && (
@@ -504,40 +478,19 @@ function UserDetailsContent({ user }: { user: any }) {
 
                   {user.userType === 'Teacher' && (
                     <>
-                      {int.qualifications && (
-                        <div className="flex items-center gap-2">
-                          <GraduationCap className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs">Edu: {int.qualifications}</span>
-                        </div>
-                      )}
-                      {int.experienceYears && (
-                        <div className="flex items-center gap-2">
-                          <Briefcase className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs">Exp: {int.experienceYears}</span>
-                        </div>
-                      )}
-                      {int.hoursPerWeek && (
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs">Commitment: {int.hoursPerWeek}</span>
-                        </div>
-                      )}
                       {int.resumeName && (
-                        <div className="mt-2 p-3 bg-green-50 rounded-lg border border-green-200 flex items-center justify-between">
+                        <div className="mt-2 p-2 bg-green-50 rounded-lg border border-green-200 flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-green-600" />
-                            <div>
-                              <p className="text-[10px] text-green-700 font-bold uppercase">Attached Resume</p>
-                              <p className="text-xs text-green-800 font-medium truncate max-w-[200px]">{int.resumeName}</p>
-                            </div>
+                            <FileText className="h-3 w-3 text-green-600" />
+                            <span className="text-xs text-green-800 font-medium truncate max-w-[150px]">{int.resumeName}</span>
                           </div>
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="h-8 w-8 text-green-700 hover:bg-green-100"
+                            className="h-6 w-6 text-green-700"
                             onClick={() => handleDownloadResume(int.resumeName, int.resumeData)}
                           >
-                            <Download className="h-4 w-4" />
+                            <Download className="h-3 w-3" />
                           </Button>
                         </div>
                       )}
@@ -547,7 +500,7 @@ function UserDetailsContent({ user }: { user: any }) {
                   {(int.affordableRange || int.expectedSalary) && (
                     <div className="flex items-center gap-2 text-accent mt-1">
                       <IndianRupee className="h-3 w-3" />
-                      <span className="text-xs font-bold">{int.affordableRange || `Salary Expectation: ${int.expectedSalary}`}</span>
+                      <span className="text-xs font-bold">{int.affordableRange || int.expectedSalary}</span>
                     </div>
                   )}
                 </div>
@@ -557,16 +510,12 @@ function UserDetailsContent({ user }: { user: any }) {
                     "{int.notes}"
                   </div>
                 )}
-                
-                <p className="text-[10px] text-muted-foreground text-right">
-                  Submitted on: {int.submissionDate?.toDate?.()?.toLocaleDateString()}
-                </p>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground italic bg-secondary/20 p-4 rounded-lg text-center">
-            No interests have been submitted yet.
+          <p className="text-xs text-muted-foreground italic text-center py-4">
+            No submissions found.
           </p>
         )}
       </div>
@@ -580,19 +529,14 @@ function UserDetailsContent({ user }: { user: any }) {
       <AlertDialog open={!!statusChangeTarget} onOpenChange={(open) => !open && setStatusChangeTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              {statusChangeTarget?.currentStatus === 'Pending' ? <CheckCircle2 className="h-5 w-5 text-green-600" /> : <RotateCcw className="h-5 w-5 text-primary" />}
-              Update Submission Status?
-            </AlertDialogTitle>
+            <AlertDialogTitle>Update Status?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will change the status of this requirement from <strong>{statusChangeTarget?.currentStatus}</strong> to <strong>{statusChangeTarget?.currentStatus === 'Pending' ? 'Completed' : 'Pending'}</strong>.
+              Mark this submission as <strong>{statusChangeTarget?.currentStatus === 'Pending' ? 'Completed' : 'Pending'}</strong>?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleStatusToggle} className={statusChangeTarget?.currentStatus === 'Pending' ? 'bg-green-600 hover:bg-green-700' : ''}>
-              Confirm Change
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleStatusToggle}>Confirm</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -600,7 +544,6 @@ function UserDetailsContent({ user }: { user: any }) {
   );
 }
 
-// Settings Component to display system logs
 function SystemSettingsLogs() {
   const db = useFirestore();
   const logsQuery = useMemoFirebase(() => {
@@ -616,47 +559,39 @@ function SystemSettingsLogs() {
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-primary" />
           <div>
-            <CardTitle>System Activity Logs</CardTitle>
-            <CardDescription>Comprehensive audit trail of all administrative actions and matches.</CardDescription>
+            <CardTitle>Activity Logs</CardTitle>
+            <CardDescription>Full audit trail of administrative actions.</CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border overflow-hidden">
+        <div className="rounded-md border">
           <Table>
-            <TableHeader className="bg-muted/50">
+            <TableHeader>
               <TableRow>
-                <TableHead className="w-[180px]">Timestamp</TableHead>
-                <TableHead className="w-[120px]">Event Type</TableHead>
-                <TableHead>Activity Description</TableHead>
+                <TableHead>Timestamp</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Description</TableHead>
                 <TableHead className="text-right">Admin</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {logs && logs.length > 0 ? (
                 logs.map((log) => (
-                  <TableRow key={log.id} className="hover:bg-muted/30 transition-colors">
-                    <TableCell className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+                  <TableRow key={log.id}>
+                    <TableCell className="text-[10px] text-muted-foreground">
                       {log.timestamp?.toDate?.()?.toLocaleString() || 'Syncing...'}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={log.type === 'assignment' ? 'default' : 'outline'} className="text-[10px] uppercase">
-                        {log.type}
-                      </Badge>
+                      <Badge variant="outline" className="text-[10px] uppercase">{log.type}</Badge>
                     </TableCell>
-                    <TableCell className="text-sm">
-                      {log.description}
-                    </TableCell>
-                    <TableCell className="text-right text-[10px] text-muted-foreground">
-                      {log.adminEmail}
-                    </TableCell>
+                    <TableCell className="text-xs">{log.description}</TableCell>
+                    <TableCell className="text-right text-[10px]">{log.adminEmail}</TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-12 text-muted-foreground italic">
-                    No activity logs recorded yet.
-                  </TableCell>
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground italic">No logs found.</TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -675,15 +610,10 @@ export default function AdminPortal() {
   const [activeTab, setActiveTab] = useState('notifications');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [notificationToDelete, setNotificationToDelete] = useState<string | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const adminDocRef = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -715,11 +645,6 @@ export default function AdminPortal() {
     router.push('/');
   };
 
-  const handleViewDetails = (user: any) => {
-    setSelectedUser(user);
-    setIsDetailsOpen(true);
-  };
-
   const filteredUsers = useMemo(() => {
     if (!users) return [];
     if (activeTab === 'students') return users.filter(u => u.userType === 'Student');
@@ -727,266 +652,124 @@ export default function AdminPortal() {
     return [];
   }, [users, activeTab]);
 
-  const totalUsers = filteredUsers.length;
-  const totalPages = Math.ceil(totalUsers / pageSize) || 1;
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
 
   if (isUserLoading || isAdminLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-muted-foreground font-medium">Verifying Administrative Access...</p>
-        </div>
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!user || !adminDoc) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background p-4">
+      <div className="flex h-screen items-center justify-center p-4">
         <Card className="max-w-md w-full border-destructive/20 shadow-xl">
           <CardHeader className="text-center">
             <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit mb-4">
               <ShieldAlert className="h-8 w-8 text-destructive" />
             </div>
-            <CardTitle className="text-2xl">Access Denied</CardTitle>
-            <CardDescription>
-              You do not have administrative permissions to view this portal.
-            </CardDescription>
+            <CardTitle>Access Denied</CardTitle>
+            <CardDescription>You do not have administrative permissions.</CardDescription>
           </CardHeader>
-          <CardContent className="text-center text-sm text-muted-foreground">
-            If you believe this is an error, please ensure your account UID is registered in the <code>roles_admin</code> collection.
-          </CardContent>
-          <div className="p-6 pt-0 flex gap-3">
+          <CardContent className="flex gap-3">
             <Button variant="outline" className="flex-1" onClick={handleSignOut}>Sign Out</Button>
             <Button className="flex-1" asChild>
               <Link href="/">Return Home</Link>
             </Button>
-          </div>
+          </CardContent>
         </Card>
       </div>
     );
   }
 
-  const sortedNotifications = [...(notifications || [])].sort((a, b) => {
-    const timeA = a.timestamp?.toDate?.() || 0;
-    const timeB = b.timestamp?.toDate?.() || 0;
-    return timeB - timeA;
-  });
-
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
         <div className="p-6 flex items-center gap-2">
-          <div className="bg-primary p-1 rounded-lg">
-            < BookOpen className="text-primary-foreground h-5 w-5" />
-          </div>
-          <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
-          <Badge variant="outline" className="text-[10px] ml-auto">ADMIN</Badge>
+          <BookOpen className="text-primary h-6 w-6" />
+          <span className="font-headline font-bold text-lg">RP Coach-Up</span>
         </div>
-        <nav className="flex-1 px-4 py-4 space-y-1">
-          <Button 
-            variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} 
-            className="w-full justify-start gap-3"
-            onClick={() => setActiveTab('notifications')}
-          >
-            <Bell className="h-4 w-4" />
-            Notifications
-            {notifications && notifications.length > 0 && (
-              <Badge className="ml-auto" variant="destructive">{notifications.length}</Badge>
-            )}
+        <nav className="flex-1 px-4 space-y-1">
+          <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('notifications')}>
+            <Bell className="h-4 w-4" /> Notifications
           </Button>
-          <Button 
-            variant={activeTab === 'students' ? 'secondary' : 'ghost'} 
-            className="w-full justify-start gap-3"
-            onClick={() => {
-                setActiveTab('students');
-                setCurrentPage(1);
-            }}
-          >
-            <UserCheck className="h-4 w-4" />
-            Manage Students
+          <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('students')}>
+            <UserCheck className="h-4 w-4" /> Students
           </Button>
-          <Button 
-            variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} 
-            className="w-full justify-start gap-3"
-            onClick={() => {
-                setActiveTab('teachers');
-                setCurrentPage(1);
-            }}
-          >
-            <GraduationCap className="h-4 w-4" />
-            Manage Teachers
+          <Button variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('teachers')}>
+            <GraduationCap className="h-4 w-4" /> Teachers
           </Button>
-          <Button 
-            variant={activeTab === 'settings' ? 'secondary' : 'ghost'} 
-            className="w-full justify-start gap-3"
-            onClick={() => setActiveTab('settings')}
-          >
-            <Settings className="h-4 w-4" />
-            System Logs
+          <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('settings')}>
+            <Settings className="h-4 w-4" /> System Logs
           </Button>
         </nav>
         <div className="p-4 border-t">
-          <Button variant="outline" className="w-full gap-2 text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4" />
-            Sign Out
+          <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4 mr-2" /> Sign Out
           </Button>
         </div>
       </aside>
 
-      <main className="flex-1 lg:ml-64 p-4 lg:p-8">
+      <main className="flex-1 lg:ml-64 p-8">
         <div className="max-w-6xl mx-auto space-y-8">
-          <header className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-3xl font-headline font-bold">Admin Portal</h1>
-                <p className="text-muted-foreground">Monitor platform activity and manage system alerts.</p>
-              </div>
-            </div>
-          </header>
+          <h1 className="text-3xl font-headline font-bold">Admin Portal</h1>
 
           {activeTab === 'notifications' && (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Platform Notifications</CardTitle>
-                  <CardDescription>Real-time alerts for registrations and interest submissions.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {isLoadingNotifications ? (
-                    <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
-                  ) : sortedNotifications.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground italic">No notifications yet.</div>
-                  ) : (
-                    <div className="space-y-4">
-                      {sortedNotifications.map((n) => (
-                        <div key={n.id} className="group relative flex flex-col gap-2 p-4 rounded-xl border bg-card hover:shadow-md transition-all">
-                          <div className="flex items-start justify-between">
-                            <div className="flex gap-3">
-                              <div className={`p-2 rounded-lg ${n.type === 'registration' ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`}>
-                                {n.type === 'registration' ? <UserCheck className="h-5 w-5" /> : <ClipboardList className="h-5 w-5" />}
-                              </div>
-                              <div>
-                                <h4 className="font-bold text-sm">{n.subject}</h4>
-                                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                                  <Clock className="h-3 w-3" />
-                                  {mounted && n.timestamp?.toDate ? n.timestamp.toDate().toLocaleString() : 'Recent'}
-                                </p>
-                              </div>
-                            </div>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
-                              onClick={() => setNotificationToDelete(n.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <p className="text-sm text-muted-foreground whitespace-pre-wrap pl-11">{n.body}</p>
-                        </div>
-                      ))}
+            <Card>
+              <CardHeader><CardTitle>Notifications</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                {isLoadingNotifications ? <Loader2 className="animate-spin mx-auto" /> : notifications?.map(n => (
+                  <div key={n.id} className="flex items-start justify-between p-4 border rounded-xl bg-card">
+                    <div className="flex gap-3">
+                      {n.type === 'registration' ? <UserCheck className="h-5 w-5 text-primary" /> : <ClipboardList className="h-5 w-5 text-accent" />}
+                      <div>
+                        <h4 className="font-bold text-sm">{n.subject}</h4>
+                        <p className="text-xs text-muted-foreground">{n.body}</p>
+                      </div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                    <Button variant="ghost" size="icon" onClick={() => setNotificationToDelete(n.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           )}
 
           {(activeTab === 'students' || activeTab === 'teachers') && (
-            <div className="space-y-6">
-              <Card className="overflow-hidden">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7 border-b">
-                  <div>
-                    <CardTitle>{activeTab === 'students' ? 'Manage Students' : 'Manage Teachers'}</CardTitle>
-                    <CardDescription>View and manage registered {activeTab === 'students' ? 'student' : 'teacher'} accounts.</CardDescription>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  {isLoadingUsers ? (
-                    <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="overflow-x-auto">
-                        <Table id="users-table">
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Full Name</TableHead>
-                              <TableHead>Email Address</TableHead>
-                              <TableHead>Account Type</TableHead>
-                              <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {paginatedUsers.map((u) => (
-                              <TableRow key={u.id}>
-                                <TableCell className="font-medium">
-                                  <div className="flex items-center gap-2">
-                                    <span>
-                                      {u.userType === 'Student' ? <UserCheck className="h-4 w-4 text-primary" /> : <GraduationCap className="h-4 w-4 text-accent" />}
-                                    </span>
-                                    {u.firstName} {u.lastName}
-                                  </div>
-                                </TableCell>
-                                <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                                <TableCell>
-                                  <Badge variant={u.userType === 'Student' ? 'outline' : 'secondary'}>
-                                      {u.userType}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    onClick={() => handleViewDetails(u)}
-                                  >
-                                    View Profile
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-6 border-t mt-4">
-                        <p className="text-sm text-muted-foreground">
-                          Displaying {paginatedUsers.length} of {totalUsers} registered {activeTab}
-                        </p>
-                        <div className="flex items-center gap-3">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            disabled={currentPage === 1}
-                            className="gap-2"
-                          >
-                            <ChevronLeft className="h-4 w-4" />
-                            Previous
-                          </Button>
-                          <div className="flex items-center gap-1 min-w-[100px] justify-center text-sm font-medium">
-                            <span>Page {currentPage}</span>
-                            <span className="text-muted-foreground">/ {totalPages}</span>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                            disabled={currentPage === totalPages}
-                            className="gap-2"
-                          >
-                            Next
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>{activeTab === 'students' ? 'Students' : 'Teachers'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead className="text-right">Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedUsers.map(u => (
+                      <TableRow key={u.id}>
+                        <TableCell>{u.firstName} {u.lastName}</TableCell>
+                        <TableCell>{u.email}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>Profile</Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                <div className="flex justify-center gap-2 mt-4">
+                  <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
+                  <span className="text-xs self-center">Page {currentPage} of {totalPages}</span>
+                  <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {activeTab === 'settings' && <SystemSettingsLogs />}
@@ -994,54 +777,18 @@ export default function AdminPortal() {
       </main>
 
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-primary" />
-              Comprehensive User Profile
-            </DialogTitle>
-          </DialogHeader>
-          
-          {selectedUser && (
-            <div className="space-y-6 py-4">
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-2xl font-bold">{selectedUser.firstName} {selectedUser.lastName}</h3>
-                    <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                      <Mail className="h-4 w-4" />
-                      <span className="text-sm">{selectedUser.email}</span>
-                    </div>
-                  </div>
-                  <Badge className="px-3 py-1 text-sm">
-                    {selectedUser.userType}
-                  </Badge>
-                </div>
-              </div>
-
-              <UserDetailsContent user={selectedUser} />
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>Close Portal View</Button>
-          </DialogFooter>
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{selectedUser?.firstName}'s Profile</DialogTitle></DialogHeader>
+          {selectedUser && <UserDetailsContent user={selectedUser} />}
         </DialogContent>
       </Dialog>
 
       <AlertDialog open={!!notificationToDelete} onOpenChange={(open) => !open && setNotificationToDelete(null)}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the notification record from the platform database.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
+          <AlertDialogHeader><AlertDialogTitle>Delete Alert?</AlertDialogTitle></AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteNotification} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete Forever
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteNotification} className="bg-destructive">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

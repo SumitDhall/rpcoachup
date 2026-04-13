@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -43,7 +44,6 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth 
 import { doc, collection, addDoc, serverTimestamp, query, where, limit, orderBy } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { notifyAdmin } from '@/app/actions/notifications';
-import Link from 'next/link';
 
 export default function StudentDashboard() {
   const { user, isUserLoading } = useUser();
@@ -56,10 +56,8 @@ export default function StudentDashboard() {
     if (!db || !user?.uid) return null;
     return doc(db, 'users', user.uid);
   }, [db, user?.uid]);
-
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
-  // Fetch interests related to this user
   const interestsQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
     return query(
@@ -69,10 +67,8 @@ export default function StudentDashboard() {
       limit(50)
     );
   }, [db, user?.uid]);
-
   const { data: interests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
 
-  // Form State
   const [studentName, setStudentName] = useState('');
   const [phone, setPhone] = useState('');
   const [school, setSchool] = useState('');
@@ -86,10 +82,10 @@ export default function StudentDashboard() {
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
 
-  // Populate form with the latest interest data when loaded
   useEffect(() => {
-    if (interests && interests.length > 0) {
+    if (interests && interests.length > 0 && !hasLoadedInitial) {
       const latest = interests[0];
       setStudentName(latest.studentName || '');
       setPhone(latest.phone || '');
@@ -101,8 +97,9 @@ export default function StudentDashboard() {
       setAffordableRange(latest.affordableRange || '');
       setIntendedStartDate(latest.intendedStartDate || '');
       setIsSubmitted(true);
+      setHasLoadedInitial(true);
     }
-  }, [interests]);
+  }, [interests, hasLoadedInitial]);
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -111,19 +108,12 @@ export default function StudentDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject || !phone || !studentName || !user || !profile) {
-      toast({
-        variant: "destructive",
-        title: "Incomplete Form",
-        description: "Please fill in all mandatory fields (Name, Phone, Subject)."
-      });
-      return;
-    }
+    if (!subject || !phone || !studentName) return;
     setIsSubmitting(true);
     
     try {
       const submissionData = {
-        studentId: user.uid,
+        studentId: user?.uid,
         studentName,
         phone,
         school,
@@ -138,493 +128,131 @@ export default function StudentDashboard() {
       };
 
       await addDoc(collection(db, 'studentInterests'), submissionData);
-
-      // Create Notification for Admin Portal
       await addDoc(collection(db, 'notifications'), {
         type: 'interest',
-        subject: `New Interest Submission from ${studentName}: ${subject}`,
-        body: `Student: ${studentName}\nSubject: ${subject}\nPhone: ${phone}\nSchool: ${school}\nClass: ${gradeOrClass}\nAddress: ${address}\nStart Date: ${intendedStartDate}\nFees: ${affordableRange}\nNotes: ${notes}`,
-        userEmail: profile.email,
-        userName: `${profile.firstName} ${profile.lastName}`,
+        subject: `New Interest: ${subject} from ${studentName}`,
+        body: `Student requested tuition for ${subject}.`,
+        userEmail: profile?.email,
+        userName: `${profile?.firstName} ${profile?.lastName}`,
         timestamp: serverTimestamp(),
         read: false
       });
 
-      // AI simulation for admin
       notifyAdmin({
         type: 'interest',
         userType: 'Student',
-        userName: `${profile.firstName} ${profile.lastName}`,
-        userEmail: profile.email,
-        details: `Student Name: ${studentName}. Subject: ${subject}. Phone: ${phone}. Start Date: ${intendedStartDate}. Fees: ${affordableRange}.`
+        userName: `${profile?.firstName} ${profile?.lastName}`,
+        userEmail: profile?.email || '',
+        details: `Subject: ${subject}`
       });
       
       setIsSubmitted(true);
-      toast({
-        title: "Interest Submitted!",
-        description: "Your requirement is now locked. Administrators will review your details to find the best match for you.",
-      });
+      toast({ title: "Submitted!", description: "Review in progress." });
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Could not submit interest."
-      });
+      toast({ variant: "destructive", title: "Error", description: "Submission failed." });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleEdit = () => {
-    setIsSubmitted(false);
-  };
-
-  const handleSubmitFeedback = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!feedback || !user) return;
-    setIsSubmitting(true);
-
-    try {
-      await addDoc(collection(db, 'feedback'), {
-        userProfileId: user.uid,
-        feedbackType: 'Platform',
-        comment: feedback,
-        submissionDate: serverTimestamp(),
-        rating: 5
-      });
-
-      setFeedback('');
-      toast({
-        title: "Feedback Received",
-        description: "Thank you for helping us improve RP Coach-Up!",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Could not submit feedback."
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (isUserLoading || isProfileLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // Monthly fee options from 7,000 to 20,000 with 1,000 increments
   const feeOptions = Array.from({ length: 14 }, (_, i) => 7000 + i * 1000);
 
-  // Sort interests by date in memory (descending)
-  const sortedInterests = interests ? [...interests].sort((a, b) => {
-    const dateA = a.submissionDate?.toMillis?.() || 0;
-    const dateB = b.submissionDate?.toMillis?.() || 0;
-    return dateB - dateA;
-  }) : [];
+  if (isUserLoading || isProfileLoading) {
+    return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin" /></div>;
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Sidebar - Desktop */}
       <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
         <div className="p-6 flex items-center gap-2">
-          <div className="bg-primary p-1 rounded-lg">
-            <BookOpen className="text-primary-foreground h-5 w-5" />
-          </div>
-          <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
+          <BookOpen className="text-primary h-5 w-5" />
+          <span className="font-headline font-bold text-lg">RP Coach-Up</span>
         </div>
-        <nav className="flex-1 px-4 py-4 space-y-1">
-          <Button variant="secondary" className="w-full justify-start gap-3">
-            <LayoutDashboard className="h-4 w-4" />
-            Dashboard
-          </Button>
-          <Button variant="ghost" className="w-full justify-start gap-3">
-            <MessageSquare className="h-4 w-4" />
-            Messages
-          </Button>
-          <Button variant="ghost" className="w-full justify-start gap-3">
-            <History className="h-4 w-4" />
-            History
-          </Button>
+        <nav className="flex-1 px-4 space-y-1">
+          <Button variant="secondary" className="w-full justify-start gap-3"><LayoutDashboard className="h-4 w-4" /> Dashboard</Button>
+          <Button variant="ghost" className="w-full justify-start gap-3"><MessageSquare className="h-4 w-4" /> Messages</Button>
         </nav>
         <div className="p-4 border-t">
-          <Button variant="outline" className="w-full gap-2 text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </Button>
+          <Button variant="outline" className="w-full text-destructive" onClick={handleSignOut}><LogOut className="h-4 w-4 mr-2" /> Sign Out</Button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 lg:ml-64 p-4 lg:p-8">
-        <div className="max-w-5xl mx-auto space-y-8">
-          <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-headline font-bold">Welcome back, {profile?.firstName || 'Learner'}!</h1>
-              <p className="text-muted-foreground">Manage your learning interests and view your profile information.</p>
-            </div>
-            <Badge variant="outline" className="w-fit text-primary border-primary">Student Account</Badge>
+      <main className="flex-1 lg:ml-64 p-8">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <header>
+            <h1 className="text-2xl font-bold">Welcome, {profile?.firstName}!</h1>
+            <Badge variant="outline" className="mt-1">Student Dashboard</Badge>
           </header>
 
           <Tabs defaultValue="interests" className="space-y-6">
-            <TabsList className="bg-muted w-full md:w-auto grid grid-cols-4">
+            <TabsList className="grid grid-cols-3 w-fit bg-muted">
               <TabsTrigger value="interests">Submit Interests</TabsTrigger>
-              <TabsTrigger value="notifications">Progress</TabsTrigger>
-              <TabsTrigger value="overview">My Profile</TabsTrigger>
+              <TabsTrigger value="progress">Progress</TabsTrigger>
               <TabsTrigger value="feedback">Feedback</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card className="shadow-md h-fit">
-                  <CardHeader>
-                    <CardTitle className="text-xl">Profile Details</CardTitle>
-                    <CardDescription>Your registered information.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/20">
-                      <User className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Full Name</p>
-                        <p className="font-medium">{profile?.firstName} {profile?.lastName}</p>
+            <TabsContent value="interests">
+              <Card className="border-primary/10">
+                <CardHeader>
+                  <CardTitle>Tuition Requirement Form</CardTitle>
+                </CardHeader>
+                <form onSubmit={handleSubmitInterest}>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label>Student Name</Label>
+                        <Input disabled={isSubmitted} value={studentName} onChange={e => setStudentName(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Phone</Label>
+                        <Input disabled={isSubmitted} value={phone} onChange={e => setPhone(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/20">
-                      <Send className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Email Address</p>
-                        <p className="font-medium">{profile?.email}</p>
+                    <div className="space-y-1">
+                      <Label>Subject</Label>
+                      <Input disabled={isSubmitted} value={subject} onChange={e => setSubject(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label>Monthly Fee</Label>
+                        <Select disabled={isSubmitted} value={affordableRange} onValueChange={setAffordableRange}>
+                          <SelectTrigger className={isSubmitted ? "bg-secondary/50" : ""}><SelectValue /></SelectTrigger>
+                          <SelectContent>{feeOptions.map(f => <SelectItem key={f} value={`${f} INR`}>{f} INR</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Start Date</Label>
+                        <Input type="date" disabled={isSubmitted} value={intendedStartDate} onChange={e => setIntendedStartDate(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-
-                <Card className="shadow-md">
-                  <CardHeader>
-                    <CardTitle className="text-xl">Recent Submissions</CardTitle>
-                    <CardDescription>Track your active tuition requirements.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {isLoadingInterests ? (
-                      <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-                    ) : sortedInterests.length > 0 ? (
-                      <div className="space-y-3">
-                        {sortedInterests.map((int) => (
-                          <div key={int.id} className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-colors shadow-sm space-y-2">
-                            <div className="flex justify-between items-center">
-                              <span className="font-bold text-primary">{int.subject}</span>
-                              <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className="text-[10px]">
-                                {int.status}
-                              </Badge>
-                            </div>
-                            <div className="grid grid-cols-1 gap-1 text-xs text-muted-foreground">
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-3 w-3" />
-                                <span>Submitted: {int.submissionDate?.toDate?.()?.toLocaleDateString()}</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 text-muted-foreground text-sm border-2 border-dashed rounded-xl">
-                        <ClipboardList className="h-10 w-10 mx-auto mb-2 opacity-20" />
-                        <p>No requirements submitted yet.</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
+                  <CardFooter className="gap-4">
+                    <Button type="submit" disabled={isSubmitting || isSubmitted} className="flex-1">Submit</Button>
+                    {isSubmitted && <Button type="button" variant="outline" onClick={() => setIsSubmitted(false)}><Edit2 className="h-4 w-4 mr-2" /> Edit</Button>}
+                  </CardFooter>
+                </form>
+              </Card>
             </TabsContent>
 
-            <TabsContent value="notifications" className="space-y-6">
+            <TabsContent value="progress">
               <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Bell className="h-5 w-5 text-primary" />
-                    <div>
-                      <CardTitle>Notifications & Progress</CardTitle>
-                      <CardDescription>Stay updated on your tuition matches and interest submissions.</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
+                <CardHeader><CardTitle>My Progress</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                  {isLoadingInterests ? (
-                    <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-                  ) : sortedInterests.length > 0 ? (
-                    <div className="grid gap-4">
-                      {sortedInterests.map((int) => {
-                        const statusColors = {
-                          'Pending': 'border-yellow-200 bg-yellow-50 text-yellow-800',
-                          'In-Progress': 'border-blue-200 bg-blue-50 text-blue-800',
-                          'Completed': 'border-green-200 bg-green-50 text-green-800'
-                        };
-                        const statusIcons = {
-                          'Pending': <Clock className="h-4 w-4" />,
-                          'In-Progress': <AlertCircle className="h-4 w-4" />,
-                          'Completed': <CheckCircle2 className="h-4 w-4" />
-                        };
-
-                        return (
-                          <div key={int.id} className={`p-4 border rounded-xl flex items-start gap-4 transition-all hover:shadow-sm ${statusColors[int.status as keyof typeof statusColors] || 'border-muted bg-secondary/10'}`}>
-                            <div className="mt-1">
-                              {statusIcons[int.status as keyof typeof statusIcons] || <Bell className="h-4 w-4" />}
-                            </div>
-                            <div className="flex-1 space-y-1">
-                              <div className="flex justify-between items-center">
-                                <p className="font-bold text-sm">Update for {int.subject}</p>
-                                <span className="text-[10px] opacity-70">{int.submissionDate?.toDate?.()?.toLocaleDateString()}</span>
-                              </div>
-                              <p className="text-xs">
-                                Your requirement for <strong>{int.subject}</strong> is currently <strong>{int.status}</strong>. 
-                                {int.status === 'Pending' && " We are reviewing your details to find the best tutors."}
-                                {int.status === 'In-Progress' && " Administrators are currently matching you with potential teachers."}
-                                {int.status === 'Completed' && " Great news! Your requirement has been processed."}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
+                  {interests?.map(i => (
+                    <div key={i.id} className="p-4 border rounded-xl flex items-center justify-between">
+                      <div>
+                        <p className="font-bold">{i.subject}</p>
+                        <p className="text-xs text-muted-foreground">{i.submissionDate?.toDate?.()?.toLocaleDateString()}</p>
+                      </div>
+                      <Badge variant={i.status === 'Completed' ? 'default' : 'outline'}>{i.status}</Badge>
                     </div>
-                  ) : (
-                    <div className="text-center py-16 border-2 border-dashed rounded-2xl bg-secondary/5">
-                      <Bell className="h-10 w-10 mx-auto mb-4 opacity-20" />
-                      <p className="text-muted-foreground">You have no notifications at this time.</p>
-                      <p className="text-xs text-muted-foreground mt-1">Status updates will appear here once you submit an interest.</p>
-                    </div>
-                  )}
+                  ))}
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="interests">
-              <Card className="max-w-3xl mx-auto shadow-lg border-primary/10">
-                <CardHeader className="bg-primary/5 rounded-t-lg">
-                  <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5 text-primary" />
-                    Student Tuition Requirement Form
-                  </CardTitle>
-                  <CardDescription>
-                    {isSubmitted 
-                      ? "Your requirement has been submitted and is currently locked for review." 
-                      : "Provide complete details to help us find the perfect teacher for you."}
-                  </CardDescription>
-                </CardHeader>
-                <form onSubmit={handleSubmitInterest}>
-                  <CardContent className="space-y-6 py-8">
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="student-name" className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                          Name of Student <span className="text-destructive">*</span>
-                        </Label>
-                        <Input 
-                          id="student-name" 
-                          placeholder="Full name of the student" 
-                          value={studentName}
-                          onChange={(e) => setStudentName(e.target.value)}
-                          required
-                          disabled={isSubmitted}
-                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="phone" className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-muted-foreground" />
-                          Phone Number <span className="text-destructive">*</span>
-                        </Label>
-                        <Input 
-                          id="phone" 
-                          type="tel"
-                          placeholder="e.g. +91 98765 43210" 
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          required
-                          disabled={isSubmitted}
-                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="school" className="flex items-center gap-2">
-                          <School className="h-4 w-4 text-muted-foreground" />
-                          School of Student
-                        </Label>
-                        <Input 
-                          id="school" 
-                          placeholder="e.g. DPS International" 
-                          value={school}
-                          onChange={(e) => setSchool(e.target.value)}
-                          disabled={isSubmitted}
-                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="class" className="flex items-center gap-2">
-                          <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
-                          Class / Grade
-                        </Label>
-                        <Input 
-                          id="class" 
-                          placeholder="e.g. Grade 10, Class A" 
-                          value={gradeOrClass}
-                          onChange={(e) => setGradeOrClass(e.target.value)}
-                          disabled={isSubmitted}
-                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="address" className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        Address
-                      </Label>
-                      <Input 
-                        id="address" 
-                        placeholder="Street address for home tuition or proximity matching" 
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        disabled={isSubmitted}
-                        className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="interest-input" className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4 text-muted-foreground" />
-                        Interest / Subject Name <span className="text-destructive">*</span>
-                      </Label>
-                      <Input 
-                        id="interest-input" 
-                        placeholder="e.g. Mathematics, Physics" 
-                        value={subject}
-                        onChange={(e) => setSubject(e.target.value)}
-                        required
-                        disabled={isSubmitted}
-                        className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="details">Additional Details (Specific Topics or Needs)</Label>
-                      <Textarea 
-                        id="details" 
-                        placeholder="Tell us more about current level or specific needs..." 
-                        className={`min-h-[80px] ${isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}`} 
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        disabled={isSubmitted}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="fees" className="flex items-center gap-2">
-                          <IndianRupee className="h-4 w-4 text-muted-foreground" />
-                          Affordable Fees (INR / month)
-                        </Label>
-                        <Select 
-                          value={affordableRange} 
-                          onValueChange={setAffordableRange}
-                          disabled={isSubmitted}
-                        >
-                          <SelectTrigger id="fees" className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}>
-                            <SelectValue placeholder="Select monthly fee" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {feeOptions.map((fee) => (
-                              <SelectItem key={fee} value={`${fee} INR / month`}>
-                                {fee.toLocaleString()} INR / month
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="start-date" className="flex items-center gap-2">
-                          <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                          Intended Start Date
-                        </Label>
-                        <Input 
-                          id="start-date" 
-                          type="date"
-                          value={intendedStartDate}
-                          onChange={(e) => setIntendedStartDate(e.target.value)}
-                          disabled={isSubmitted}
-                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
-                        />
-                      </div>
-                    </div>
-
-                  </CardContent>
-                  <CardFooter className="bg-secondary/10 rounded-b-lg p-6 flex flex-col sm:flex-row gap-4">
-                    <Button type="submit" className="flex-1 gap-2 h-12 text-lg font-bold" disabled={isSubmitting || isSubmitted}>
-                      {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                      Submit Tuition Requirement
-                    </Button>
-                    {isSubmitted && (
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={handleEdit}
-                        className="flex-1 gap-2 h-12 text-lg font-bold border-2 border-primary text-primary hover:bg-primary/5"
-                      >
-                        <Edit2 className="h-5 w-5" />
-                        Edit Requirement
-                      </Button>
-                    )}
-                  </CardFooter>
-                </form>
-              </Card>
-            </TabsContent>
-
             <TabsContent value="feedback">
-              <Card className="max-w-2xl mx-auto shadow-lg">
-                <CardHeader>
-                  <CardTitle>Share your Feedback</CardTitle>
-                  <CardDescription>
-                    Help us improve RP Coach-Up. Your feedback goes directly to our administration team.
-                  </CardDescription>
-                </CardHeader>
-                <form onSubmit={handleSubmitFeedback}>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="category">Category</Label>
-                      <select id="category" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                        <option>Platform Experience</option>
-                        <option>Course Quality</option>
-                        <option>Teacher Match</option>
-                        <option>Technical Issue</option>
-                        <option>Other</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="message">Your Message</Label>
-                      <Textarea 
-                        id="message" 
-                        placeholder="Type your feedback here..." 
-                        className="min-h-[150px]" 
-                        value={feedback}
-                        onChange={(e) => setFeedback(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button type="submit" className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90" disabled={isSubmitting}>
-                       {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send Feedback"}
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Card>
+              <Card><CardHeader><CardTitle>Feedback</CardTitle></CardHeader><CardContent><Textarea placeholder="How can we improve?" /></CardContent></Card>
             </TabsContent>
           </Tabs>
         </div>
