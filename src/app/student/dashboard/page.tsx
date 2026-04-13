@@ -34,7 +34,9 @@ import {
   Clock,
   ClipboardList,
   Edit2,
-  Megaphone
+  Bell,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
@@ -222,12 +224,6 @@ export default function StudentDashboard() {
             <LayoutDashboard className="h-4 w-4" />
             Dashboard
           </Button>
-          <Button variant="ghost" className="w-full justify-start gap-3" asChild>
-            <Link href="/programs/dashboard">
-              <Megaphone className="h-4 w-4" />
-              Programs
-            </Link>
-          </Button>
           <Button variant="ghost" className="w-full justify-start gap-3">
             <MessageSquare className="h-4 w-4" />
             Messages
@@ -257,8 +253,9 @@ export default function StudentDashboard() {
           </header>
 
           <Tabs defaultValue="interests" className="space-y-6">
-            <TabsList className="bg-muted w-full md:w-auto grid grid-cols-3">
+            <TabsList className="bg-muted w-full md:w-auto grid grid-cols-4">
               <TabsTrigger value="interests">Submit Interests</TabsTrigger>
+              <TabsTrigger value="notifications">Progress</TabsTrigger>
               <TabsTrigger value="overview">My Profile</TabsTrigger>
               <TabsTrigger value="feedback">Feedback</TabsTrigger>
             </TabsList>
@@ -311,18 +308,6 @@ export default function StudentDashboard() {
                                 <Clock className="h-3 w-3" />
                                 <span>Submitted: {int.submissionDate?.toDate?.()?.toLocaleDateString()}</span>
                               </div>
-                              {int.intendedStartDate && (
-                                <div className="flex items-center gap-2">
-                                  <CalendarIcon className="h-3 w-3" />
-                                  <span>Start Date: {int.intendedStartDate}</span>
-                                </div>
-                              )}
-                              {int.affordableRange && (
-                                <div className="flex items-center gap-2">
-                                  <IndianRupee className="h-3 w-3" />
-                                  <span>Budget: {int.affordableRange}</span>
-                                </div>
-                              )}
                             </div>
                           </div>
                         ))}
@@ -331,17 +316,71 @@ export default function StudentDashboard() {
                       <div className="text-center py-12 text-muted-foreground text-sm border-2 border-dashed rounded-xl">
                         <ClipboardList className="h-10 w-10 mx-auto mb-2 opacity-20" />
                         <p>No requirements submitted yet.</p>
-                        <Button variant="link" onClick={() => {
-                           const trigger = document.querySelector('[value="interests"]') as HTMLElement;
-                           trigger?.click();
-                        }}>
-                          Submit your first interest
-                        </Button>
                       </div>
                     )}
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            <TabsContent value="notifications" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Bell className="h-5 w-5 text-primary" />
+                    <div>
+                      <CardTitle>Notifications & Progress</CardTitle>
+                      <CardDescription>Stay updated on your tuition matches and interest submissions.</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {isLoadingInterests ? (
+                    <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+                  ) : sortedInterests.length > 0 ? (
+                    <div className="grid gap-4">
+                      {sortedInterests.map((int) => {
+                        const statusColors = {
+                          'Pending': 'border-yellow-200 bg-yellow-50 text-yellow-800',
+                          'In-Progress': 'border-blue-200 bg-blue-50 text-blue-800',
+                          'Completed': 'border-green-200 bg-green-50 text-green-800'
+                        };
+                        const statusIcons = {
+                          'Pending': <Clock className="h-4 w-4" />,
+                          'In-Progress': <AlertCircle className="h-4 w-4" />,
+                          'Completed': <CheckCircle2 className="h-4 w-4" />
+                        };
+
+                        return (
+                          <div key={int.id} className={`p-4 border rounded-xl flex items-start gap-4 transition-all hover:shadow-sm ${statusColors[int.status as keyof typeof statusColors] || 'border-muted bg-secondary/10'}`}>
+                            <div className="mt-1">
+                              {statusIcons[int.status as keyof typeof statusIcons] || <Bell className="h-4 w-4" />}
+                            </div>
+                            <div className="flex-1 space-y-1">
+                              <div className="flex justify-between items-center">
+                                <p className="font-bold text-sm">Update for {int.subject}</p>
+                                <span className="text-[10px] opacity-70">{int.submissionDate?.toDate?.()?.toLocaleDateString()}</span>
+                              </div>
+                              <p className="text-xs">
+                                Your requirement for <strong>{int.subject}</strong> is currently <strong>{int.status}</strong>. 
+                                {int.status === 'Pending' && " We are reviewing your details to find the best tutors."}
+                                {int.status === 'In-Progress' && " Administrators are currently matching you with potential teachers."}
+                                {int.status === 'Completed' && " Great news! Your requirement has been processed."}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-16 border-2 border-dashed rounded-2xl bg-secondary/5">
+                      <Bell className="h-10 w-10 mx-auto mb-4 opacity-20" />
+                      <p className="text-muted-foreground">You have no notifications at this time.</p>
+                      <p className="text-xs text-muted-foreground mt-1">Status updates will appear here once you submit an interest.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="interests">
