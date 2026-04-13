@@ -31,11 +31,13 @@ import {
   School,
   MapPin,
   Calendar as CalendarIcon,
-  IndianRupee
+  IndianRupee,
+  Clock,
+  ClipboardList
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
+import { doc, collection, addDoc, serverTimestamp, query, where } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { notifyAdmin } from '@/app/actions/notifications';
 import Link from 'next/link';
@@ -53,6 +55,17 @@ export default function StudentDashboard() {
   }, [db, user?.uid]);
 
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
+
+  // Fetch interests related to this user
+  const interestsQuery = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return query(
+      collection(db, 'studentInterests'),
+      where('studentId', '==', user.uid)
+    );
+  }, [db, user?.uid]);
+
+  const { data: interests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
 
   // Form State
   const [studentName, setStudentName] = useState('');
@@ -189,6 +202,13 @@ export default function StudentDashboard() {
 
   const feeOptions = [200, 300, 400, 500, 600, 700, 800, 900, 1000];
 
+  // Sort interests by date in memory (descending)
+  const sortedInterests = interests ? [...interests].sort((a, b) => {
+    const dateA = a.submissionDate?.toMillis?.() || 0;
+    const dateB = b.submissionDate?.toMillis?.() || 0;
+    return dateB - dateA;
+  }) : [];
+
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar - Desktop */}
@@ -247,26 +267,77 @@ export default function StudentDashboard() {
 
             <TabsContent value="overview" className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
-                <Card className="shadow-md">
+                <Card className="shadow-md h-fit">
                   <CardHeader>
                     <CardTitle className="text-xl">Profile Details</CardTitle>
                     <CardDescription>Your registered information.</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm"><strong>Name:</strong> {profile?.firstName} {profile?.lastName}</p>
-                    <p className="text-sm"><strong>Email:</strong> {profile?.email}</p>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/20">
+                      <User className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Full Name</p>
+                        <p className="font-medium">{profile?.firstName} {profile?.lastName}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/20">
+                      <Send className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Email Address</p>
+                        <p className="font-medium">{profile?.email}</p>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
 
                 <Card className="shadow-md">
                   <CardHeader>
                     <CardTitle className="text-xl">Recent Submissions</CardTitle>
-                    <CardDescription>Your latest interest forms and their status.</CardDescription>
+                    <CardDescription>Track your active tuition requirements.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="text-center py-8 text-muted-foreground text-sm">
-                      Submit interests to see them tracked here.
-                    </div>
+                    {isLoadingInterests ? (
+                      <div className="flex justify-center p-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+                    ) : sortedInterests.length > 0 ? (
+                      <div className="space-y-3">
+                        {sortedInterests.map((int) => (
+                          <div key={int.id} className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-colors shadow-sm space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="font-bold text-primary">{int.subject}</span>
+                              <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className="text-[10px]">
+                                {int.status}
+                              </Badge>
+                            </div>
+                            <div className="grid grid-cols-1 gap-1 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-3 w-3" />
+                                <span>Submitted: {int.submissionDate?.toDate?.()?.toLocaleDateString()}</span>
+                              </div>
+                              {int.intendedStartDate && (
+                                <div className="flex items-center gap-2">
+                                  <CalendarIcon className="h-3 w-3" />
+                                  <span>Start Date: {int.intendedStartDate}</span>
+                                </div>
+                              )}
+                              {int.affordableRange && (
+                                <div className="flex items-center gap-2">
+                                  <IndianRupee className="h-3 w-3" />
+                                  <span>Budget: {int.affordableRange}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 text-muted-foreground text-sm border-2 border-dashed rounded-xl">
+                        <ClipboardList className="h-10 w-10 mx-auto mb-2 opacity-20" />
+                        <p>No requirements submitted yet.</p>
+                        <Button variant="link" onClick={() => document.querySelector('[value="interests"]')?.dispatchEvent(new MouseEvent('click', {bubbles: true}))}>
+                          Submit your first interest
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
