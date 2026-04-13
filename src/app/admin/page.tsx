@@ -32,12 +32,80 @@ import {
   Calendar,
   Award,
   BookMarked,
-  User
+  User,
+  ClipboardList,
+  Clock
 } from 'lucide-react';
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, query, limit, doc } from 'firebase/firestore';
+import { collection, query, limit, doc, where, orderBy } from 'firebase/firestore';
 
-// Component to fetch and display role-specific details
+// Component to fetch and display submitted interests for a specific user
+function UserInterestsSection({ userId, userType }: { userId: string; userType: string }) {
+  const db = useFirestore();
+  
+  const collectionName = userType === 'Student' ? 'studentInterests' : 'teacherInterests';
+  const idField = userType === 'Student' ? 'studentId' : 'teacherId';
+
+  const interestsQuery = useMemoFirebase(() => {
+    return query(
+      collection(db, collectionName),
+      where(idField, '==', userId),
+      orderBy('submissionDate', 'desc'),
+      limit(10)
+    );
+  }, [db, userId, collectionName, idField]);
+
+  const { data: interests, isLoading } = useCollection(interestsQuery);
+
+  if (isLoading) {
+    return <div className="flex justify-center p-4"><Loader2 className="h-4 w-4 animate-spin text-primary" /></div>;
+  }
+
+  return (
+    <div className="space-y-4 pt-4 border-t">
+      <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+        <ClipboardList className="h-4 w-4" />
+        {userType} Interests & Submissions
+      </h4>
+      
+      {!interests || interests.length === 0 ? (
+        <p className="text-sm text-muted-foreground italic bg-secondary/20 p-3 rounded-lg text-center">
+          No interests have been submitted by this user yet.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {interests.map((interest) => (
+            <div key={interest.id} className="bg-secondary/30 p-3 rounded-lg border border-border/50">
+              <div className="flex justify-between items-start mb-2">
+                <span className="font-bold text-sm text-primary">{interest.subject}</span>
+                <Badge variant="outline" className="text-[10px]">
+                  {interest.status || 'Pending'}
+                </Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Award className="h-3 w-3" />
+                  <span>Level: {interest.level || 'N/A'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  <span>{interest.submissionDate?.toDate ? interest.submissionDate.toDate().toLocaleDateString() : 'Recent'}</span>
+                </div>
+              </div>
+              {interest.notes && (
+                <p className="mt-2 text-[11px] italic text-muted-foreground border-t pt-2 border-border/30">
+                  Notes: {interest.notes}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Component to fetch and display role-specific profile details
 function UserRoleDetails({ userId, userType }: { userId: string; userType: string }) {
   const db = useFirestore();
   
@@ -56,34 +124,44 @@ function UserRoleDetails({ userId, userType }: { userId: string; userType: strin
   }
 
   if (!details) {
-    return <p className="text-sm text-muted-foreground italic">No detailed profile information found.</p>;
+    return (
+      <div className="space-y-4 pt-4 border-t">
+        <p className="text-sm text-muted-foreground italic">No detailed role-specific profile found.</p>
+        <UserInterestsSection userId={userId} userType={userType} />
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-4 pt-4 border-t">
-      <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-        {userType === 'Student' ? <BookMarked className="h-4 w-4" /> : <Award className="h-4 w-4" />}
-        {userType} Specific Information
-      </h4>
-      <div className="grid grid-cols-1 gap-3">
-        {userType === 'Student' ? (
-          <div className="bg-secondary/30 p-3 rounded-lg">
-            <p className="text-xs text-muted-foreground">Grade Level</p>
-            <p className="font-medium">{details.gradeLevel || 'Not specified'}</p>
-          </div>
-        ) : (
-          <>
+    <div className="space-y-6">
+      <div className="space-y-4 pt-4 border-t">
+        <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          {userType === 'Student' ? <BookMarked className="h-4 w-4" /> : <Award className="h-4 w-4" />}
+          {userType} Specific Information
+        </h4>
+        <div className="grid grid-cols-1 gap-3">
+          {userType === 'Student' ? (
             <div className="bg-secondary/30 p-3 rounded-lg">
-              <p className="text-xs text-muted-foreground">Experience</p>
-              <p className="font-medium">{details.experienceYears || 0} Years</p>
+              <p className="text-xs text-muted-foreground">Grade Level</p>
+              <p className="font-medium">{details.gradeLevel || 'Not specified'}</p>
             </div>
-            <div className="bg-secondary/30 p-3 rounded-lg">
-              <p className="text-xs text-muted-foreground">Qualifications</p>
-              <p className="font-medium whitespace-pre-wrap">{details.qualifications || 'Not specified'}</p>
-            </div>
-          </>
-        )}
+          ) : (
+            <>
+              <div className="bg-secondary/30 p-3 rounded-lg">
+                <p className="text-xs text-muted-foreground">Experience</p>
+                <p className="font-medium">{details.experienceYears || 0} Years</p>
+              </div>
+              <div className="bg-secondary/30 p-3 rounded-lg">
+                <p className="text-xs text-muted-foreground">Qualifications</p>
+                <p className="font-medium whitespace-pre-wrap">{details.qualifications || 'Not specified'}</p>
+              </div>
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Show submitted interests (the main request) */}
+      <UserInterestsSection userId={userId} userType={userType} />
     </div>
   );
 }
@@ -221,7 +299,7 @@ export default function AdminPortal() {
 
       {/* User Details Dialog */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="h-5 w-5 text-primary" />
@@ -262,7 +340,7 @@ export default function AdminPortal() {
                 </div>
               </div>
 
-              {/* Dynamic Role-Specific Content */}
+              {/* Dynamic Role-Specific Content and Interests */}
               <UserRoleDetails 
                 userId={selectedUser.id} 
                 userType={selectedUser.userType} 
