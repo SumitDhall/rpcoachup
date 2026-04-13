@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
+import Link from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -53,8 +53,6 @@ import {
   Phone,
   School,
   MapPin,
-  DollarSign,
-  Bell,
   CheckCircle2,
   RotateCcw,
   ChevronLeft,
@@ -73,6 +71,137 @@ import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, getDo
 import { signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
+
+// Component to handle student assignments for a teacher
+function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: string; teacherName: string }) {
+  const db = useFirestore();
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // 1. Fetch all students
+  const studentsQuery = useMemoFirebase(() => {
+    return query(collection(db, 'users'), where('userType', '==', 'Student'), limit(100));
+  }, [db]);
+  const { data: students, isLoading: isLoadingStudents } = useCollection(studentsQuery);
+
+  // 2. Fetch current matches for this teacher
+  const matchesQuery = useMemoFirebase(() => {
+    return query(collection(db, 'matchProposals'), where('teacherId', '==', teacherId));
+  }, [db, teacherId]);
+  const { data: currentMatches, isLoading: isLoadingMatches } = useCollection(matchesQuery);
+
+  const matchedStudentIds = useMemo(() => {
+    return new Set(currentMatches?.map(m => m.studentId) || []);
+  }, [currentMatches]);
+
+  const handleAssignStudent = (student: any) => {
+    const matchData = {
+      teacherId,
+      teacherName,
+      studentId: student.id,
+      studentName: `${student.firstName} ${student.lastName}`,
+      assignedAt: serverTimestamp(),
+      status: 'active'
+    };
+    
+    addDocumentNonBlocking(collection(db, 'matchProposals'), matchData);
+    toast({
+      title: "Student Assigned",
+      description: `Successfully matched ${student.firstName} with ${teacherName}.`,
+    });
+  };
+
+  const handleUnassignStudent = (studentId: string) => {
+    const matchToDelete = currentMatches?.find(m => m.studentId === studentId);
+    if (matchToDelete) {
+      deleteDocumentNonBlocking(doc(db, 'matchProposals', matchToDelete.id));
+      toast({
+        title: "Student Unassigned",
+        description: "The match has been removed.",
+      });
+    }
+  };
+
+  const filteredStudents = useMemo(() => {
+    if (!students) return [];
+    return students.filter(s => 
+      `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [students, searchTerm]);
+
+  if (isLoadingStudents || isLoadingMatches) {
+    return <div className="flex justify-center p-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+  }
+
+  return (
+    <div className="space-y-4 pt-6 border-t mt-6">
+      <div className="flex items-center justify-between">
+        <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <UserPlus className="h-4 w-4" />
+          Assign Students
+        </h4>
+        <Badge variant="secondary" className="font-normal">
+          {matchedStudentIds.size} Assigned
+        </Badge>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input 
+          placeholder="Search students by name or email..." 
+          className="pl-9 h-9 text-xs"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2">
+        {filteredStudents.length > 0 ? (
+          filteredStudents.map((student) => {
+            const isAssigned = matchedStudentIds.has(student.id);
+            return (
+              <div key={student.id} className="flex items-center justify-between p-3 rounded-lg border bg-secondary/5 group hover:border-primary/30 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${isAssigned ? 'bg-accent text-accent-foreground' : 'bg-muted'}`}>
+                    {student.firstName[0]}{student.lastName[0]}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{student.firstName} {student.lastName}</p>
+                    <p className="text-[10px] text-muted-foreground">{student.email}</p>
+                  </div>
+                </div>
+                {isAssigned ? (
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10 gap-1"
+                    onClick={() => handleUnassignStudent(student.id)}
+                  >
+                    <UserMinus className="h-3.5 w-3.5" />
+                    <span className="text-[10px]">Unassign</span>
+                  </Button>
+                ) : (
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-8 text-primary border-primary/20 hover:border-primary hover:bg-primary/5 gap-1"
+                    onClick={() => handleAssignStudent(student)}
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    <span className="text-[10px]">Assign</span>
+                  </Button>
+                )}
+              </div>
+            );
+          })
+        ) : (
+          <p className="text-center py-8 text-xs text-muted-foreground italic">No students found.</p>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // Component to handle teacher assignments for a student
 function TeacherAssignmentManager({ studentId, studentName }: { studentId: string; studentName: string }) {
@@ -422,9 +551,11 @@ function UserDetailsContent({ user }: { user: any }) {
         )}
       </div>
 
-      {/* Teacher Assignment UI - Only for Students */}
-      {user.userType === 'Student' && (
+      {/* Matching Interface */}
+      {user.userType === 'Student' ? (
         <TeacherAssignmentManager studentId={user.id} studentName={`${user.firstName} ${user.lastName}`} />
+      ) : (
+        <StudentAssignmentManager teacherId={user.id} teacherName={`${user.firstName} ${user.lastName}`} />
       )}
 
       <AlertDialog open={!!statusChangeTarget} onOpenChange={(open) => !open && setStatusChangeTarget(null)}>
@@ -563,7 +694,7 @@ export default function AdminPortal() {
       <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
         <div className="p-6 flex items-center gap-2">
           <div className="bg-primary p-1 rounded-lg">
-            <BookOpen className="text-primary-foreground h-5 w-5" />
+            < BookOpen className="text-primary-foreground h-5 w-5" />
           </div>
           <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
           <Badge variant="outline" className="text-[10px] ml-auto">ADMIN</Badge>
