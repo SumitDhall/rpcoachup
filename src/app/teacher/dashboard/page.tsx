@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -12,6 +11,7 @@ import { BookOpen, Send, LayoutDashboard, Calendar, Users, Star, Clock, Loader2 
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { notifyAdmin } from '@/app/actions/notifications';
 
 export default function TeacherDashboard() {
   const { user, isUserLoading } = useUser();
@@ -31,30 +31,50 @@ export default function TeacherDashboard() {
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
   const { data: teacherProfile, isLoading: isTeacherProfileLoading } = useDoc(teacherProfileRef);
 
-  const [subject, setSubject] = useState('');
+  const [specialization, setSpecialization] = useState('');
+  const [availability, setAvailability] = useState('');
+  const [notes, setNotes] = useState('');
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmitProfile = async (e: React.FormEvent) => {
+  const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!teacherProfileRef || !user) return;
+    if (!specialization || !user || !profile) return;
     setIsSubmitting(true);
 
     try {
-      await updateDoc(teacherProfileRef, {
-        qualifications: 'Updated Profile', // Simplified for now
-        updatedAt: serverTimestamp()
+      await addDoc(collection(db, 'teacherInterests'), {
+        teacherId: user.uid,
+        subject: specialization,
+        level: 'N/A',
+        topics: [],
+        availability: availability,
+        submissionDate: serverTimestamp(),
+        status: 'Pending',
+        notes: notes
+      });
+
+      // Notify Admin
+      notifyAdmin({
+        type: 'interest',
+        userType: 'Teacher',
+        userName: `${profile.firstName} ${profile.lastName}`,
+        userEmail: profile.email,
+        details: `Specialization: ${specialization}. Availability: ${availability}. Notes: ${notes}`
       });
       
+      setSpecialization('');
+      setAvailability('');
+      setNotes('');
       toast({
-        title: "Teaching Profile Updated",
-        description: "Your changes have been saved successfully.",
+        title: "Teaching Interest Submitted",
+        description: "Administrators will review your availability to find potential students.",
       });
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Could not update profile."
+        description: "Could not submit teaching interest."
       });
     } finally {
       setIsSubmitting(false);
@@ -184,29 +204,44 @@ export default function TeacherDashboard() {
             <TabsContent value="interests">
               <Card className="shadow-lg border-primary/20">
                 <CardHeader>
-                  <CardTitle>Teaching Profile</CardTitle>
+                  <CardTitle>Submit Teaching Interests</CardTitle>
                   <CardDescription>
                     Update the subjects you specialize in and when you are available for classes.
                   </CardDescription>
                 </CardHeader>
-                <form onSubmit={handleSubmitProfile}>
+                <form onSubmit={handleSubmitInterest}>
                   <CardContent className="space-y-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Full Name</label>
-                      <Input value={`${profile?.firstName} ${profile?.lastName}`} disabled />
+                      <label className="text-sm font-medium">Specialization / Subject</label>
+                      <Input 
+                        placeholder="e.g. Mathematics, Science" 
+                        value={specialization}
+                        onChange={(e) => setSpecialization(e.target.value)}
+                        required
+                      />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Specialization</label>
-                      <Input placeholder="e.g. Mathematics, Science" />
+                      <label className="text-sm font-medium">Availability</label>
+                      <Input 
+                        placeholder="e.g. Weekdays evenings, Weekends" 
+                        value={availability}
+                        onChange={(e) => setAvailability(e.target.value)}
+                        required
+                      />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Bio</label>
-                      <Textarea placeholder="Describe your teaching philosophy..." className="min-h-[100px]" />
+                      <label className="text-sm font-medium">Additional Notes</label>
+                      <Textarea 
+                        placeholder="Describe your teaching approach or specific requirements..." 
+                        className="min-h-[100px]" 
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                      />
                     </div>
                   </CardContent>
                   <CardFooter>
                     <Button type="submit" className="w-full font-bold" disabled={isSubmitting}>
-                      {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Profile Changes"}
+                      {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit Teaching Interest"}
                     </Button>
                   </CardFooter>
                 </form>

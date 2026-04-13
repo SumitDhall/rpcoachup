@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -14,8 +13,7 @@ import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { notifyAdmin } from '@/app/actions/notifications';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -75,6 +73,14 @@ export default function RegisterPage() {
           qualifications: '',
         });
       }
+
+      // 3. Notify Admin (Non-blocking)
+      notifyAdmin({
+        type: 'registration',
+        userType: role,
+        userName: `${formData.firstName} ${formData.lastName}`,
+        userEmail: formData.email
+      });
 
       toast({
         title: "Registration Successful",

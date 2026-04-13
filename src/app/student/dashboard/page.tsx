@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -12,6 +11,7 @@ import { BookOpen, Send, LayoutDashboard, MessageSquare, History, Loader2 } from
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { notifyAdmin } from '@/app/actions/notifications';
 
 export default function StudentDashboard() {
   const { user, isUserLoading } = useUser();
@@ -26,12 +26,13 @@ export default function StudentDashboard() {
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
   const [interest, setInterest] = useState('');
+  const [details, setDetails] = useState('');
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!interest || !user) return;
+    if (!interest || !user || !profile) return;
     setIsSubmitting(true);
     
     try {
@@ -42,10 +43,20 @@ export default function StudentDashboard() {
         topics: [],
         submissionDate: serverTimestamp(),
         status: 'Pending',
-        notes: ''
+        notes: details
+      });
+
+      // Notify Admin
+      notifyAdmin({
+        type: 'interest',
+        userType: 'Student',
+        userName: `${profile.firstName} ${profile.lastName}`,
+        userEmail: profile.email,
+        details: `Subject: ${interest}. Notes: ${details}`
       });
       
       setInterest('');
+      setDetails('');
       toast({
         title: "Interest Submitted!",
         description: "Administrators will review your interests to find the best courses for you.",
@@ -197,7 +208,13 @@ export default function StudentDashboard() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="details">Additional Details (Optional)</Label>
-                      <Textarea id="details" placeholder="Tell us more about your current level or specific needs..." className="min-h-[100px]" />
+                      <Textarea 
+                        id="details" 
+                        placeholder="Tell us more about your current level or specific needs..." 
+                        className="min-h-[100px]" 
+                        value={details}
+                        onChange={(e) => setDetails(e.target.value)}
+                      />
                     </div>
                   </CardContent>
                   <CardFooter>
