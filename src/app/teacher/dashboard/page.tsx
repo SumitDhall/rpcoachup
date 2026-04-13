@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -10,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { BookOpen, Send, LayoutDashboard, Calendar, Users, Star, Clock, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { notifyAdmin } from '@/app/actions/notifications';
 
 export default function TeacherDashboard() {
@@ -23,13 +24,7 @@ export default function TeacherDashboard() {
     return doc(db, 'users', user.uid);
   }, [db, user?.uid]);
 
-  const teacherProfileRef = useMemoFirebase(() => {
-    if (!db || !user?.uid) return null;
-    return doc(db, 'users', user.uid, 'teacherProfile', 'teacherProfile');
-  }, [db, user?.uid]);
-
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
-  const { data: teacherProfile, isLoading: isTeacherProfileLoading } = useDoc(teacherProfileRef);
 
   const [specialization, setSpecialization] = useState('');
   const [availability, setAvailability] = useState('');
@@ -54,7 +49,18 @@ export default function TeacherDashboard() {
         notes: notes
       });
 
-      // Notify Admin
+      // Create Notification for Admin Portal
+      await addDoc(collection(db, 'notifications'), {
+        type: 'interest',
+        subject: `New Teacher Specialization: ${specialization}`,
+        body: `Teacher ${profile.firstName} ${profile.lastName} has submitted teaching availability.\nSubject: ${specialization}\nAvailability: ${availability}`,
+        userEmail: profile.email,
+        userName: `${profile.firstName} ${profile.lastName}`,
+        timestamp: serverTimestamp(),
+        read: false
+      });
+
+      // AI simulation for admin
       notifyAdmin({
         type: 'interest',
         userType: 'Teacher',
@@ -111,7 +117,7 @@ export default function TeacherDashboard() {
     }
   };
 
-  if (isUserLoading || isProfileLoading || isTeacherProfileLoading) {
+  if (isUserLoading || isProfileLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -164,36 +170,6 @@ export default function TeacherDashboard() {
             </div>
             <Badge variant="outline" className="w-fit text-accent border-accent">Teacher Account</Badge>
           </header>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="bg-primary text-primary-foreground">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-primary-foreground/80 mb-2">
-                  <Users className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Active Students</span>
-                </div>
-                <div className="text-3xl font-bold">0</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-accent text-accent-foreground">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-accent-foreground/80 mb-2">
-                  <Star className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Rating</span>
-                </div>
-                <div className="text-3xl font-bold">N/A</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-secondary">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <Clock className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Hours Taught</span>
-                </div>
-                <div className="text-3xl font-bold text-primary">0h</div>
-              </CardContent>
-            </Card>
-          </div>
 
           <Tabs defaultValue="interests" className="space-y-6">
             <TabsList className="bg-muted w-full md:w-auto grid grid-cols-2">

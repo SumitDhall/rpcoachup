@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "UserProfile": {
@@ -386,6 +387,23 @@
         "comment",
         "submissionDate"
       ]
+    },
+    "Notification": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Notification",
+      "type": "object",
+      "description": "Represents a system notification or email simulation record for the administrator.",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["registration", "interest"] },
+        "subject": { "type": "string" },
+        "body": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "userName": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["id", "type", "subject", "body", "timestamp"]
     }
   },
   "auth": {
@@ -403,43 +421,11 @@
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "Stores core user profile details. The document ID `{userId}` is identical to the Firebase Authentication UID, establishing direct ownership. This document also contains the 'userType' field, critical for role-based authorization. Authorization relies on `request.auth.uid == userId`.",
+          "description": "Stores core user profile details.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique Firebase Authentication UID of the user, serving as the document ID."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/studentProfile",
-        "definition": {
-          "entityName": "Student",
-          "schema": {
-            "$ref": "#/backend/entities/Student"
-          },
-          "description": "Stores student-specific profile details. This is a subcollection of a UserProfile, with the document ID (`studentProfile`) implicitly linked to the parent `userId`. The `userProfileId` field within the document will be denormalized to `{userId}` for consistency, though path ownership is primary for rules. Authorization relies on `request.auth.uid == userId` and the parent `UserProfile`'s `userType` being 'Student'.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique Firebase Authentication UID of the owning user."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/teacherProfile",
-        "definition": {
-          "entityName": "Teacher",
-          "schema": {
-            "$ref": "#/backend/entities/Teacher"
-          },
-          "description": "Stores teacher-specific profile details. This is a subcollection of a UserProfile, with the document ID (`teacherProfile`) implicitly linked to the parent `userId`. The `userProfileId` field within the document will be denormalized to `{userId}` for consistency, though path ownership is primary for rules. Authorization relies on `request.auth.uid == userId` and the parent `UserProfile`'s `userType` being 'Teacher'.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique Firebase Authentication UID of the owning user."
+              "description": "The unique Firebase Authentication UID of the user."
             }
           ]
         }
@@ -451,7 +437,7 @@
           "schema": {
             "$ref": "#/backend/entities/StudentInterest"
           },
-          "description": "Stores individual student interest submissions. Includes denormalized `studentId` (which corresponds to `request.auth.uid` for the submitting student) for authorization independence and QAP (Query Against Path) support, allowing efficient user-specific and admin queries without hierarchical lookups.",
+          "description": "Stores individual student interest submissions.",
           "params": [
             {
               "name": "studentInterestId",
@@ -467,7 +453,7 @@
           "schema": {
             "$ref": "#/backend/entities/TeacherInterest"
           },
-          "description": "Stores individual teacher interest and availability submissions. Includes denormalized `teacherId` (which corresponds to `request.auth.uid` for the submitting teacher) for authorization independence and QAP support, allowing efficient user-specific and admin queries without hierarchical lookups.",
+          "description": "Stores individual teacher interest and availability submissions.",
           "params": [
             {
               "name": "teacherInterestId",
@@ -477,49 +463,17 @@
         }
       },
       {
-        "path": "/programs/{programId}",
+        "path": "/notifications/{notificationId}",
         "definition": {
-          "entityName": "Program",
+          "entityName": "Notification",
           "schema": {
-            "$ref": "#/backend/entities/Program"
+            "$ref": "#/backend/entities/Notification"
           },
-          "description": "Stores details of available educational programs and courses. This collection is publicly readable to support the responsive public dashboard, with write access restricted to administrators.",
+          "description": "Stores system notifications intended for administrators. Any registered user can create a notification, but only admins can read and manage them.",
           "params": [
             {
-              "name": "programId",
-              "description": "The unique identifier for a specific educational program."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/matchProposals/{matchProposalId}",
-        "definition": {
-          "entityName": "MatchProposal",
-          "schema": {
-            "$ref": "#/backend/entities/MatchProposal"
-          },
-          "description": "Stores suggested pairings between students, teachers, or programs. Includes denormalized `studentId` and `teacherId` (if applicable) for authorization independence and QAP support, allowing admins to manage all and relevant students/teachers to view their proposals without hierarchical lookups. Access is primarily for admins, and relevant students/teachers.",
-          "params": [
-            {
-              "name": "matchProposalId",
-              "description": "The unique identifier for a specific match proposal."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/feedback/{feedbackId}",
-        "definition": {
-          "entityName": "Feedback",
-          "schema": {
-            "$ref": "#/backend/entities/Feedback"
-          },
-          "description": "Records feedback submitted by registered users. Includes denormalized `userProfileId` (which corresponds to `request.auth.uid` for the submitting user) for authorization independence and QAP support, allowing users to view their own feedback and admins to manage all feedback without hierarchical lookups.",
-          "params": [
-            {
-              "name": "feedbackId",
-              "description": "The unique identifier for a specific feedback submission."
+              "name": "notificationId",
+              "description": "Unique identifier for the notification."
             }
           ]
         }
@@ -531,16 +485,15 @@
           "schema": {
             "$ref": "#/backend/entities/UserProfile"
           },
-          "description": "A sentinel collection used for Database Access Control (DBAC) to designate administrators. The mere existence of a document at `/roles_admin/{request.auth.uid}` grants administrative privileges. This avoids custom claims and keeps role logic within the database.",
+          "description": "A sentinel collection used for Database Access Control (DBAC) to designate administrators.",
           "params": [
             {
               "name": "adminId",
-              "description": "The unique Firebase Authentication UID of a user who is designated as an administrator."
+              "description": "The unique Firebase Authentication UID of an administrator."
             }
           ]
         }
       }
-    ],
-    "reasoning": "The recommended Firestore structure is designed to be highly secure, scalable, and debuggable, strictly adhering to the core design principles. The primary strategy for achieving Authorization Independence is through strategic denormalization and strict path-based ownership.\n\n**Authorization Independence via Denormalization:**\n*   **User Profiles (`/users/{userId}`, `/users/{userId}/studentProfile`, `/users/{userId}/teacherProfile`):** Ownership is inherently established by the path itself, where `{userId}` directly corresponds to `request.auth.uid`. This eliminates the need for `get()` operations in rules to determine who owns a profile or profile segment, ensuring atomic operations and easy debugging.\n*   **Global Collections with Denormalized Ownership (`/studentInterests`, `/teacherInterests`, `/matchProposals`, `/feedback`):** For entities that need to be queried globally (e.g., by AI or Admins) but also require user-specific access, critical authorization fields (`studentId`, `teacherId`, `userProfileId`) are denormalized and stored directly within each document. For example, a `StudentInterest` document at `/studentInterests/{interestId}` will contain its `studentId`. This means a security rule can evaluate `request.auth.uid == resource.data.studentId` directly, without needing to `get()` the parent `Student` or `UserProfile` document. This is crucial for performance and rule clarity, as it avoids complex and potentially error-prone hierarchical lookups.\n\n**Support for Query Against Paths (QAPs - Rules are not Filters):**\n*   **Path-Based Ownership:** For user-specific data like `studentProfile` or `teacherProfile`, the path `/users/{userId}/...` directly implies that only `request.auth.uid` matching `{userId}` has access. This inherently supports QAPs for individual user queries, as a user can only request data under their own UID path.\n*   **Denormalized Ownership for Global Collections:** By denormalizing `studentId`, `teacherId`, or `userProfileId` into `StudentInterest`, `TeacherInterest`, `MatchProposal`, and `Feedback` documents, the system facilitates secure and efficient `list` operations. For instance, a student can query `/studentInterests` with a `where('studentId', '==', request.auth.uid)` clause. The security rules can then easily verify that the `studentId` in the query's `where` clause matches `request.auth.uid`. This prevents clients from attempting to fetch all documents and rely on rules to filter, which Firestore rules do not do. Admin access is granted via the `/roles_admin/{adminId}` collection, enabling admins to list all documents in these collections without specific `where` clauses.\n*   **Public Data (`/programs`):** The `/programs` collection is a top-level collection with public read access, allowing efficient listing for the public dashboard feature. Admin write access is controlled.\n\n**DBAC and Structural Segregation:**\n*   **DBAC (Database Access Control):** User roles are managed directly in the database. The `userType` field within `/users/{userId}` provides a base role (Student/Teacher). Explicit admin roles are managed via the `/roles_admin/{adminId}` collection, where the mere existence of a document grants admin privileges. This avoids custom claims and keeps role management within the data layer.\n*   **Structural Segregation (Homogeneous Security Posture):** Each collection (or subcollection) is designed to have a uniform security posture. For example, all documents in `/programs` are publicly readable. All documents in `/users/{userId}/studentProfile` are owned by `userId`. This greatly simplifies security rules as there's no mixing of public, private, and collaborative data within the same collection, making rules more explicit and less prone to errors."
+    ]
   }
 }

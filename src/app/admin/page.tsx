@@ -35,97 +35,12 @@ import {
   User,
   ClipboardList,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Bell,
+  Trash2
 } from 'lucide-react';
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, query, limit, doc, where } from 'firebase/firestore';
-
-// Component to fetch and display submitted interests for a specific user
-function UserInterestsSection({ userId, userType }: { userId: string; userType: string }) {
-  const db = useFirestore();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  
-  const collectionName = userType === 'Student' ? 'studentInterests' : 'teacherInterests';
-  const idField = userType === 'Student' ? 'studentId' : 'teacherId';
-
-  // Simplified query: removed orderBy to avoid requiring composite indexes
-  const interestsQuery = useMemoFirebase(() => {
-    return query(
-      collection(db, collectionName),
-      where(idField, '==', userId),
-      limit(10)
-    );
-  }, [db, userId, collectionName, idField]);
-
-  const { data: interests, isLoading, error } = useCollection(interestsQuery);
-
-  if (isLoading) {
-    return <div className="flex justify-center p-4"><Loader2 className="h-4 w-4 animate-spin text-primary" /></div>;
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center gap-2 p-3 text-xs text-destructive bg-destructive/10 rounded-lg">
-        <AlertCircle className="h-4 w-4" />
-        <span>Failed to load interests.</span>
-      </div>
-    );
-  }
-
-  // Sort interests in memory if needed
-  const sortedInterests = [...(interests || [])].sort((a, b) => {
-    const dateA = a.submissionDate?.toDate?.() || 0;
-    const dateB = b.submissionDate?.toDate?.() || 0;
-    return dateB - dateA;
-  });
-
-  return (
-    <div className="space-y-4 pt-4 border-t">
-      <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-        <ClipboardList className="h-4 w-4" />
-        {userType} Interests & Submissions
-      </h4>
-      
-      {sortedInterests.length === 0 ? (
-        <p className="text-sm text-muted-foreground italic bg-secondary/20 p-3 rounded-lg text-center">
-          No interests have been submitted by this user yet.
-        </p>
-      ) : (
-        <div className="space-y-3">
-          {sortedInterests.map((interest) => (
-            <div key={interest.id} className="bg-secondary/30 p-3 rounded-lg border border-border/50">
-              <div className="flex justify-between items-start mb-2">
-                <span className="font-bold text-sm text-primary">{interest.subject}</span>
-                <Badge variant="outline" className="text-[10px]">
-                  {interest.status || 'Pending'}
-                </Badge>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Award className="h-3 w-3" />
-                  <span>Level: {interest.level || 'N/A'}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  <span>{mounted && interest.submissionDate?.toDate ? interest.submissionDate.toDate().toLocaleDateString() : 'Recent'}</span>
-                </div>
-              </div>
-              {interest.notes && (
-                <p className="mt-2 text-[11px] italic text-muted-foreground border-t pt-2 border-border/30">
-                  Notes: {interest.notes}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
 
 // Component to fetch and display role-specific profile details
 function UserRoleDetails({ userId, userType }: { userId: string; userType: string }) {
@@ -139,31 +54,10 @@ function UserRoleDetails({ userId, userType }: { userId: string; userType: strin
     return doc(db, profilePath);
   }, [db, profilePath]);
 
-  const { data: details, isLoading, error } = useDoc(docRef);
+  const { data: details, isLoading } = useDoc(docRef);
 
   if (isLoading) {
     return <div className="flex justify-center p-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-4 pt-4 border-t">
-        <div className="flex items-center gap-2 p-3 text-xs text-destructive bg-destructive/10 rounded-lg">
-          <AlertCircle className="h-4 w-4" />
-          <span>Error loading profile details.</span>
-        </div>
-        <UserInterestsSection userId={userId} userType={userType} />
-      </div>
-    );
-  }
-
-  if (!details) {
-    return (
-      <div className="space-y-4 pt-4 border-t">
-        <p className="text-sm text-muted-foreground italic">No detailed role-specific profile document found.</p>
-        <UserInterestsSection userId={userId} userType={userType} />
-      </div>
-    );
   }
 
   return (
@@ -177,31 +71,29 @@ function UserRoleDetails({ userId, userType }: { userId: string; userType: strin
           {userType === 'Student' ? (
             <div className="bg-secondary/30 p-3 rounded-lg">
               <p className="text-xs text-muted-foreground">Grade Level</p>
-              <p className="font-medium">{details.gradeLevel || 'Not specified'}</p>
+              <p className="font-medium">{details?.gradeLevel || 'Not specified'}</p>
             </div>
           ) : (
             <>
               <div className="bg-secondary/30 p-3 rounded-lg">
                 <p className="text-xs text-muted-foreground">Experience</p>
-                <p className="font-medium">{details.experienceYears || 0} Years</p>
+                <p className="font-medium">{details?.experienceYears || 0} Years</p>
               </div>
               <div className="bg-secondary/30 p-3 rounded-lg">
                 <p className="text-xs text-muted-foreground">Qualifications</p>
-                <p className="font-medium whitespace-pre-wrap">{details.qualifications || 'Not specified'}</p>
+                <p className="font-medium whitespace-pre-wrap">{details?.qualifications || 'Not specified'}</p>
               </div>
             </>
           )}
         </div>
       </div>
-
-      <UserInterestsSection userId={userId} userType={userType} />
     </div>
   );
 }
 
 export default function AdminPortal() {
   const db = useFirestore();
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('notifications');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -213,12 +105,27 @@ export default function AdminPortal() {
   const usersQuery = useMemoFirebase(() => {
     return query(collection(db, 'users'), limit(50));
   }, [db]);
-  const { data: users, isLoading: isLoadingUsers, error: usersError } = useCollection(usersQuery);
+  const { data: users, isLoading: isLoadingUsers } = useCollection(usersQuery);
+
+  const notificationsQuery = useMemoFirebase(() => {
+    return query(collection(db, 'notifications'), limit(50));
+  }, [db]);
+  const { data: notifications, isLoading: isLoadingNotifications } = useCollection(notificationsQuery);
+
+  const handleDeleteNotification = (id: string) => {
+    deleteDoc(doc(db, 'notifications', id));
+  };
 
   const handleViewDetails = (user: any) => {
     setSelectedUser(user);
     setIsDetailsOpen(true);
   };
+
+  const sortedNotifications = [...(notifications || [])].sort((a, b) => {
+    const timeA = a.timestamp?.toDate?.() || 0;
+    const timeB = b.timestamp?.toDate?.() || 0;
+    return timeB - timeA;
+  });
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -232,6 +139,17 @@ export default function AdminPortal() {
           <Badge variant="outline" className="text-[10px] ml-auto">ADMIN</Badge>
         </div>
         <nav className="flex-1 px-4 py-4 space-y-1">
+          <Button 
+            variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} 
+            className="w-full justify-start gap-3"
+            onClick={() => setActiveTab('notifications')}
+          >
+            <Bell className="h-4 w-4" />
+            Notifications
+            {notifications && notifications.length > 0 && (
+              <Badge className="ml-auto" variant="destructive">{notifications.length}</Badge>
+            )}
+          </Button>
           <Button 
             variant={activeTab === 'users' ? 'secondary' : 'ghost'} 
             className="w-full justify-start gap-3"
@@ -262,9 +180,57 @@ export default function AdminPortal() {
           <header className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-headline font-bold">Admin Portal</h1>
-              <p className="text-muted-foreground">Monitor platform activity and manage user accounts.</p>
+              <p className="text-muted-foreground">Monitor platform activity and manage system alerts.</p>
             </div>
           </header>
+
+          {activeTab === 'notifications' && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Platform Notifications</CardTitle>
+                  <CardDescription>Real-time alerts for registrations and interest submissions.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingNotifications ? (
+                    <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                  ) : sortedNotifications.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground italic">No notifications yet.</div>
+                  ) : (
+                    <div className="space-y-4">
+                      {sortedNotifications.map((n) => (
+                        <div key={n.id} className="group relative flex flex-col gap-2 p-4 rounded-xl border bg-card hover:shadow-md transition-all">
+                          <div className="flex items-start justify-between">
+                            <div className="flex gap-3">
+                              <div className={`p-2 rounded-lg ${n.type === 'registration' ? 'bg-primary/10 text-primary' : 'bg-accent/10 text-accent-foreground'}`}>
+                                {n.type === 'registration' ? <UserCheck className="h-5 w-5" /> : <ClipboardList className="h-5 w-5" />}
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-sm">{n.subject}</h4>
+                                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                  <Clock className="h-3 w-3" />
+                                  {mounted && n.timestamp?.toDate ? n.timestamp.toDate().toLocaleString() : 'Recent'}
+                                </p>
+                              </div>
+                            </div>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
+                              onClick={() => handleDeleteNotification(n.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap pl-11">{n.body}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {activeTab === 'users' && (
             <div className="space-y-6">
@@ -276,11 +242,6 @@ export default function AdminPortal() {
                 <CardContent>
                   {isLoadingUsers ? (
                     <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
-                  ) : usersError ? (
-                    <div className="flex flex-col items-center gap-2 p-8 text-destructive">
-                      <AlertCircle className="h-10 w-10" />
-                      <p>Error loading users. Please check permissions.</p>
-                    </div>
                   ) : (
                     <Table>
                       <TableHeader>
@@ -324,18 +285,6 @@ export default function AdminPortal() {
               </Card>
             </div>
           )}
-
-          {activeTab === 'settings' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Platform Configuration</CardTitle>
-                <CardDescription>Manage global settings and administrative controls.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">Global configuration for platform operations and administrative visibility.</p>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </main>
 
@@ -347,9 +296,6 @@ export default function AdminPortal() {
               <User className="h-5 w-5 text-primary" />
               User Profile Details
             </DialogTitle>
-            <DialogDescription>
-              Viewing comprehensive information for platform account.
-            </DialogDescription>
           </DialogHeader>
           
           {selectedUser && (
@@ -366,19 +312,6 @@ export default function AdminPortal() {
                   <Badge className="px-3 py-1 text-sm">
                     {selectedUser.userType}
                   </Badge>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Joined:</span>
-                    <span>{mounted && selectedUser.createdAt?.toDate ? selectedUser.createdAt.toDate().toLocaleDateString() : 'N/A'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Settings className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">ID:</span>
-                    <span className="font-mono text-[10px] bg-secondary px-1 rounded">{selectedUser.id.substring(0, 8)}...</span>
-                  </div>
                 </div>
               </div>
 

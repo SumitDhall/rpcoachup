@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -46,7 +47,18 @@ export default function StudentDashboard() {
         notes: details
       });
 
-      // Notify Admin
+      // Create Notification for Admin Portal
+      await addDoc(collection(db, 'notifications'), {
+        type: 'interest',
+        subject: `New Interest Submission: ${interest}`,
+        body: `Student ${profile.firstName} ${profile.lastName} has submitted a new interest.\nSubject: ${interest}\nNotes: ${details}`,
+        userEmail: profile.email,
+        userName: `${profile.firstName} ${profile.lastName}`,
+        timestamp: serverTimestamp(),
+        read: false
+      });
+
+      // AI simulation for admin
       notifyAdmin({
         type: 'interest',
         userType: 'Student',

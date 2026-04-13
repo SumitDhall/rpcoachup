@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -11,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { BookOpen, ArrowLeft, Loader2, User, GraduationCap } from 'lucide-react';
 import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { notifyAdmin } from '@/app/actions/notifications';
 
@@ -74,7 +75,18 @@ export default function RegisterPage() {
         });
       }
 
-      // 3. Notify Admin (Non-blocking)
+      // 3. Create System Notification for Admin
+      await addDoc(collection(db, 'notifications'), {
+        type: 'registration',
+        subject: `New ${role} Registration: ${formData.firstName} ${formData.lastName}`,
+        body: `A new ${role} has joined the platform.\nName: ${formData.firstName} ${formData.lastName}\nEmail: ${formData.email}`,
+        userEmail: formData.email,
+        userName: `${formData.firstName} ${formData.lastName}`,
+        timestamp: serverTimestamp(),
+        read: false
+      });
+
+      // 4. Notify Admin (AI Simulation & Console Log)
       notifyAdmin({
         type: 'registration',
         userType: role,
@@ -166,13 +178,6 @@ export default function RegisterPage() {
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" value={formData.password} onChange={handleInputChange} required />
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <input type="checkbox" id="terms" className="rounded border-muted text-primary focus:ring-primary" required />
-              <label htmlFor="terms" className="text-sm text-muted-foreground">
-                I agree to the <Link href="#" className="text-primary hover:underline">Terms of Service</Link> and <Link href="#" className="text-primary hover:underline">Privacy Policy</Link>
-              </label>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
