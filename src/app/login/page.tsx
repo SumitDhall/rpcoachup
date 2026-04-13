@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { BookOpen, ArrowLeft, Loader2, ShieldAlert } from 'lucide-react';
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth, useFirestore, useUser } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +18,7 @@ export default function LoginPage() {
   const router = useRouter();
   const auth = useAuth();
   const db = useFirestore();
+  const { user, isUserLoading: isAuthCheckLoading } = useUser();
   const { toast } = useToast();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -25,6 +26,42 @@ export default function LoginPage() {
     email: '',
     password: '',
   });
+
+  // Automatically redirect if user is already logged in
+  useEffect(() => {
+    if (!isAuthCheckLoading && user) {
+      handleRoleRedirect(user.uid);
+    }
+  }, [user, isAuthCheckLoading]);
+
+  const handleRoleRedirect = async (uid: string) => {
+    try {
+      // 1. Check Admin status
+      const adminDocRef = doc(db, 'roles_admin', uid);
+      const adminDoc = await getDoc(adminDocRef);
+      if (adminDoc.exists()) {
+        router.push('/admin');
+        return;
+      }
+
+      // 2. Check Standard User status
+      const userDocRef = doc(db, 'users', uid);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const role = (userData.userType || 'Student').toLowerCase();
+        router.push(`/${role}/dashboard`);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Profile Not Found",
+          description: "Your authentication is valid, but we couldn't find your platform profile. Please contact support.",
+        });
+      }
+    } catch (e) {
+      console.error("Redirection check failed:", e);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -37,40 +74,39 @@ export default function LoginPage() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
-
-      // 1. Check if user is an admin via roles_admin collection
-      const adminDocRef = doc(db, 'roles_admin', user.uid);
-      const adminDoc = await getDoc(adminDocRef);
-
-      if (adminDoc.exists()) {
-        toast({ title: "Admin Login Successful", description: "Redirecting to Admin Portal..." });
-        router.push('/admin');
-        return;
-      }
-
-      // 2. Fetch standard user profile to determine role
-      const userDocRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        const role = userData.userType || 'Student';
-        toast({ title: "Login Successful", description: `Welcome back, ${userData.firstName}!` });
-        router.push(`/${role.toLowerCase()}/dashboard`);
-      } else {
-        throw new Error("User profile not found. Please contact support.");
-      }
+      await handleRoleRedirect(user.uid);
+      
+      toast({ 
+        title: "Login Successful", 
+        description: "Welcome back to RP Coach-Up!" 
+      });
     } catch (error: any) {
       console.error("Login error:", error);
+      let errorMessage = "Invalid credentials or system error.";
+      
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        errorMessage = "The email or password you entered is incorrect.";
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = "Too many failed login attempts. Please try again later.";
+      }
+
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message || "Invalid credentials or system error.",
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isAuthCheckLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-background">

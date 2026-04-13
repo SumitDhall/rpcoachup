@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { BookOpen, ArrowLeft, Loader2, User, GraduationCap } from 'lucide-react';
 import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, addDoc, collection, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { notifyAdmin } from '@/app/actions/notifications';
 
@@ -43,9 +43,11 @@ export default function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
+      const batch = writeBatch(db);
+
       // 1. Create Base User Profile
       const userProfileRef = doc(db, 'users', user.uid);
-      const profileData = {
+      batch.set(userProfileRef, {
         id: user.uid,
         email: formData.email,
         firstName: formData.firstName,
@@ -53,21 +55,19 @@ export default function RegisterPage() {
         userType: role,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      };
+      });
 
-      await setDoc(userProfileRef, profileData);
-
-      // 2. Create Role-Specific Profile
+      // 2. Create Role-Specific Profile Placeholder
       if (role === 'Student') {
         const studentProfileRef = doc(db, 'users', user.uid, 'studentProfile', 'studentProfile');
-        await setDoc(studentProfileRef, {
+        batch.set(studentProfileRef, {
           id: 'studentProfile',
           userProfileId: user.uid,
           gradeLevel: '',
         });
       } else if (role === 'Teacher') {
         const teacherProfileRef = doc(db, 'users', user.uid, 'teacherProfile', 'teacherProfile');
-        await setDoc(teacherProfileRef, {
+        batch.set(teacherProfileRef, {
           id: 'teacherProfile',
           userProfileId: user.uid,
           experienceYears: 0,
@@ -75,8 +75,9 @@ export default function RegisterPage() {
         });
       }
 
-      // 3. Create System Notification for Admin
-      await addDoc(collection(db, 'notifications'), {
+      // 3. Create Notification for Admin
+      const notificationRef = doc(collection(db, 'notifications'));
+      batch.set(notificationRef, {
         type: 'registration',
         subject: `New ${role} Registration: ${formData.firstName} ${formData.lastName}`,
         body: `A new ${role} has joined the platform.\nName: ${formData.firstName} ${formData.lastName}\nEmail: ${formData.email}`,
@@ -85,6 +86,9 @@ export default function RegisterPage() {
         timestamp: serverTimestamp(),
         read: false
       });
+
+      // Commit all Firestore operations
+      await batch.commit();
 
       // 4. Notify Admin (AI Simulation & Console Log)
       notifyAdmin({
@@ -102,10 +106,17 @@ export default function RegisterPage() {
       router.push(`/${role.toLowerCase()}/dashboard`);
     } catch (error: any) {
       console.error("Registration error:", error);
+      let msg = "An error occurred during registration.";
+      if (error.code === 'auth/email-already-in-use') {
+        msg = "This email address is already registered.";
+      } else if (error.code === 'auth/weak-password') {
+        msg = "Your password is too weak. Please use at least 6 characters.";
+      }
+      
       toast({
         variant: "destructive",
         title: "Registration Failed",
-        description: error.message || "An error occurred during registration.",
+        description: msg,
       });
     } finally {
       setIsLoading(false);
