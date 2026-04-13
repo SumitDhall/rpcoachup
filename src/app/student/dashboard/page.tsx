@@ -10,6 +10,13 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   BookOpen, 
   Send, 
@@ -24,7 +31,7 @@ import {
   School,
   MapPin,
   Calendar as CalendarIcon,
-  DollarSign
+  IndianRupee
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
@@ -113,7 +120,7 @@ export default function StudentDashboard() {
         userType: 'Student',
         userName: `${profile.firstName} ${profile.lastName}`,
         userEmail: profile.email,
-        details: `Student Name: ${studentName}. Subject: ${subject}. Phone: ${phone}. Start Date: ${intendedStartDate}.`
+        details: `Student Name: ${studentName}. Subject: ${subject}. Phone: ${phone}. Start Date: ${intendedStartDate}. Fees: ${affordableRange}.`
       });
       
       // Reset Form
@@ -179,6 +186,8 @@ export default function StudentDashboard() {
       </div>
     );
   }
+
+  const feeOptions = [200, 300, 400, 500, 600, 700, 800, 900, 1000];
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -276,7 +285,6 @@ export default function StudentDashboard() {
                 </CardHeader>
                 <form onSubmit={handleSubmitInterest}>
                   <CardContent className="space-y-6 py-8">
-                    {/* Chronological Order Requested */}
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
@@ -300,7 +308,7 @@ export default function StudentDashboard() {
                         <Input 
                           id="phone" 
                           type="tel"
-                          placeholder="e.g. +1 234 567 890" 
+                          placeholder="e.g. +91 98765 43210" 
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           required
@@ -316,7 +324,7 @@ export default function StudentDashboard() {
                         </Label>
                         <Input 
                           id="school" 
-                          placeholder="e.g. Westside High School" 
+                          placeholder="e.g. DPS International" 
                           value={school}
                           onChange={(e) => setSchool(e.target.value)}
                         />
@@ -355,7 +363,7 @@ export default function StudentDashboard() {
                       </Label>
                       <Input 
                         id="interest-input" 
-                        placeholder="e.g. Quantum Physics, Academic Writing" 
+                        placeholder="e.g. Mathematics, Physics" 
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
                         required
@@ -376,15 +384,21 @@ export default function StudentDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label htmlFor="fees" className="flex items-center gap-2">
-                          <DollarSign className="h-4 w-4 text-muted-foreground" />
-                          Affordable Fees Range
+                          <IndianRupee className="h-4 w-4 text-muted-foreground" />
+                          Affordable Fees (INR / hour)
                         </Label>
-                        <Input 
-                          id="fees" 
-                          placeholder="e.g. $20-$40 / hour" 
-                          value={affordableRange}
-                          onChange={(e) => setAffordableRange(e.target.value)}
-                        />
+                        <Select value={affordableRange} onValueChange={setAffordableRange}>
+                          <SelectTrigger id="fees">
+                            <SelectValue placeholder="Select hourly fee" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {feeOptions.map((fee) => (
+                              <SelectItem key={fee} value={`${fee} INR`}>
+                                {fee} INR / hour
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="start-date" className="flex items-center gap-2">
