@@ -266,6 +266,22 @@
         "read": { "type": "boolean" }
       },
       "required": ["id", "type", "subject", "body", "timestamp"]
+    },
+    "MatchProposal": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MatchProposal",
+      "type": "object",
+      "description": "Represents a proposed match between a student and a teacher created by an administrator.",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "studentName": { "type": "string" },
+        "assignedAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "studentId", "teacherId", "assignedAt"]
     }
   },
   "auth": {
@@ -352,6 +368,22 @@
             {
               "name": "adminId",
               "description": "The unique Firebase Authentication UID of an administrator."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/matchProposals/{matchProposalId}",
+        "definition": {
+          "entityName": "MatchProposal",
+          "schema": {
+            "$ref": "#/backend/entities/MatchProposal"
+          },
+          "description": "Stores administrator-created matches between students and teachers.",
+          "params": [
+            {
+              "name": "matchProposalId",
+              "description": "Unique identifier for a match proposal."
             }
           ]
         }

@@ -63,22 +63,157 @@ import {
   Briefcase,
   FileText,
   IndianRupee,
-  Download
+  Download,
+  UserPlus,
+  UserMinus,
+  Search
 } from 'lucide-react';
-import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking } from '@/firebase';
-import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
+import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, getDocs } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+
+// Component to handle teacher assignments for a student
+function TeacherAssignmentManager({ studentId, studentName }: { studentId: string; studentName: string }) {
+  const db = useFirestore();
+  const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // 1. Fetch all teachers
+  const teachersQuery = useMemoFirebase(() => {
+    return query(collection(db, 'users'), where('userType', '==', 'Teacher'), limit(100));
+  }, [db]);
+  const { data: teachers, isLoading: isLoadingTeachers } = useCollection(teachersQuery);
+
+  // 2. Fetch current matches for this student
+  const matchesQuery = useMemoFirebase(() => {
+    return query(collection(db, 'matchProposals'), where('studentId', '==', studentId));
+  }, [db, studentId]);
+  const { data: currentMatches, isLoading: isLoadingMatches } = useCollection(matchesQuery);
+
+  const matchedTeacherIds = useMemo(() => {
+    return new Set(currentMatches?.map(m => m.teacherId) || []);
+  }, [currentMatches]);
+
+  const handleAssignTeacher = (teacher: any) => {
+    const matchData = {
+      studentId,
+      studentName,
+      teacherId: teacher.id,
+      teacherName: `${teacher.firstName} ${teacher.lastName}`,
+      assignedAt: serverTimestamp(),
+      status: 'active'
+    };
+    
+    addDocumentNonBlocking(collection(db, 'matchProposals'), matchData);
+    toast({
+      title: "Teacher Assigned",
+      description: `Successfully matched ${teacher.firstName} with ${studentName}.`,
+    });
+  };
+
+  const handleUnassignTeacher = (teacherId: string) => {
+    const matchToDelete = currentMatches?.find(m => m.teacherId === teacherId);
+    if (matchToDelete) {
+      deleteDocumentNonBlocking(doc(db, 'matchProposals', matchToDelete.id));
+      toast({
+        title: "Teacher Unassigned",
+        description: "The match has been removed.",
+      });
+    }
+  };
+
+  const filteredTeachers = useMemo(() => {
+    if (!teachers) return [];
+    return teachers.filter(t => 
+      `${t.firstName} ${t.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [teachers, searchTerm]);
+
+  if (isLoadingTeachers || isLoadingMatches) {
+    return <div className="flex justify-center p-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+  }
+
+  return (
+    <div className="space-y-4 pt-6 border-t mt-6">
+      <div className="flex items-center justify-between">
+        <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <UserPlus className="h-4 w-4" />
+          Assign Teachers
+        </h4>
+        <Badge variant="secondary" className="font-normal">
+          {matchedTeacherIds.size} Assigned
+        </Badge>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input 
+          placeholder="Search teachers by name or email..." 
+          className="pl-9 h-9 text-xs"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2">
+        {filteredTeachers.length > 0 ? (
+          filteredTeachers.map((teacher) => {
+            const isAssigned = matchedTeacherIds.has(teacher.id);
+            return (
+              <div key={teacher.id} className="flex items-center justify-between p-3 rounded-lg border bg-secondary/5 group hover:border-primary/30 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${isAssigned ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                    {teacher.firstName[0]}{teacher.lastName[0]}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{teacher.firstName} {teacher.lastName}</p>
+                    <p className="text-[10px] text-muted-foreground">{teacher.email}</p>
+                  </div>
+                </div>
+                {isAssigned ? (
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10 gap-1"
+                    onClick={() => handleUnassignTeacher(teacher.id)}
+                  >
+                    <UserMinus className="h-3.5 w-3.5" />
+                    <span className="text-[10px]">Unassign</span>
+                  </Button>
+                ) : (
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-8 text-primary border-primary/20 hover:border-primary hover:bg-primary/5 gap-1"
+                    onClick={() => handleAssignTeacher(teacher)}
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    <span className="text-[10px]">Assign</span>
+                  </Button>
+                )}
+              </div>
+            );
+          })
+        ) : (
+          <p className="text-center py-8 text-xs text-muted-foreground italic">No teachers found.</p>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // Component to fetch and display role-specific profile details and interests
-function UserDetailsContent({ userId, userType }: { userId: string; userType: string }) {
+function UserDetailsContent({ user }: { user: any }) {
   const db = useFirestore();
   const { toast } = useToast();
   const [statusChangeTarget, setStatusChangeTarget] = useState<{id: string, currentStatus: string, collection: string} | null>(null);
   
-  const profilePath = userType === 'Student' 
-    ? `users/${userId}/studentProfile/studentProfile` 
-    : `users/${userId}/teacherProfile/teacherProfile`;
+  const profilePath = user.userType === 'Student' 
+    ? `users/${user.id}/studentProfile/studentProfile` 
+    : `users/${user.id}/teacherProfile/teacherProfile`;
 
   const docRef = useMemoFirebase(() => {
     return doc(db, profilePath);
@@ -87,16 +222,16 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
   const { data: details, isLoading: isLoadingProfile, error: profileError } = useDoc(docRef);
 
   // Fetch interests related to this user
-  const interestCollection = userType === 'Student' ? 'studentInterests' : 'teacherInterests';
-  const interestField = userType === 'Student' ? 'studentId' : 'teacherId';
+  const interestCollection = user.userType === 'Student' ? 'studentInterests' : 'teacherInterests';
+  const interestField = user.userType === 'Student' ? 'studentId' : 'teacherId';
   
   const interestsQuery = useMemoFirebase(() => {
     return query(
       collection(db, interestCollection), 
-      where(interestField, '==', userId),
+      where(interestField, '==', user.id),
       limit(50)
     );
-  }, [db, userId, interestCollection, interestField]);
+  }, [db, user.id, interestCollection, interestField]);
 
   const { data: interests, isLoading: isLoadingInterests, error: interestsError } = useCollection(interestsQuery);
 
@@ -121,7 +256,6 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
     }
 
     try {
-      // The dataUrl is already the correctly encoded data from the teacher's upload
       const link = document.createElement('a');
       link.href = dataUrl;
       link.download = fileName;
@@ -146,19 +280,10 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
     return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
-  if (profileError || interestsError) {
-    return (
-      <div className="p-4 bg-destructive/10 text-destructive rounded-lg text-sm">
-        <p className="font-bold">Error loading profile data</p>
-        <p>You may not have sufficient permissions or the profile might not exist.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8">
       {/* Role Specific Info - Only for Students now per requirements */}
-      {userType === 'Student' && (
+      {user.userType === 'Student' && (
         <div className="space-y-4 pt-4 border-t">
           <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
             <BookMarked className="h-4 w-4" />
@@ -174,10 +299,10 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
       )}
 
       {/* Interests List */}
-      <div className={`space-y-4 ${userType === 'Teacher' ? 'pt-4 border-t' : ''}`}>
+      <div className={`space-y-4 ${user.userType === 'Teacher' ? 'pt-4 border-t' : ''}`}>
         <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
-           {userType === 'Student' ? 'Tuition Requirements' : 'Professional Specializations'}
+           {user.userType === 'Student' ? 'Tuition Requirements' : 'Professional Specializations'}
         </h4>
         {interests && interests.length > 0 ? (
           <div className="space-y-3">
@@ -211,7 +336,7 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
                     </div>
                   )}
 
-                  {userType === 'Student' && (
+                  {user.userType === 'Student' && (
                     <>
                       {int.school && (
                         <div className="flex items-center gap-2">
@@ -228,7 +353,7 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
                     </>
                   )}
 
-                  {userType === 'Teacher' && (
+                  {user.userType === 'Teacher' && (
                     <>
                       {int.qualifications && (
                         <div className="flex items-center gap-2">
@@ -296,6 +421,11 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
           </p>
         )}
       </div>
+
+      {/* Teacher Assignment UI - Only for Students */}
+      {user.userType === 'Student' && (
+        <TeacherAssignmentManager studentId={user.id} studentName={`${user.firstName} ${user.lastName}`} />
+      )}
 
       <AlertDialog open={!!statusChangeTarget} onOpenChange={(open) => !open && setStatusChangeTarget(null)}>
         <AlertDialogContent>
@@ -670,10 +800,7 @@ export default function AdminPortal() {
                 </div>
               </div>
 
-              <UserDetailsContent 
-                userId={selectedUser.id} 
-                userType={selectedUser.userType} 
-              />
+              <UserDetailsContent user={selectedUser} />
             </div>
           )}
           
