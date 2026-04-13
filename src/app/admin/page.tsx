@@ -22,48 +22,80 @@ import {
   CheckCircle2, 
   AlertCircle,
   Loader2,
-  Sparkles
+  Sparkles,
+  UserCheck,
+  GraduationCap
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { matchStudentsTeachersCourses } from '@/ai/flows/admin-course-teacher-matching';
-
-// Mock data for initial view
-const mockStudents = [
-  { id: 's1', name: 'Alex Johnson', interests: ['Quantum Physics', 'Mathematics'], status: 'Active' },
-  { id: 's2', name: 'Maria Garcia', interests: ['Web Development', 'UI Design'], status: 'Pending' }
-];
-
-const mockTeachers = [
-  { id: 't1', name: 'Prof. Miller', skills: ['Mathematics', 'Physics'], availability: 'Weekdays 5-9PM' },
-  { id: 't2', name: 'Dr. Emily Stone', skills: ['Web Dev', 'Data Science'], availability: 'Flexible' }
-];
-
-const mockCourses = [
-  { id: 'c1', title: 'Advanced Calculus', description: 'Deep dive into limits and integrals.' },
-  { id: 'c2', title: 'Fullstack React', description: 'Modern web development with Next.js.' }
-];
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, limit } from 'firebase/firestore';
 
 export default function AdminPortal() {
   const { toast } = useToast();
+  const db = useFirestore();
   const [activeTab, setActiveTab] = useState('users');
   const [isMatching, setIsMatching] = useState(false);
   const [matches, setMatches] = useState<any[]>([]);
 
+  // Fetch real users from Firestore
+  const usersQuery = useMemoFirebase(() => {
+    return query(collection(db, 'users'), limit(50));
+  }, [db]);
+  const { data: users, isLoading: isLoadingUsers } = useCollection(usersQuery);
+
+  // Fetch real programs for matching context
+  const programsQuery = useMemoFirebase(() => {
+    return query(collection(db, 'programs'), limit(20));
+  }, [db]);
+  const { data: programs } = useCollection(programsQuery);
+
+  // Fetch student interests
+  const interestsQuery = useMemoFirebase(() => {
+    return query(collection(db, 'studentInterests'), limit(50));
+  }, [db]);
+  const { data: interests } = useCollection(interestsQuery);
+
   const handleRunAiMatching = async () => {
+    if (!users || !programs || !interests) {
+      toast({ title: "Insufficient Data", description: "Not enough data to run matching." });
+      return;
+    }
+
     setIsMatching(true);
     try {
-      // Use the pre-defined flow
+      const students = users
+        .filter(u => u.userType === 'Student')
+        .map(s => ({
+          studentId: s.id,
+          interests: interests.filter(i => i.studentId === s.id).map(i => i.subject)
+        }));
+
+      const teachers = users
+        .filter(u => u.userType === 'Teacher')
+        .map(t => ({
+          teacherId: t.id,
+          teachingInterests: [], // This would ideally come from teacherProfile subcollection
+          availability: 'Flexible'
+        }));
+
+      const courses = programs.map(p => ({
+        courseId: p.id,
+        title: p.name,
+        description: p.description
+      }));
+
       const result = await matchStudentsTeachersCourses({
-        students: mockStudents.map(s => ({ studentId: s.id, interests: s.interests })),
-        teachers: mockTeachers.map(t => ({ teacherId: t.id, teachingInterests: t.skills, availability: t.availability })),
-        courses: mockCourses.map(c => ({ courseId: c.id, title: c.title, description: c.description }))
+        students,
+        teachers,
+        courses
       });
       
       setMatches(result.matches);
       setActiveTab('matches');
       toast({
         title: "Matching Complete",
-        description: "AI has successfully generated resource allocation suggestions.",
+        description: `AI has suggested ${result.matches.length} matches.`,
       });
     } catch (error) {
       toast({
@@ -114,8 +146,8 @@ export default function AdminPortal() {
           </Button>
         </nav>
         <div className="p-4 border-t">
-          <Button variant="outline" className="w-full" asChild>
-            <a href="/">Logout Portal</a>
+          <Button variant="outline" className="w-full" onClick={() => window.location.href = '/'}>
+            Logout Portal
           </Button>
         </div>
       </aside>
@@ -130,7 +162,7 @@ export default function AdminPortal() {
             </div>
             <Button 
               onClick={handleRunAiMatching} 
-              disabled={isMatching}
+              disabled={isMatching || isLoadingUsers}
               className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg font-bold"
             >
               {isMatching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
@@ -143,51 +175,44 @@ export default function AdminPortal() {
               <Card>
                 <CardHeader>
                   <CardTitle>User Accounts Management</CardTitle>
-                  <CardDescription>Create, update, or remove student and teacher accounts.</CardDescription>
+                  <CardDescription>View all registered students and teachers.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mockStudents.map((student) => (
-                        <TableRow key={student.id}>
-                          <TableCell className="font-medium">{student.name}</TableCell>
-                          <TableCell><Badge variant="outline">Student</Badge></TableCell>
-                          <TableCell>
-                            <span className="flex items-center gap-1.5 text-xs">
-                              {student.status === 'Active' ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <AlertCircle className="h-3 w-3 text-yellow-500" />}
-                              {student.status}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="sm">Edit</Button>
-                          </TableCell>
+                  {isLoadingUsers ? (
+                    <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                      ))}
-                      {mockTeachers.map((teacher) => (
-                        <TableRow key={teacher.id}>
-                          <TableCell className="font-medium">{teacher.name}</TableCell>
-                          <TableCell><Badge variant="secondary">Teacher</Badge></TableCell>
-                          <TableCell>
-                            <span className="flex items-center gap-1.5 text-xs text-green-500">
-                              <CheckCircle2 className="h-3 w-3" />
-                              Active
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="ghost" size="sm">Edit</Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {users?.map((u) => (
+                          <TableRow key={u.id}>
+                            <TableCell className="font-medium">
+                              <div className="flex items-center gap-2">
+                                {u.userType === 'Student' ? <UserCheck className="h-4 w-4 text-primary" /> : <GraduationCap className="h-4 w-4 text-accent" />}
+                                {u.firstName} {u.lastName}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                            <TableCell>
+                              <Badge variant={u.userType === 'Student' ? 'outline' : 'secondary'}>
+                                {u.userType}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="sm">Details</Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -211,22 +236,22 @@ export default function AdminPortal() {
                           <Sparkles className="h-4 w-4 text-accent" />
                         </div>
                         <CardTitle className="text-lg mt-2">
-                          Student: {mockStudents.find(s => s.id === match.studentId)?.name || match.studentId}
+                          Student ID: {match.studentId}
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
                         {match.teacherId && (
                           <div className="flex items-center gap-2 text-sm">
                             <Users className="h-4 w-4 text-primary" />
-                            <span className="font-medium">Teacher:</span>
-                            <span>{mockTeachers.find(t => t.id === match.teacherId)?.name || match.teacherId}</span>
+                            <span className="font-medium">Suggested Teacher:</span>
+                            <span>{match.teacherId}</span>
                           </div>
                         )}
                         {match.courseId && (
                           <div className="flex items-center gap-2 text-sm">
                             <BookOpen className="h-4 w-4 text-primary" />
-                            <span className="font-medium">Course:</span>
-                            <span>{mockCourses.find(c => c.id === match.courseId)?.title || match.courseId}</span>
+                            <span className="font-medium">Suggested Course:</span>
+                            <span>{match.courseId}</span>
                           </div>
                         )}
                         <p className="text-xs text-muted-foreground leading-relaxed italic mt-2">
@@ -250,7 +275,7 @@ export default function AdminPortal() {
                 <CardDescription>Manage global settings and AI parameters.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">General settings interface would be here.</p>
+                <p className="text-sm text-muted-foreground">Global configuration for matching algorithms and administrative controls.</p>
               </CardContent>
             </Card>
           )}

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { BookOpen, ArrowLeft, Loader2 } from 'lucide-react';
+import { BookOpen, ArrowLeft, Loader2, ShieldAlert } from 'lucide-react';
 import { useAuth, useFirestore } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -38,25 +38,27 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
-      // Check if user is an admin via roles_admin collection
+      // 1. Check if user is an admin via roles_admin collection
       const adminDocRef = doc(db, 'roles_admin', user.uid);
       const adminDoc = await getDoc(adminDocRef);
 
       if (adminDoc.exists()) {
+        toast({ title: "Admin Login Successful", description: "Redirecting to Admin Portal..." });
         router.push('/admin');
         return;
       }
 
-      // Fetch user profile to determine role
+      // 2. Fetch standard user profile to determine role
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
         const role = userData.userType || 'Student';
+        toast({ title: "Login Successful", description: `Welcome back, ${userData.firstName}!` });
         router.push(`/${role.toLowerCase()}/dashboard`);
       } else {
-        throw new Error("User profile not found.");
+        throw new Error("User profile not found. Please contact support.");
       }
     } catch (error: any) {
       console.error("Login error:", error);
@@ -101,6 +103,13 @@ export default function LoginPage() {
                 </div>
                 <Input id="password" type="password" value={formData.password} onChange={handleInputChange} required />
               </div>
+            </div>
+
+            <div className="p-3 bg-secondary/50 rounded-lg border flex gap-3 items-start text-xs text-muted-foreground">
+              <ShieldAlert className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+              <p>
+                <strong>Admin Access:</strong> To login as admin, your account UID must exist in the <code>roles_admin</code> Firestore collection.
+              </p>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
