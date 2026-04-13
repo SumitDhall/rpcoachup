@@ -34,7 +34,8 @@ import {
   FileText, 
   Clock, 
   IndianRupee,
-  Edit2
+  Edit2,
+  Megaphone
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
@@ -242,6 +243,12 @@ export default function TeacherDashboard() {
           <Button variant="secondary" className="w-full justify-start gap-3">
             <LayoutDashboard className="h-4 w-4" />
             Dashboard
+          </Button>
+          <Button variant="ghost" className="w-full justify-start gap-3" asChild>
+            <Link href="/programs/dashboard">
+              <Megaphone className="h-4 w-4" />
+              Programs
+            </Link>
           </Button>
           <Button variant="ghost" className="w-full justify-start gap-3" asChild>
             <Link href="/">
