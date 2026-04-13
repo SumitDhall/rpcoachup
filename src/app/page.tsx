@@ -137,10 +137,10 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-              <div className="relative rounded-2xl overflow-hidden border shadow-xl">
+              <div className="relative rounded-2xl overflow-hidden border shadow-xl bg-muted">
                  <Image 
                     src={flyerImg?.imageUrl || "https://picsum.photos/seed/tutorad/800/1000"} 
-                    alt="RP Coach-Up Program Flyer"
+                    alt="RP Coach-Up Home Tuition Flyer"
                     width={800}
                     height={1000}
                     className="object-cover w-full h-auto"
