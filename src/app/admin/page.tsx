@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import Link from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -54,15 +54,18 @@ import {
   School,
   MapPin,
   DollarSign,
-  Bell
+  Bell,
+  CheckCircle2,
+  RotateCcw
 } from 'lucide-react';
-import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser } from '@/firebase';
+import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 
 // Component to fetch and display role-specific profile details and interests
 function UserDetailsContent({ userId, userType }: { userId: string; userType: string }) {
   const db = useFirestore();
+  const [statusChangeTarget, setStatusChangeTarget] = useState<{id: string, currentStatus: string, collection: string} | null>(null);
   
   const profilePath = userType === 'Student' 
     ? `users/${userId}/studentProfile/studentProfile` 
@@ -87,6 +90,16 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
   }, [db, userId, interestCollection, interestField]);
 
   const { data: interests, isLoading: isLoadingInterests, error: interestsError } = useCollection(interestsQuery);
+
+  const handleStatusToggle = () => {
+    if (!statusChangeTarget) return;
+    
+    const newStatus = statusChangeTarget.currentStatus === 'Pending' ? 'Completed' : 'Pending';
+    const interestRef = doc(db, statusChangeTarget.collection, statusChangeTarget.id);
+    
+    updateDocumentNonBlocking(interestRef, { status: newStatus });
+    setStatusChangeTarget(null);
+  };
 
   if (isLoadingProfile || isLoadingInterests) {
     return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -142,7 +155,18 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
               <div key={int.id} className="p-4 border rounded-xl bg-card hover:border-primary/30 transition-colors shadow-sm space-y-3">
                 <div className="flex justify-between items-center pb-2 border-b">
                   <span className="font-bold text-primary">{int.subject}</span>
-                  <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className="text-[10px]">{int.status}</Badge>
+                  <button 
+                    onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: interestCollection })}
+                    className="focus:outline-none transition-transform hover:scale-105 active:scale-95"
+                  >
+                    <Badge 
+                      variant={int.status === 'Pending' ? 'outline' : 'default'} 
+                      className={`text-[10px] cursor-pointer gap-1 py-1 px-2 ${int.status === 'Completed' ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                    >
+                      {int.status === 'Completed' ? <CheckCircle2 className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                      {int.status}
+                    </Badge>
+                  </button>
                 </div>
                 
                 {userType === 'Student' && (
@@ -208,6 +232,27 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
           </p>
         )}
       </div>
+
+      {/* Confirmation Dialog for Status Change */}
+      <AlertDialog open={!!statusChangeTarget} onOpenChange={(open) => !open && setStatusChangeTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              {statusChangeTarget?.currentStatus === 'Pending' ? <CheckCircle2 className="h-5 w-5 text-green-600" /> : <RotateCcw className="h-5 w-5 text-primary" />}
+              Update Submission Status?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will change the status of this requirement from <strong>{statusChangeTarget?.currentStatus}</strong> to <strong>{statusChangeTarget?.currentStatus === 'Pending' ? 'Completed' : 'Pending'}</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleStatusToggle} className={statusChangeTarget?.currentStatus === 'Pending' ? 'bg-green-600 hover:bg-green-700' : ''}>
+              Confirm Change
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -516,7 +561,7 @@ export default function AdminPortal() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Alert Dialog */}
+      {/* Notification Delete Confirmation Alert Dialog */}
       <AlertDialog open={!!notificationToDelete} onOpenChange={(open) => !open && setNotificationToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
