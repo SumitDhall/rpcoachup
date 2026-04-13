@@ -43,7 +43,8 @@ import {
   Phone,
   School,
   MapPin,
-  DollarSign
+  DollarSign,
+  Bell
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
@@ -61,20 +62,33 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
     return doc(db, profilePath);
   }, [db, profilePath]);
 
-  const { data: details, isLoading: isLoadingProfile } = useDoc(docRef);
+  const { data: details, isLoading: isLoadingProfile, error: profileError } = useDoc(docRef);
 
   // Fetch interests related to this user
   const interestCollection = userType === 'Student' ? 'studentInterests' : 'teacherInterests';
   const interestField = userType === 'Student' ? 'studentId' : 'teacherId';
   
   const interestsQuery = useMemoFirebase(() => {
-    return query(collection(db, interestCollection), where(interestField, '==', userId));
+    return query(
+      collection(db, interestCollection), 
+      where(interestField, '==', userId),
+      limit(50)
+    );
   }, [db, userId, interestCollection, interestField]);
 
-  const { data: interests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
+  const { data: interests, isLoading: isLoadingInterests, error: interestsError } = useCollection(interestsQuery);
 
   if (isLoadingProfile || isLoadingInterests) {
     return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  }
+
+  if (profileError || interestsError) {
+    return (
+      <div className="p-4 bg-destructive/10 text-destructive rounded-lg text-sm">
+        <p className="font-bold">Error loading profile data</p>
+        <p>You may not have sufficient permissions or the profile might not exist.</p>
+      </div>
+    );
   }
 
   return (

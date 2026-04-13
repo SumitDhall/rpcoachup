@@ -37,7 +37,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp, query, where } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { notifyAdmin } from '@/app/actions/notifications';
 import Link from 'next/link';
@@ -56,12 +56,13 @@ export default function StudentDashboard() {
 
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
-  // Fetch interests related to this user
+  // Fetch interests related to this user with a limit to satisfy security rules
   const interestsQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
     return query(
       collection(db, 'studentInterests'),
-      where('studentId', '==', user.uid)
+      where('studentId', '==', user.uid),
+      limit(50)
     );
   }, [db, user?.uid]);
 
@@ -333,7 +334,10 @@ export default function StudentDashboard() {
                       <div className="text-center py-12 text-muted-foreground text-sm border-2 border-dashed rounded-xl">
                         <ClipboardList className="h-10 w-10 mx-auto mb-2 opacity-20" />
                         <p>No requirements submitted yet.</p>
-                        <Button variant="link" onClick={() => document.querySelector('[value="interests"]')?.dispatchEvent(new MouseEvent('click', {bubbles: true}))}>
+                        <Button variant="link" onClick={() => {
+                           const trigger = document.querySelector('[value="interests"]') as HTMLElement;
+                           trigger?.click();
+                        }}>
                           Submit your first interest
                         </Button>
                       </div>
