@@ -33,7 +33,8 @@ import {
   Briefcase, 
   FileText, 
   Clock, 
-  IndianRupee 
+  IndianRupee,
+  Edit2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
@@ -69,6 +70,7 @@ export default function TeacherDashboard() {
   
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   // Dropdown Options
   const hourOptions = Array.from({ length: 21 }, (_, i) => 8 + i * 2); // 8 to 48 with step 2
@@ -118,7 +120,7 @@ export default function TeacherDashboard() {
     setIsSubmitting(true);
 
     try {
-      // Read file content as base64 string to store in Firestore (Prototype approach)
+      // Read file content as data URL (non-encrypted base64 string)
       const reader = new FileReader();
       const fileDataPromise = new Promise<string>((resolve, reject) => {
         reader.onload = () => resolve(reader.result as string);
@@ -167,20 +169,10 @@ export default function TeacherDashboard() {
         details: `Name: ${teacherName}. Subjects: ${subjects}. Phone: ${phone}. Experience: ${workingExperience}. Salary expectation: ${expectedSalary}.`
       });
       
-      // Reset Form
-      setTeacherName('');
-      setPhone('');
-      setQualifications('');
-      setWorkingExperience('');
-      setSubjects('');
-      setHoursPerWeek('');
-      setExpectedSalary('');
-      setResumeFile(null);
-      setNotes('');
-
+      setIsSubmitted(true);
       toast({
         title: "Interest Submitted",
-        description: "Administrators will review your profile and contact you shortly.",
+        description: "Your profile is now locked. Administrators will contact you shortly.",
       });
     } catch (error) {
       console.error(error);
@@ -192,6 +184,10 @@ export default function TeacherDashboard() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleEdit = () => {
+    setIsSubmitted(false);
   };
 
   const handleSubmitFeedback = async (e: React.FormEvent) => {
@@ -299,7 +295,9 @@ export default function TeacherDashboard() {
                     Teacher Specialization & Interest Form
                   </CardTitle>
                   <CardDescription>
-                    Provide your professional details to help us optimize your matching profile.
+                    {isSubmitted 
+                      ? "Your profile has been submitted and is currently locked for review." 
+                      : "Provide your professional details to help us optimize your matching profile."}
                   </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmitInterest}>
@@ -317,6 +315,8 @@ export default function TeacherDashboard() {
                           value={teacherName}
                           onChange={(e) => setTeacherName(e.target.value)}
                           required
+                          disabled={isSubmitted}
+                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
                         />
                       </div>
                       <div className="space-y-2">
@@ -331,6 +331,8 @@ export default function TeacherDashboard() {
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           required
+                          disabled={isSubmitted}
+                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
                         />
                       </div>
                     </div>
@@ -346,6 +348,8 @@ export default function TeacherDashboard() {
                           placeholder="e.g. M.Sc. Mathematics, PhD in Physics" 
                           value={qualifications}
                           onChange={(e) => setQualifications(e.target.value)}
+                          disabled={isSubmitted}
+                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
                         />
                       </div>
                       <div className="space-y-2">
@@ -358,6 +362,8 @@ export default function TeacherDashboard() {
                           placeholder="e.g. 5 Years in Corporate Training" 
                           value={workingExperience}
                           onChange={(e) => setWorkingExperience(e.target.value)}
+                          disabled={isSubmitted}
+                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
                         />
                       </div>
                     </div>
@@ -372,6 +378,8 @@ export default function TeacherDashboard() {
                         placeholder="e.g. Calculus, Quantum Mechanics, Organic Chemistry" 
                         value={subjects}
                         onChange={(e) => setSubjects(e.target.value)}
+                        disabled={isSubmitted}
+                        className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
                       />
                     </div>
 
@@ -381,8 +389,12 @@ export default function TeacherDashboard() {
                           <Clock className="h-4 w-4 text-muted-foreground" />
                           Hours per Week Commitment
                         </Label>
-                        <Select value={hoursPerWeek} onValueChange={setHoursPerWeek}>
-                          <SelectTrigger id="hours">
+                        <Select 
+                          value={hoursPerWeek} 
+                          onValueChange={setHoursPerWeek}
+                          disabled={isSubmitted}
+                        >
+                          <SelectTrigger id="hours" className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}>
                             <SelectValue placeholder="Select weekly hours" />
                           </SelectTrigger>
                           <SelectContent>
@@ -399,8 +411,12 @@ export default function TeacherDashboard() {
                           <IndianRupee className="h-4 w-4 text-muted-foreground" />
                           Expected Salary (INR / month)
                         </Label>
-                        <Select value={expectedSalary} onValueChange={setExpectedSalary}>
-                          <SelectTrigger id="salary">
+                        <Select 
+                          value={expectedSalary} 
+                          onValueChange={setExpectedSalary}
+                          disabled={isSubmitted}
+                        >
+                          <SelectTrigger id="salary" className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}>
                             <SelectValue placeholder="Select monthly salary" />
                           </SelectTrigger>
                           <SelectContent>
@@ -425,7 +441,8 @@ export default function TeacherDashboard() {
                           type="file" 
                           accept=".doc,.docx"
                           onChange={handleFileChange}
-                          className="cursor-pointer"
+                          className={`cursor-pointer ${isSubmitted ? "bg-secondary/50" : ""}`}
+                          disabled={isSubmitted}
                         />
                         {resumeFile && (
                           <p className="text-xs text-green-600 font-medium flex items-center gap-1">
@@ -440,18 +457,34 @@ export default function TeacherDashboard() {
                       <Textarea 
                         id="notes" 
                         placeholder="Describe your teaching philosophy or any specific requirements..." 
-                        className="min-h-[100px]" 
+                        className={`min-h-[100px] ${isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}`} 
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
+                        disabled={isSubmitted}
                       />
                     </div>
 
                   </CardContent>
-                  <CardFooter className="bg-secondary/10 rounded-b-lg p-6">
-                    <Button type="submit" className="w-full gap-2 h-12 text-lg font-bold" disabled={isSubmitting}>
+                  <CardFooter className="bg-secondary/10 rounded-b-lg p-6 flex flex-col sm:flex-row gap-4">
+                    <Button 
+                      type="submit" 
+                      className="flex-1 gap-2 h-12 text-lg font-bold" 
+                      disabled={isSubmitting || isSubmitted}
+                    >
                       {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
                       Submit Professional Profile
                     </Button>
+                    {isSubmitted && (
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={handleEdit}
+                        className="flex-1 gap-2 h-12 text-lg font-bold border-2 border-primary text-primary hover:bg-primary/5"
+                      >
+                        <Edit2 className="h-5 w-5" />
+                        Edit Profile
+                      </Button>
+                    )}
                   </CardFooter>
                 </form>
               </Card>
