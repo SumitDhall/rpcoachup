@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,8 +38,8 @@ import {
   Megaphone
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
+import { doc, collection, addDoc, serverTimestamp, query, where, orderBy, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { notifyAdmin } from '@/app/actions/notifications';
 import Link from 'next/link';
@@ -58,6 +58,19 @@ export default function TeacherDashboard() {
 
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
+  // Fetch teacher interests related to this user
+  const teacherInterestsQuery = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return query(
+      collection(db, 'teacherInterests'),
+      where('teacherId', '==', user.uid),
+      orderBy('submissionDate', 'desc'),
+      limit(50)
+    );
+  }, [db, user?.uid]);
+
+  const { data: interests, isLoading: isLoadingInterests } = useCollection(teacherInterestsQuery);
+
   // Form State
   const [teacherName, setTeacherName] = useState('');
   const [phone, setPhone] = useState('');
@@ -67,6 +80,7 @@ export default function TeacherDashboard() {
   const [hoursPerWeek, setHoursPerWeek] = useState('');
   const [expectedSalary, setExpectedSalary] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [existingResumeName, setExistingResumeName] = useState('');
   const [notes, setNotes] = useState('');
   
   const [feedback, setFeedback] = useState('');
@@ -76,6 +90,23 @@ export default function TeacherDashboard() {
   // Dropdown Options
   const hourOptions = Array.from({ length: 21 }, (_, i) => 8 + i * 2); // 8 to 48 with step 2
   const salaryOptions = [5000, 6000, 7000, 8000, 9000, 10000];
+
+  // Populate form with the latest teacher profile data when loaded
+  useEffect(() => {
+    if (interests && interests.length > 0) {
+      const latest = interests[0];
+      setTeacherName(latest.teacherName || '');
+      setPhone(latest.phone || '');
+      setQualifications(latest.qualifications || '');
+      setWorkingExperience(latest.experienceYears || '');
+      setSubjects(latest.subjects || '');
+      setHoursPerWeek(latest.hoursPerWeek || '');
+      setExpectedSalary(latest.expectedSalary || '');
+      setExistingResumeName(latest.resumeName || '');
+      setNotes(latest.notes || '');
+      setIsSubmitted(true);
+    }
+  }, [interests]);
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -110,26 +141,37 @@ export default function TeacherDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!teacherName || !phone || !resumeFile || !user || !profile) {
+    if (!teacherName || !phone || (!resumeFile && !existingResumeName) || !user || !profile) {
       toast({
         variant: "destructive",
         title: "Incomplete Form",
-        description: "Please fill in all mandatory fields and attach your resume."
+        description: "Please fill in all mandatory fields and ensure your resume is provided."
       });
       return;
     }
     setIsSubmitting(true);
 
     try {
-      // Read file content as data URL (non-encrypted base64 string)
-      const reader = new FileReader();
-      const fileDataPromise = new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(resumeFile);
-      });
+      let resumeDataUrl = '';
+      let resumeName = existingResumeName;
+      let resumeType = '';
 
-      const resumeDataUrl = await fileDataPromise;
+      if (resumeFile) {
+        // Read new file content as data URL
+        const reader = new FileReader();
+        const fileDataPromise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(resumeFile);
+        });
+        resumeDataUrl = await fileDataPromise;
+        resumeName = resumeFile.name;
+        resumeType = resumeFile.type;
+      } else if (interests && interests.length > 0) {
+        // Reuse existing resume data if no new file is selected
+        resumeDataUrl = interests[0].resumeData;
+        resumeType = interests[0].resumeType;
+      }
 
       const submissionData = {
         teacherId: user.uid,
@@ -140,9 +182,9 @@ export default function TeacherDashboard() {
         subjects,
         hoursPerWeek,
         expectedSalary,
-        resumeName: resumeFile.name,
-        resumeData: resumeDataUrl, // The actual file content
-        resumeType: resumeFile.type,
+        resumeName: resumeName,
+        resumeData: resumeDataUrl,
+        resumeType: resumeType,
         submissionDate: serverTimestamp(),
         status: 'Pending',
         notes
@@ -154,7 +196,7 @@ export default function TeacherDashboard() {
       await addDoc(collection(db, 'notifications'), {
         type: 'interest',
         subject: `New Teacher Application: ${teacherName}`,
-        body: `Teacher: ${teacherName}\nSubjects: ${subjects}\nPhone: ${phone}\nExperience: ${workingExperience}\nCommitment: ${hoursPerWeek} hrs/week\nSalary: ${expectedSalary} INR/mo\nResume: ${resumeFile.name}`,
+        body: `Teacher: ${teacherName}\nSubjects: ${subjects}\nPhone: ${phone}\nExperience: ${workingExperience}\nCommitment: ${hoursPerWeek} hrs/week\nSalary: ${expectedSalary} INR/mo\nResume: ${resumeName}`,
         userEmail: profile.email,
         userName: `${profile.firstName} ${profile.lastName}`,
         timestamp: serverTimestamp(),
@@ -221,7 +263,7 @@ export default function TeacherDashboard() {
     }
   };
 
-  if (isUserLoading || isProfileLoading) {
+  if (isUserLoading || isProfileLoading || isLoadingInterests) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -451,11 +493,15 @@ export default function TeacherDashboard() {
                           className={`cursor-pointer ${isSubmitted ? "bg-secondary/50" : ""}`}
                           disabled={isSubmitted}
                         />
-                        {resumeFile && (
+                        {resumeFile ? (
                           <p className="text-xs text-green-600 font-medium flex items-center gap-1">
                             <FileText className="h-3 w-3" /> Selected: {resumeFile.name}
                           </p>
-                        )}
+                        ) : existingResumeName ? (
+                          <p className="text-xs text-primary font-medium flex items-center gap-1">
+                            <FileText className="h-3 w-3" /> Current Resume: {existingResumeName}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
 

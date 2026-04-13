@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,7 +40,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp, query, where, limit, orderBy } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { notifyAdmin } from '@/app/actions/notifications';
 import Link from 'next/link';
@@ -59,12 +59,13 @@ export default function StudentDashboard() {
 
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
-  // Fetch interests related to this user with a limit to satisfy security rules
+  // Fetch interests related to this user
   const interestsQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
     return query(
       collection(db, 'studentInterests'),
       where('studentId', '==', user.uid),
+      orderBy('submissionDate', 'desc'),
       limit(50)
     );
   }, [db, user?.uid]);
@@ -85,6 +86,23 @@ export default function StudentDashboard() {
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // Populate form with the latest interest data when loaded
+  useEffect(() => {
+    if (interests && interests.length > 0) {
+      const latest = interests[0];
+      setStudentName(latest.studentName || '');
+      setPhone(latest.phone || '');
+      setSchool(latest.school || '');
+      setGradeOrClass(latest.gradeOrClass || '');
+      setAddress(latest.address || '');
+      setSubject(latest.subject || '');
+      setNotes(latest.notes || '');
+      setAffordableRange(latest.affordableRange || '');
+      setIntendedStartDate(latest.intendedStartDate || '');
+      setIsSubmitted(true);
+    }
+  }, [interests]);
 
   const handleSignOut = async () => {
     await signOut(auth);
