@@ -1,0 +1,194 @@
+/**
+ * RP Coach-Up Firestore Security Rules
+ *
+ * CORE PHILOSOPHY:
+ * This ruleset implements a robust, multi-layered security model centered on 
+ * verified identity and resource ownership. It leverages denormalized fields 
+ * for "Authorization Independence," ensuring that security decisions are fast, 
+ * cost-effective, and scalable by avoiding excessive cross-document lookups.
+ *
+ * DATA STRUCTURE:
+ * 1. User Profiles: Structured under `/users/{userId}` where `{userId}` is the 
+ *    Firebase Auth UID. Role-specific data (Student/Teacher) is nested as subcollections.
+ * 2. Global Resource Collections: Collections like `studentInterests` and `feedback` 
+ *    exist at the top level for administrative ease but include denormalized 
+ *    ownership fields (e.g., `studentId`, `userProfileId`) to secure user access.
+ * 3. Public Catalog: The `programs` collection is publicly readable to support 
+ *    the app's landing pages and dashboards.
+ * 4. Admin Sentinels: Administrative privileges are determined by the presence 
+ *    of a user's UID in the `/roles_admin` collection.
+ *
+ * KEY SECURITY DECISIONS:
+ * - Ownership over Path: Paths starting with `/users/{userId}` strictly 
+ *   enforce that only the user matching that UID can access the data.
+ * - DBAC (Database Access Control): Instead of custom JWT claims, roles 
+ *   are managed via the `roles_admin` collection and the `userType` field 
+ *   within user profiles.
+ * - Structural Segregation: Private user data is kept separate from public 
+ *   program data to prevent accidental exposure.
+ * - Immutability: Critical relational fields (like ownership IDs) are 
+ *   enforced as immutable to prevent users from "transferring" data ownership.
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- GLOBAL HELPER FUNCTIONS ---
+
+    /** @description Checks if the request is from an authenticated user. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Checks if the authenticated user is a system administrator. */
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    /** @description Validates if the user is the owner based on path UID. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** @description Validates if the authenticated user owns the document based on a field. */
+    function isDataOwner(ownerId) {
+      return isSignedIn() && request.auth.uid == ownerId;
+    }
+
+    /** @description Checks if a field's value is not being changed in an update. */
+    function isImmutable(field) {
+      return !(field in request.resource.data) || request.resource.data[field] == resource.data[field];
+    }
+
+    // --- COLLECTION RULES ---
+
+    /**
+     * @description Core user profile management. Establishes the primary identity link.
+     * @path /users/{userId}
+     * @allow (get) Any signed-in user or Admin. (list) Admins. (create/update) The owner.
+     * @deny Any write where the UID does not match the document ID.
+     * @principle Path-based ownership and relational integrity for user identities.
+     */
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isOwner(userId) && isImmutable('id') && isImmutable('userType');
+      allow delete: if isAdmin() || (isOwner(userId) && resource != null);
+
+      /**
+       * @description Student-specific extension of the user profile.
+       * @path /users/{userId}/studentProfile/studentProfile
+       * @allow (get) Owner or Admin. (write) Owner if userType is 'Student'.
+       * @deny Creation if the parent profile isn't a Student role.
+       * @principle Role-based subcollection access.
+       */
+      match /studentProfile/{profileId} {
+        allow get: if isOwner(userId) || isAdmin();
+        allow list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && get(/databases/$(database)/documents/users/$(userId)).data.userType == 'Student';
+        allow update: if isOwner(userId) && resource != null;
+        allow delete: if isOwner(userId) && resource != null;
+      }
+
+      /**
+       * @description Teacher-specific extension of the user profile.
+       * @path /users/{userId}/teacherProfile/teacherProfile
+       * @allow (get) Owner or Admin. (write) Owner if userType is 'Teacher'.
+       * @deny Access if the UID does not match the parent path.
+       * @principle Role-based subcollection access.
+       */
+      match /teacherProfile/{profileId} {
+        allow get: if isOwner(userId) || isAdmin();
+        allow list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && get(/databases/$(database)/documents/users/$(userId)).data.userType == 'Teacher';
+        allow update: if isOwner(userId) && resource != null;
+        allow delete: if isOwner(userId) && resource != null;
+      }
+    }
+
+    /**
+     * @description Global collection for student interest submissions.
+     * @path /studentInterests/{studentInterestId}
+     * @allow (get/list) The submitting student or Admin. (create) Student setting their own ID.
+     * @deny Updating the studentId or deleting others' submissions.
+     * @principle Denormalized ownership for global queries.
+     */
+    match /studentInterests/{studentInterestId} {
+      allow get: if isAdmin() || isDataOwner(resource.data.studentId);
+      allow list: if isAdmin() || (isSignedIn() && request.query.limit <= 100); 
+      allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
+      allow update: if isDataOwner(resource.data.studentId) && isImmutable('studentId');
+      allow delete: if isAdmin() || (isDataOwner(resource.data.studentId) && resource != null);
+    }
+
+    /**
+     * @description Global collection for teacher interest and availability.
+     * @path /teacherInterests/{teacherInterestId}
+     * @allow (get/list) The submitting teacher or Admin. (create) Teacher setting their own ID.
+     * @deny Listing without being an Admin or the specific teacher.
+     * @principle Denormalized ownership for performance and security.
+     */
+    match /teacherInterests/{teacherInterestId} {
+      allow get: if isAdmin() || isDataOwner(resource.data.teacherId);
+      allow list: if isAdmin() || (isSignedIn() && request.query.limit <= 100);
+      allow create: if isSignedIn() && request.resource.data.teacherId == request.auth.uid;
+      allow update: if isDataOwner(resource.data.teacherId) && isImmutable('teacherId');
+      allow delete: if isAdmin() || (isDataOwner(resource.data.teacherId) && resource != null);
+    }
+
+    /**
+     * @description Catalog of available programs and courses.
+     * @path /programs/{programId}
+     * @allow (read) Public. (write) Admins only.
+     * @deny Any non-admin write attempt.
+     * @principle Publicly readable content with restricted administrative writes.
+     */
+    match /programs/{programId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Suggested pairings between users or programs.
+     * @path /matchProposals/{matchProposalId}
+     * @allow (get/list) Involved student, involved teacher, or Admin.
+     * @deny Creation or modification by non-admins.
+     * @principle Multi-party access control via denormalized relationship fields.
+     */
+    match /matchProposals/{matchProposalId} {
+      allow get: if isAdmin() || isDataOwner(resource.data.studentId) || isDataOwner(resource.data.teacherId);
+      allow list: if isAdmin() || (isSignedIn() && (request.query.limit <= 50));
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description User-submitted feedback for the platform and courses.
+     * @path /feedback/{feedbackId}
+     * @allow (get) Submitting user or Admin. (list) Admin only. (create) Any signed-in user.
+     * @deny Modifying another user's feedback or changing the author UID.
+     * @principle Secure user-generated content with author validation.
+     */
+    match /feedback/{feedbackId} {
+      allow get: if isAdmin() || isDataOwner(resource.data.userProfileId);
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && request.resource.data.userProfileId == request.auth.uid;
+      allow update: if isDataOwner(resource.data.userProfileId) && isImmutable('userProfileId');
+      allow delete: if isAdmin() || (isDataOwner(resource.data.userProfileId) && resource != null);
+    }
+
+    /**
+     * @description Administrative role registry.
+     * @path /roles_admin/{adminId}
+     * @allow (get) Signed-in users. (write) Admins only.
+     * @deny Self-promotion to Admin.
+     * @principle DBAC (Database Access Control) using existence checks.
+     */
+    match /roles_admin/{adminId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}

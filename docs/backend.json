@@ -1,0 +1,546 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a registered user account on the RP Coach-Up platform, serving as a base for both students and teachers. This entity stores common user information and links to specific roles.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "The unique email address of the user, used for login and communication.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the user."
+        },
+        "userType": {
+          "type": "string",
+          "description": "The role of the user on the platform (Student or Teacher).",
+          "format": "string",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user profile was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "firstName",
+        "lastName",
+        "userType",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Student": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Student",
+      "type": "object",
+      "description": "Holds specific profile details for a student user, extending the base UserProfile.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Student entity."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to the associated UserProfile. (Relationship: UserProfile 1:1 Student)"
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "The student's date of birth.",
+          "format": "date"
+        },
+        "gradeLevel": {
+          "type": "string",
+          "description": "The current academic grade or level of the student."
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId"
+      ]
+    },
+    "Teacher": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Teacher",
+      "type": "object",
+      "description": "Holds specific profile details for a teacher user, extending the base UserProfile.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Teacher entity."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to the associated UserProfile. (Relationship: UserProfile 1:1 Teacher)"
+        },
+        "qualifications": {
+          "type": "string",
+          "description": "Teacher's educational qualifications and certifications."
+        },
+        "experienceYears": {
+          "type": "number",
+          "description": "Number of years of teaching experience."
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId"
+      ]
+    },
+    "StudentInterest": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StudentInterest",
+      "type": "object",
+      "description": "Stores the specific subject and topic interests submitted by a student for tuition classes.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the StudentInterest entity."
+        },
+        "studentId": {
+          "type": "string",
+          "description": "Reference to the student who submitted these interests. (Relationship: Student 1:N StudentInterest)"
+        },
+        "subject": {
+          "type": "string",
+          "description": "The main subject of interest (e.g., 'Mathematics', 'Physics', 'English')."
+        },
+        "level": {
+          "type": "string",
+          "description": "The academic level for the subject (e.g., 'High School', 'College', 'Advanced Placement')."
+        },
+        "topics": {
+          "type": "array",
+          "description": "A list of specific topics or areas within the subject the student wants to focus on.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "submissionDate": {
+          "type": "string",
+          "description": "Timestamp when the student interest form was submitted.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the interest submission (e.g., 'Pending', 'Reviewed', 'Matched').",
+          "format": "string",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes or specific requirements from the student."
+        }
+      },
+      "required": [
+        "id",
+        "studentId",
+        "subject",
+        "level",
+        "topics",
+        "submissionDate",
+        "status"
+      ]
+    },
+    "TeacherInterest": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TeacherInterest",
+      "type": "object",
+      "description": "Stores the teaching interests and availability submitted by a teacher for tuition classes.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the TeacherInterest entity."
+        },
+        "teacherId": {
+          "type": "string",
+          "description": "Reference to the teacher who submitted these interests and availability. (Relationship: Teacher 1:N TeacherInterest)"
+        },
+        "subject": {
+          "type": "string",
+          "description": "The main subject the teacher is interested in teaching (e.g., 'Mathematics', 'Physics', 'English')."
+        },
+        "level": {
+          "type": "string",
+          "description": "The academic level for the subject the teacher can teach (e.g., 'High School', 'College', 'Advanced Placement')."
+        },
+        "topics": {
+          "type": "array",
+          "description": "A list of specific topics or areas within the subject the teacher is proficient in teaching.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "availability": {
+          "type": "string",
+          "description": "Teacher's general availability for classes (e.g., 'Weekdays evenings', 'Weekends mornings', 'Flexible')."
+        },
+        "submissionDate": {
+          "type": "string",
+          "description": "Timestamp when the teacher interest and availability form was submitted.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the interest submission (e.g., 'Pending', 'Reviewed', 'Matched').",
+          "format": "string",
+          "items": {
+            "type": "string"
+          }
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes or specific conditions from the teacher."
+        }
+      },
+      "required": [
+        "id",
+        "teacherId",
+        "subject",
+        "level",
+        "topics",
+        "availability",
+        "submissionDate",
+        "status"
+      ]
+    },
+    "Program": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Program",
+      "type": "object",
+      "description": "Represents an available educational program or course offered on the platform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Program entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The official name of the program or course."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the program's content and objectives."
+        },
+        "subject": {
+          "type": "string",
+          "description": "The main subject area of the program."
+        },
+        "level": {
+          "type": "string",
+          "description": "The academic level for which the program is designed."
+        },
+        "durationHours": {
+          "type": "number",
+          "description": "Estimated total duration of the program in hours."
+        },
+        "prerequisites": {
+          "type": "string",
+          "description": "Required prior knowledge or courses for the program."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the program was added to the catalog.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the program details were last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "subject",
+        "level",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "MatchProposal": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MatchProposal",
+      "type": "object",
+      "description": "Stores a suggested pairing between a student's interest and a teacher's interest or a specific program, typically generated by the AI tool or an admin.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MatchProposal entity."
+        },
+        "studentInterestId": {
+          "type": "string",
+          "description": "Reference to the student's interest submission involved in this match proposal. (Relationship: StudentInterest 1:N MatchProposal)"
+        },
+        "teacherInterestId": {
+          "type": "string",
+          "description": "Reference to a teacher's interest submission if this is a student-teacher match proposal. (Relationship: TeacherInterest 1:N MatchProposal)"
+        },
+        "programId": {
+          "type": "string",
+          "description": "Reference to a Program if this is a student-program match proposal. (Relationship: Program 1:N MatchProposal)"
+        },
+        "suggestedBy": {
+          "type": "string",
+          "description": "Indicates whether the match was suggested by 'AI' or an 'Admin'.",
+          "format": "string",
+          "items": {
+            "type": "string"
+          }
+        },
+        "suggestionDate": {
+          "type": "string",
+          "description": "Timestamp when this match proposal was created.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the match proposal (e.g., 'Suggested', 'Approved', 'Rejected', 'Completed').",
+          "format": "string",
+          "items": {
+            "type": "string"
+          }
+        },
+        "adminNotes": {
+          "type": "string",
+          "description": "Notes added by an administrator regarding this match proposal."
+        }
+      },
+      "required": [
+        "id",
+        "studentInterestId",
+        "suggestedBy",
+        "suggestionDate",
+        "status"
+      ]
+    },
+    "Feedback": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Feedback",
+      "type": "object",
+      "description": "Records feedback submitted by registered students or teachers about courses, teachers, or the platform itself.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Feedback entity."
+        },
+        "userProfileId": {
+          "type": "string",
+          "description": "Reference to the UserProfile of the person who provided the feedback. (Relationship: UserProfile 1:N Feedback)"
+        },
+        "feedbackType": {
+          "type": "string",
+          "description": "The category of feedback (e.g., 'Platform', 'Course', 'Teacher', 'Student').",
+          "format": "string",
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetEntityId": {
+          "type": "string",
+          "description": "ID of the specific entity (e.g., Program, Teacher, Student) that the feedback is about, if applicable. This allows flexible targeting of feedback."
+        },
+        "rating": {
+          "type": "number",
+          "description": "A numerical rating provided by the user, typically on a scale (e.g., 1 to 5)."
+        },
+        "comment": {
+          "type": "string",
+          "description": "The detailed text content of the feedback."
+        },
+        "submissionDate": {
+          "type": "string",
+          "description": "Timestamp when the feedback was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userProfileId",
+        "feedbackType",
+        "comment",
+        "submissionDate"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores core user profile details. The document ID `{userId}` is identical to the Firebase Authentication UID, establishing direct ownership. This document also contains the 'userType' field, critical for role-based authorization. Authorization relies on `request.auth.uid == userId`.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the user, serving as the document ID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/studentProfile",
+        "definition": {
+          "entityName": "Student",
+          "schema": {
+            "$ref": "#/backend/entities/Student"
+          },
+          "description": "Stores student-specific profile details. This is a subcollection of a UserProfile, with the document ID (`studentProfile`) implicitly linked to the parent `userId`. The `userProfileId` field within the document will be denormalized to `{userId}` for consistency, though path ownership is primary for rules. Authorization relies on `request.auth.uid == userId` and the parent `UserProfile`'s `userType` being 'Student'.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the owning user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/teacherProfile",
+        "definition": {
+          "entityName": "Teacher",
+          "schema": {
+            "$ref": "#/backend/entities/Teacher"
+          },
+          "description": "Stores teacher-specific profile details. This is a subcollection of a UserProfile, with the document ID (`teacherProfile`) implicitly linked to the parent `userId`. The `userProfileId` field within the document will be denormalized to `{userId}` for consistency, though path ownership is primary for rules. Authorization relies on `request.auth.uid == userId` and the parent `UserProfile`'s `userType` being 'Teacher'.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the owning user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/studentInterests/{studentInterestId}",
+        "definition": {
+          "entityName": "StudentInterest",
+          "schema": {
+            "$ref": "#/backend/entities/StudentInterest"
+          },
+          "description": "Stores individual student interest submissions. Includes denormalized `studentId` (which corresponds to `request.auth.uid` for the submitting student) for authorization independence and QAP (Query Against Path) support, allowing efficient user-specific and admin queries without hierarchical lookups.",
+          "params": [
+            {
+              "name": "studentInterestId",
+              "description": "The unique identifier for a specific student interest submission."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/teacherInterests/{teacherInterestId}",
+        "definition": {
+          "entityName": "TeacherInterest",
+          "schema": {
+            "$ref": "#/backend/entities/TeacherInterest"
+          },
+          "description": "Stores individual teacher interest and availability submissions. Includes denormalized `teacherId` (which corresponds to `request.auth.uid` for the submitting teacher) for authorization independence and QAP support, allowing efficient user-specific and admin queries without hierarchical lookups.",
+          "params": [
+            {
+              "name": "teacherInterestId",
+              "description": "The unique identifier for a specific teacher interest submission."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/programs/{programId}",
+        "definition": {
+          "entityName": "Program",
+          "schema": {
+            "$ref": "#/backend/entities/Program"
+          },
+          "description": "Stores details of available educational programs and courses. This collection is publicly readable to support the responsive public dashboard, with write access restricted to administrators.",
+          "params": [
+            {
+              "name": "programId",
+              "description": "The unique identifier for a specific educational program."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/matchProposals/{matchProposalId}",
+        "definition": {
+          "entityName": "MatchProposal",
+          "schema": {
+            "$ref": "#/backend/entities/MatchProposal"
+          },
+          "description": "Stores suggested pairings between students, teachers, or programs. Includes denormalized `studentId` and `teacherId` (if applicable) for authorization independence and QAP support, allowing admins to manage all and relevant students/teachers to view their proposals without hierarchical lookups. Access is primarily for admins, and relevant students/teachers.",
+          "params": [
+            {
+              "name": "matchProposalId",
+              "description": "The unique identifier for a specific match proposal."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/feedback/{feedbackId}",
+        "definition": {
+          "entityName": "Feedback",
+          "schema": {
+            "$ref": "#/backend/entities/Feedback"
+          },
+          "description": "Records feedback submitted by registered users. Includes denormalized `userProfileId` (which corresponds to `request.auth.uid` for the submitting user) for authorization independence and QAP support, allowing users to view their own feedback and admins to manage all feedback without hierarchical lookups.",
+          "params": [
+            {
+              "name": "feedbackId",
+              "description": "The unique identifier for a specific feedback submission."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{adminId}",
+        "definition": {
+          "entityName": "AdminRole",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "A sentinel collection used for Database Access Control (DBAC) to designate administrators. The mere existence of a document at `/roles_admin/{request.auth.uid}` grants administrative privileges. This avoids custom claims and keeps role logic within the database.",
+          "params": [
+            {
+              "name": "adminId",
+              "description": "The unique Firebase Authentication UID of a user who is designated as an administrator."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The recommended Firestore structure is designed to be highly secure, scalable, and debuggable, strictly adhering to the core design principles. The primary strategy for achieving Authorization Independence is through strategic denormalization and strict path-based ownership.\n\n**Authorization Independence via Denormalization:**\n*   **User Profiles (`/users/{userId}`, `/users/{userId}/studentProfile`, `/users/{userId}/teacherProfile`):** Ownership is inherently established by the path itself, where `{userId}` directly corresponds to `request.auth.uid`. This eliminates the need for `get()` operations in rules to determine who owns a profile or profile segment, ensuring atomic operations and easy debugging.\n*   **Global Collections with Denormalized Ownership (`/studentInterests`, `/teacherInterests`, `/matchProposals`, `/feedback`):** For entities that need to be queried globally (e.g., by AI or Admins) but also require user-specific access, critical authorization fields (`studentId`, `teacherId`, `userProfileId`) are denormalized and stored directly within each document. For example, a `StudentInterest` document at `/studentInterests/{interestId}` will contain its `studentId`. This means a security rule can evaluate `request.auth.uid == resource.data.studentId` directly, without needing to `get()` the parent `Student` or `UserProfile` document. This is crucial for performance and rule clarity, as it avoids complex and potentially error-prone hierarchical lookups.\n\n**Support for Query Against Paths (QAPs - Rules are not Filters):**\n*   **Path-Based Ownership:** For user-specific data like `studentProfile` or `teacherProfile`, the path `/users/{userId}/...` directly implies that only `request.auth.uid` matching `{userId}` has access. This inherently supports QAPs for individual user queries, as a user can only request data under their own UID path.\n*   **Denormalized Ownership for Global Collections:** By denormalizing `studentId`, `teacherId`, or `userProfileId` into `StudentInterest`, `TeacherInterest`, `MatchProposal`, and `Feedback` documents, the system facilitates secure and efficient `list` operations. For instance, a student can query `/studentInterests` with a `where('studentId', '==', request.auth.uid)` clause. The security rules can then easily verify that the `studentId` in the query's `where` clause matches `request.auth.uid`. This prevents clients from attempting to fetch all documents and rely on rules to filter, which Firestore rules do not do. Admin access is granted via the `/roles_admin/{adminId}` collection, enabling admins to list all documents in these collections without specific `where` clauses.\n*   **Public Data (`/programs`):** The `/programs` collection is a top-level collection with public read access, allowing efficient listing for the public dashboard feature. Admin write access is controlled.\n\n**DBAC and Structural Segregation:**\n*   **DBAC (Database Access Control):** User roles are managed directly in the database. The `userType` field within `/users/{userId}` provides a base role (Student/Teacher). Explicit admin roles are managed via the `/roles_admin/{adminId}` collection, where the mere existence of a document grants admin privileges. This avoids custom claims and keeps role management within the data layer.\n*   **Structural Segregation (Homogeneous Security Posture):** Each collection (or subcollection) is designed to have a uniform security posture. For example, all documents in `/programs` are publicly readable. All documents in `/users/{userId}/studentProfile` are owned by `userId`. This greatly simplifies security rules as there's no mixing of public, private, and collaborative data within the same collection, making rules more explicit and less prone to errors."
+  }
+}
