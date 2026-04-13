@@ -1,16 +1,23 @@
+
+"use client"
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { BookOpen, Users, Star, ArrowRight, ShieldCheck, Zap, Search } from 'lucide-react';
+import { BookOpen, Users, Star, ArrowRight, ShieldCheck, Zap, Search, Loader2 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-
-// This is a server component, so Date is calculated once during the build/request.
-// Static year for consistency.
-const CURRENT_YEAR = 2025;
+import { useUser } from '@/firebase';
 
 export default function Home() {
+  const { user, isUserLoading } = useUser();
   const heroImg = PlaceHolderImages.find(img => img.id === 'hero-education');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -29,12 +36,22 @@ export default function Home() {
             <Link href="/about" className="text-sm font-medium hover:text-primary transition-colors">About Us</Link>
           </nav>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/login">Log in</Link>
-            </Button>
-            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" asChild>
-              <Link href="/register">Get Started</Link>
-            </Button>
+            {isUserLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : user ? (
+              <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+                <Link href="/login">Go to Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/login">Log in</Link>
+                </Button>
+                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+                  <Link href="/register">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -228,7 +245,7 @@ export default function Home() {
             </div>
           </div>
           <div className="pt-8 border-t text-center text-sm text-muted-foreground">
-            © {CURRENT_YEAR} RP Coach-Up. All rights reserved.
+            © {mounted ? new Date().getFullYear() : '2025'} RP Coach-Up. All rights reserved.
           </div>
         </div>
       </footer>

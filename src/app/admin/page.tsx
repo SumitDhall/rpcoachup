@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -39,13 +40,15 @@ import {
   AlertCircle,
   Bell,
   Trash2,
-  ArrowLeft
+  ArrowLeft,
+  LogOut
 } from 'lucide-react';
-import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 
-// Component to fetch and display role-specific profile details
-function UserRoleDetails({ userId, userType }: { userId: string; userType: string }) {
+// Component to fetch and display role-specific profile details and interests
+function UserDetailsContent({ userId, userType }: { userId: string; userType: string }) {
   const db = useFirestore();
   
   const profilePath = userType === 'Student' 
@@ -56,14 +59,25 @@ function UserRoleDetails({ userId, userType }: { userId: string; userType: strin
     return doc(db, profilePath);
   }, [db, profilePath]);
 
-  const { data: details, isLoading } = useDoc(docRef);
+  const { data: details, isLoading: isLoadingProfile } = useDoc(docRef);
 
-  if (isLoading) {
-    return <div className="flex justify-center p-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+  // Fetch interests related to this user
+  const interestCollection = userType === 'Student' ? 'studentInterests' : 'teacherInterests';
+  const interestField = userType === 'Student' ? 'studentId' : 'teacherId';
+  
+  const interestsQuery = useMemoFirebase(() => {
+    return query(collection(db, interestCollection), where(interestField, '==', userId));
+  }, [db, userId, interestCollection, interestField]);
+
+  const { data: interests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
+
+  if (isLoadingProfile || isLoadingInterests) {
+    return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Role Specific Info */}
       <div className="space-y-4 pt-4 border-t">
         <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           {userType === 'Student' ? <BookMarked className="h-4 w-4" /> : <Award className="h-4 w-4" />}
@@ -89,12 +103,41 @@ function UserRoleDetails({ userId, userType }: { userId: string; userType: strin
           )}
         </div>
       </div>
+
+      {/* Interests List */}
+      <div className="space-y-4">
+        <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <ClipboardList className="h-4 w-4" />
+          Submitted Interests
+        </h4>
+        {interests && interests.length > 0 ? (
+          <div className="space-y-3">
+            {interests.map((int: any) => (
+              <div key={int.id} className="p-3 border rounded-lg bg-card space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-sm">{int.subject}</span>
+                  <Badge variant="outline" className="text-[10px]">{int.status}</Badge>
+                </div>
+                {int.notes && <p className="text-xs text-muted-foreground line-clamp-2">{int.notes}</p>}
+                {int.availability && <p className="text-xs font-medium text-accent">Availability: {int.availability}</p>}
+                <p className="text-[10px] text-muted-foreground">Submitted: {int.submissionDate?.toDate?.()?.toLocaleDateString()}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground italic bg-secondary/20 p-4 rounded-lg text-center">
+            No interests have been submitted yet.
+          </p>
+        )}
+      </div>
     </div>
   );
 }
 
 export default function AdminPortal() {
   const db = useFirestore();
+  const auth = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('notifications');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -116,6 +159,11 @@ export default function AdminPortal() {
 
   const handleDeleteNotification = (id: string) => {
     deleteDoc(doc(db, 'notifications', id));
+  };
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push('/');
   };
 
   const handleViewDetails = (user: any) => {
@@ -170,8 +218,9 @@ export default function AdminPortal() {
           </Button>
         </nav>
         <div className="p-4 border-t">
-          <Button variant="outline" className="w-full" asChild>
-            <Link href="/">Logout Portal</Link>
+          <Button variant="outline" className="w-full gap-2 text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4" />
+            Sign Out
           </Button>
         </div>
       </aside>
@@ -329,7 +378,7 @@ export default function AdminPortal() {
                 </div>
               </div>
 
-              <UserRoleDetails 
+              <UserDetailsContent 
                 userId={selectedUser.id} 
                 userType={selectedUser.userType} 
               />

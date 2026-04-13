@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -5,15 +6,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { BookOpen, ArrowLeft, Target, Lightbulb, ShieldCheck, Users } from 'lucide-react';
+import { BookOpen, ArrowLeft, Target, Lightbulb, ShieldCheck, Users, Loader2 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useUser } from '@/firebase';
 
 export default function AboutPage() {
+  const { user, isUserLoading } = useUser();
   const mentorImg = PlaceHolderImages.find(img => img.id === 'teacher-mentoring');
   const [currentYear, setCurrentYear] = useState<number | null>(null);
 
   useEffect(() => {
-    // Avoid hydration mismatch by setting the date only on the client
     setCurrentYear(new Date().getFullYear());
   }, []);
 
@@ -29,12 +31,22 @@ export default function AboutPage() {
             <span className="font-headline font-bold text-xl tracking-tight text-primary">RP Coach-Up</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/login">Log in</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link href="/register">Get Started</Link>
-            </Button>
+            {isUserLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ) : user ? (
+              <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+                <Link href="/login">Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/login">Log in</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link href="/register">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -180,7 +192,7 @@ export default function AboutPage() {
             <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
           </div>
           <p className="text-sm text-muted-foreground mb-8">
-            © {currentYear || '...'} RP Coach-Up. Empowering education through technology.
+            © {currentYear || '2025'} RP Coach-Up. Empowering education through technology.
           </p>
         </div>
       </footer>

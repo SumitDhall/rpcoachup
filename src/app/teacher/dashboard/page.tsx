@@ -2,21 +2,26 @@
 "use client"
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BookOpen, Send, LayoutDashboard, Calendar, Users, Star, Clock, Loader2 } from 'lucide-react';
+import { BookOpen, Send, LayoutDashboard, Calendar, Users, Star, Clock, Loader2, LogOut, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 import { notifyAdmin } from '@/app/actions/notifications';
+import Link from 'next/link';
 
 export default function TeacherDashboard() {
   const { user, isUserLoading } = useUser();
+  const auth = useAuth();
   const db = useFirestore();
+  const router = useRouter();
   const { toast } = useToast();
 
   const userDocRef = useMemoFirebase(() => {
@@ -31,6 +36,11 @@ export default function TeacherDashboard() {
   const [notes, setNotes] = useState('');
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push('/');
+  };
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,6 +150,12 @@ export default function TeacherDashboard() {
             <LayoutDashboard className="h-4 w-4" />
             Dashboard
           </Button>
+          <Button variant="ghost" className="w-full justify-start gap-3" asChild>
+            <Link href="/">
+              <Globe className="h-4 w-4" />
+              Public Website
+            </Link>
+          </Button>
           <Button variant="ghost" className="w-full justify-start gap-3">
             <Users className="h-4 w-4" />
             My Students
@@ -154,8 +170,9 @@ export default function TeacherDashboard() {
           </Button>
         </nav>
         <div className="p-4 border-t">
-          <Button variant="outline" className="w-full" onClick={() => window.location.href = '/'}>
-            Logout
+          <Button variant="outline" className="w-full gap-2 text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4" />
+            Sign Out
           </Button>
         </div>
       </aside>
