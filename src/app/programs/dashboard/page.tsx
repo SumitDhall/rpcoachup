@@ -104,6 +104,7 @@ export default function ProgramsDashboard() {
                   height={1000}
                   className="w-full h-auto object-cover transform transition-transform duration-500 group-hover:scale-105"
                   data-ai-hint="tuition flyer"
+                  priority
                 />
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent text-white">
                   <p className="text-lg font-bold">One-to-One Personalized Learning</p>
@@ -153,7 +154,7 @@ export default function ProgramsDashboard() {
           <footer className="text-center py-12 border-t mt-12">
             <div className="flex items-center justify-center gap-2 mb-4">
               <div className="bg-primary p-1 rounded-lg">
-                <BookOpen className="text-primary-foreground h-4 w-4" />
+                < BookOpen className="text-primary-foreground h-4 w-4" />
               </div>
               <span className="font-headline font-bold text-primary">RP Coach-Up Platform</span>
             </div>
