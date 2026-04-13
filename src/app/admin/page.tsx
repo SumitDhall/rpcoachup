@@ -56,7 +56,10 @@ import {
   DollarSign,
   Bell,
   CheckCircle2,
-  RotateCcw
+  RotateCcw,
+  Printer,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
@@ -268,6 +271,10 @@ export default function AdminPortal() {
   const [mounted, setMounted] = useState(false);
   const [notificationToDelete, setNotificationToDelete] = useState<string | null>(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -307,6 +314,10 @@ export default function AdminPortal() {
   const handleViewDetails = (user: any) => {
     setSelectedUser(user);
     setIsDetailsOpen(true);
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   // Wait for auth to initialize
@@ -355,8 +366,48 @@ export default function AdminPortal() {
     return timeB - timeA;
   });
 
+  // Pagination logic
+  const totalUsers = users?.length || 0;
+  const totalPages = Math.ceil(totalUsers / pageSize);
+  const paginatedUsers = users?.slice((currentPage - 1) * pageSize, currentPage * pageSize) || [];
+
   return (
     <div className="flex min-h-screen bg-background">
+      <style jsx global>{`
+        @media print {
+          aside, header, .no-print, button, .pagination-controls {
+            display: none !important;
+          }
+          main {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+          }
+          .printable-area {
+            display: block !important;
+            border: none !important;
+            box-shadow: none !important;
+          }
+          table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
+          th, td {
+            border: 1px solid #ddd !important;
+            padding: 8px !important;
+            text-align: left !important;
+          }
+          .printable-header {
+            display: block !important;
+            margin-bottom: 20px !important;
+            text-align: center !important;
+          }
+        }
+        .printable-header {
+          display: none;
+        }
+      `}</style>
+
       {/* Admin Sidebar */}
       <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
         <div className="p-6 flex items-center gap-2">
@@ -406,7 +457,7 @@ export default function AdminPortal() {
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 p-4 lg:p-8">
         <div className="max-w-6xl mx-auto space-y-8">
-          <header className="flex items-center justify-between">
+          <header className="flex items-center justify-between no-print">
             <div className="flex items-center gap-4">
               <div>
                 <h1 className="text-3xl font-headline font-bold">Admin Portal</h1>
@@ -465,53 +516,100 @@ export default function AdminPortal() {
 
           {activeTab === 'users' && (
             <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>User Accounts Management</CardTitle>
-                  <CardDescription>View and manage all registered students and teachers.</CardDescription>
+              <Card className="printable-area">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
+                  <div>
+                    <CardTitle>User Accounts Management</CardTitle>
+                    <CardDescription className="no-print">View and manage all registered students and teachers.</CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handlePrint} className="no-print gap-2">
+                    <Printer className="h-4 w-4" />
+                    Print Current Page
+                  </Button>
                 </CardHeader>
                 <CardContent>
+                  <div className="printable-header">
+                    <h2 className="text-xl font-bold">RP Coach-Up User Accounts Report</h2>
+                    <p className="text-sm text-muted-foreground">Page {currentPage} of {totalPages} | Generated on {new Date().toLocaleDateString()}</p>
+                  </div>
+
                   {isLoadingUsers ? (
-                    <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                    <div className="flex justify-center p-8 no-print"><Loader2 className="h-8 w-8 animate-spin" /></div>
                   ) : (
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {users?.map((u) => (
-                            <TableRow key={u.id}>
-                              <TableCell className="font-medium whitespace-nowrap">
-                                <div className="flex items-center gap-2">
-                                  {u.userType === 'Student' ? <UserCheck className="h-4 w-4 text-primary" /> : <GraduationCap className="h-4 w-4 text-accent" />}
-                                  {u.firstName} {u.lastName}
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-muted-foreground whitespace-nowrap">{u.email}</TableCell>
-                              <TableCell>
-                                <Badge variant={u.userType === 'Student' ? 'outline' : 'secondary'}>
-                                  {u.userType}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-right whitespace-nowrap">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleViewDetails(u)}
-                                >
-                                  Details
-                                </Button>
-                              </TableCell>
+                    <div className="space-y-4">
+                      <div className="overflow-x-auto">
+                        <Table id="users-table">
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Role</TableHead>
+                              <TableHead className="text-right no-print">Actions</TableHead>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                          </TableHeader>
+                          <TableBody>
+                            {paginatedUsers.map((u) => (
+                              <TableRow key={u.id}>
+                                <TableCell className="font-medium whitespace-nowrap">
+                                  <div className="flex items-center gap-2">
+                                    <span className="no-print">
+                                      {u.userType === 'Student' ? <UserCheck className="h-4 w-4 text-primary" /> : <GraduationCap className="h-4 w-4 text-accent" />}
+                                    </span>
+                                    {u.firstName} {u.lastName}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-muted-foreground whitespace-nowrap">{u.email}</TableCell>
+                                <TableCell>
+                                  <Badge variant={u.userType === 'Student' ? 'outline' : 'secondary'}>
+                                    {u.userType}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right whitespace-nowrap no-print">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => handleViewDetails(u)}
+                                  >
+                                    Details
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+
+                      {/* Pagination Controls */}
+                      <div className="flex items-center justify-between no-print pt-4 border-t">
+                        <p className="text-sm text-muted-foreground">
+                          Showing {paginatedUsers.length} of {totalUsers} users
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                            className="gap-1"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                            Previous
+                          </Button>
+                          <span className="text-sm font-medium">
+                            Page {currentPage} of {totalPages}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages}
+                            className="gap-1"
+                          >
+                            Next
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </CardContent>
