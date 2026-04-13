@@ -65,27 +65,40 @@ import {
   UserPlus,
   UserMinus,
   Search,
-  Bell
+  Bell,
+  Activity,
+  History
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, getDocs } from 'firebase/firestore';
+import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, getDocs, orderBy } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 
+// Helper to log system events
+function logSystemEvent(db: any, admin: any, type: string, description: string) {
+  if (!admin) return;
+  addDocumentNonBlocking(collection(db, 'systemLogs'), {
+    type,
+    description,
+    adminId: admin.uid,
+    adminEmail: admin.email,
+    timestamp: serverTimestamp(),
+  });
+}
+
 // Component to handle student assignments for a teacher
 function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: string; teacherName: string }) {
   const db = useFirestore();
+  const { user: adminUser } = useUser();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
 
-  // 1. Fetch all students
   const studentsQuery = useMemoFirebase(() => {
     return query(collection(db, 'users'), where('userType', '==', 'Student'), limit(100));
   }, [db]);
   const { data: students, isLoading: isLoadingStudents } = useCollection(studentsQuery);
 
-  // 2. Fetch current matches for this teacher
   const matchesQuery = useMemoFirebase(() => {
     return query(collection(db, 'matchProposals'), where('teacherId', '==', teacherId));
   }, [db, teacherId]);
@@ -96,16 +109,19 @@ function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: strin
   }, [currentMatches]);
 
   const handleAssignStudent = (student: any) => {
+    const studentFullName = `${student.firstName} ${student.lastName}`;
     const matchData = {
       teacherId,
       teacherName,
       studentId: student.id,
-      studentName: `${student.firstName} ${student.lastName}`,
+      studentName: studentFullName,
       assignedAt: serverTimestamp(),
       status: 'active'
     };
     
     addDocumentNonBlocking(collection(db, 'matchProposals'), matchData);
+    logSystemEvent(db, adminUser, 'assignment', `Assigned Student: ${studentFullName} to Teacher: ${teacherName}`);
+    
     toast({
       title: "Student Assigned",
       description: `Successfully matched ${student.firstName} with ${teacherName}.`,
@@ -116,6 +132,8 @@ function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: strin
     const matchToDelete = currentMatches?.find(m => m.studentId === studentId);
     if (matchToDelete) {
       deleteDocumentNonBlocking(doc(db, 'matchProposals', matchToDelete.id));
+      logSystemEvent(db, adminUser, 'unassignment', `Removed Student: ${matchToDelete.studentName} from Teacher: ${teacherName}`);
+      
       toast({
         title: "Student Unassigned",
         description: "The match has been removed.",
@@ -207,16 +225,15 @@ function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: strin
 // Component to handle teacher assignments for a student
 function TeacherAssignmentManager({ studentId, studentName }: { studentId: string; studentName: string }) {
   const db = useFirestore();
+  const { user: adminUser } = useUser();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
 
-  // 1. Fetch all teachers
   const teachersQuery = useMemoFirebase(() => {
     return query(collection(db, 'users'), where('userType', '==', 'Teacher'), limit(100));
   }, [db]);
   const { data: teachers, isLoading: isLoadingTeachers } = useCollection(teachersQuery);
 
-  // 2. Fetch current matches for this student
   const matchesQuery = useMemoFirebase(() => {
     return query(collection(db, 'matchProposals'), where('studentId', '==', studentId));
   }, [db, studentId]);
@@ -227,16 +244,19 @@ function TeacherAssignmentManager({ studentId, studentName }: { studentId: strin
   }, [currentMatches]);
 
   const handleAssignTeacher = (teacher: any) => {
+    const teacherFullName = `${teacher.firstName} ${teacher.lastName}`;
     const matchData = {
       studentId,
       studentName,
       teacherId: teacher.id,
-      teacherName: `${teacher.firstName} ${teacher.lastName}`,
+      teacherName: teacherFullName,
       assignedAt: serverTimestamp(),
       status: 'active'
     };
     
     addDocumentNonBlocking(collection(db, 'matchProposals'), matchData);
+    logSystemEvent(db, adminUser, 'assignment', `Assigned Teacher: ${teacherFullName} to Student: ${studentName}`);
+
     toast({
       title: "Teacher Assigned",
       description: `Successfully matched ${teacher.firstName} with ${studentName}.`,
@@ -247,6 +267,8 @@ function TeacherAssignmentManager({ studentId, studentName }: { studentId: strin
     const matchToDelete = currentMatches?.find(m => m.teacherId === teacherId);
     if (matchToDelete) {
       deleteDocumentNonBlocking(doc(db, 'matchProposals', matchToDelete.id));
+      logSystemEvent(db, adminUser, 'unassignment', `Removed Teacher: ${matchToDelete.teacherName} from Student: ${studentName}`);
+
       toast({
         title: "Teacher Unassigned",
         description: "The match has been removed.",
@@ -351,7 +373,6 @@ function UserDetailsContent({ user }: { user: any }) {
 
   const { data: details, isLoading: isLoadingProfile } = useDoc(docRef);
 
-  // Fetch interests related to this user
   const interestCollection = user.userType === 'Student' ? 'studentInterests' : 'teacherInterests';
   const interestField = user.userType === 'Student' ? 'studentId' : 'teacherId';
   
@@ -412,7 +433,6 @@ function UserDetailsContent({ user }: { user: any }) {
 
   return (
     <div className="space-y-8">
-      {/* Role Specific Info - Only for Students now per requirements */}
       {user.userType === 'Student' && (
         <div className="space-y-4 pt-4 border-t">
           <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
@@ -428,7 +448,6 @@ function UserDetailsContent({ user }: { user: any }) {
         </div>
       )}
 
-      {/* Interests List */}
       <div className={`space-y-4 ${user.userType === 'Teacher' ? 'pt-4 border-t' : ''}`}>
         <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
@@ -552,7 +571,6 @@ function UserDetailsContent({ user }: { user: any }) {
         )}
       </div>
 
-      {/* Matching Interface */}
       {user.userType === 'Student' ? (
         <TeacherAssignmentManager studentId={user.id} studentName={`${user.firstName} ${user.lastName}`} />
       ) : (
@@ -579,6 +597,73 @@ function UserDetailsContent({ user }: { user: any }) {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+// Settings Component to display system logs
+function SystemSettingsLogs() {
+  const db = useFirestore();
+  const logsQuery = useMemoFirebase(() => {
+    return query(collection(db, 'systemLogs'), orderBy('timestamp', 'desc'), limit(100));
+  }, [db]);
+  const { data: logs, isLoading } = useCollection(logsQuery);
+
+  if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <History className="h-5 w-5 text-primary" />
+          <div>
+            <CardTitle>System Activity Logs</CardTitle>
+            <CardDescription>Comprehensive audit trail of all administrative actions and matches.</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="rounded-md border overflow-hidden">
+          <Table>
+            <TableHeader className="bg-muted/50">
+              <TableRow>
+                <TableHead className="w-[180px]">Timestamp</TableHead>
+                <TableHead className="w-[120px]">Event Type</TableHead>
+                <TableHead>Activity Description</TableHead>
+                <TableHead className="text-right">Admin</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {logs && logs.length > 0 ? (
+                logs.map((log) => (
+                  <TableRow key={log.id} className="hover:bg-muted/30 transition-colors">
+                    <TableCell className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+                      {log.timestamp?.toDate?.()?.toLocaleString() || 'Syncing...'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={log.type === 'assignment' ? 'default' : 'outline'} className="text-[10px] uppercase">
+                        {log.type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {log.description}
+                    </TableCell>
+                    <TableCell className="text-right text-[10px] text-muted-foreground">
+                      {log.adminEmail}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-12 text-muted-foreground italic">
+                    No activity logs recorded yet.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -740,7 +825,7 @@ export default function AdminPortal() {
             onClick={() => setActiveTab('settings')}
           >
             <Settings className="h-4 w-4" />
-            System Settings
+            System Logs
           </Button>
         </nav>
         <div className="p-4 border-t">
@@ -903,6 +988,8 @@ export default function AdminPortal() {
               </Card>
             </div>
           )}
+
+          {activeTab === 'settings' && <SystemSettingsLogs />}
         </div>
       </main>
 

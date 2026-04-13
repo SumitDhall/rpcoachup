@@ -80,6 +80,11 @@ service cloud.firestore {
       allow update, delete: if isAdmin() || isDataOwner(resource.data.userProfileId);
     }
 
+    match /systemLogs/{logId} {
+      allow create: if isAdmin();
+      allow read, list: if isAdmin();
+    }
+
     match /roles_admin/{adminId} {
       allow get: if isSignedIn();
       allow list, create, update, delete: if isAdmin();
