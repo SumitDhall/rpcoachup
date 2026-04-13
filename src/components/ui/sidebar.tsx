@@ -653,8 +653,9 @@ const SidebarMenuSkeleton = React.forwardRef<
   const [width, setWidth] = React.useState("70%");
 
   React.useEffect(() => {
-    // Math.random must be deferred to the client to avoid hydration errors
-    setWidth(`${Math.floor(Math.random() * 40) + 50}%`);
+    // Avoid hydration mismatch by only generating random width on client
+    const randomWidth = `${Math.floor(Math.random() * 40) + 50}%`;
+    setWidth(randomWidth);
   }, []);
 
   return (

@@ -13,6 +13,7 @@ export default function AboutPage() {
   const [currentYear, setCurrentYear] = useState<number | null>(null);
 
   useEffect(() => {
+    // Avoid hydration mismatch by setting the date only on the client
     setCurrentYear(new Date().getFullYear());
   }, []);
 
