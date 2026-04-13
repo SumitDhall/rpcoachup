@@ -8,25 +8,66 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { BookOpen, ArrowLeft, Loader2 } from 'lucide-react';
+import { useAuth, useFirestore } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [role, setRole] = useState('student');
+  const auth = useAuth();
+  const db = useFirestore();
+  const { toast } = useToast();
+  
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate auth
-    setTimeout(() => {
-      if (role === 'admin') {
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+
+      // Check if user is an admin via roles_admin collection
+      const adminDocRef = doc(db, 'roles_admin', user.uid);
+      const adminDoc = await getDoc(adminDocRef);
+
+      if (adminDoc.exists()) {
         router.push('/admin');
-      } else {
-        router.push(`/${role}/dashboard`);
+        return;
       }
-    }, 1000);
+
+      // Fetch user profile to determine role
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const role = userData.userType || 'Student';
+        router.push(`/${role.toLowerCase()}/dashboard`);
+      } else {
+        throw new Error("User profile not found.");
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message || "Invalid credentials or system error.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -48,50 +89,17 @@ export default function LoginPage() {
         </CardHeader>
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-6">
-            <div className="space-y-3">
-              <Label>Select Your Role</Label>
-              <RadioGroup defaultValue="student" onValueChange={setRole} className="grid grid-cols-3 gap-4">
-                <div>
-                  <RadioGroupItem value="student" id="student" className="peer sr-only" />
-                  <Label
-                    htmlFor="student"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent/5 hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                  >
-                    <span className="text-sm font-semibold">Student</span>
-                  </Label>
-                </div>
-                <div>
-                  <RadioGroupItem value="teacher" id="teacher" className="peer sr-only" />
-                  <Label
-                    htmlFor="teacher"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent/5 hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                  >
-                    <span className="text-sm font-semibold">Teacher</span>
-                  </Label>
-                </div>
-                <div>
-                  <RadioGroupItem value="admin" id="admin" className="peer sr-only" />
-                  <Label
-                    htmlFor="admin"
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent/5 hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                  >
-                    <span className="text-sm font-semibold">Admin</span>
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="name@example.com" required />
+                <Input id="email" type="email" placeholder="name@example.com" value={formData.email} onChange={handleInputChange} required />
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
                   <Link href="#" className="text-xs text-primary hover:underline">Forgot password?</Link>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" type="password" value={formData.password} onChange={handleInputChange} required />
               </div>
             </div>
           </CardContent>

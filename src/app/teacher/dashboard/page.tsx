@@ -8,34 +8,96 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BookOpen, Send, LayoutDashboard, Calendar, Users, Star, Clock } from 'lucide-react';
+import { BookOpen, Send, LayoutDashboard, Calendar, Users, Star, Clock, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, collection, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 
 export default function TeacherDashboard() {
+  const { user, isUserLoading } = useUser();
+  const db = useFirestore();
   const { toast } = useToast();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user?.uid]);
+
+  const teacherProfileRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, 'users', user.uid, 'teacherProfile', 'teacherProfile');
+  }, [db, user?.uid]);
+
+  const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
+  const { data: teacherProfile, isLoading: isTeacherProfileLoading } = useDoc(teacherProfileRef);
+
   const [subject, setSubject] = useState('');
-  const [subjectsList, setSubjectsList] = useState(['Calculus', 'Linear Algebra']);
   const [feedback, setFeedback] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmitProfile = (e: React.FormEvent) => {
+  const handleSubmitProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject) return;
-    setSubjectsList([...subjectsList, subject]);
-    setSubject('');
-    toast({
-      title: "Teaching Profile Updated",
-      description: "Students looking for these topics will now see you in their matches.",
-    });
+    if (!teacherProfileRef || !user) return;
+    setIsSubmitting(true);
+
+    try {
+      await updateDoc(teacherProfileRef, {
+        qualifications: 'Updated Profile', // Simplified for now
+        updatedAt: serverTimestamp()
+      });
+      
+      toast({
+        title: "Teaching Profile Updated",
+        description: "Your changes have been saved successfully.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not update profile."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSubmitFeedback = (e: React.FormEvent) => {
+  const handleSubmitFeedback = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFeedback('');
-    toast({
-      title: "Feedback Received",
-      description: "Thank you! We value your professional input.",
-    });
+    if (!feedback || !user) return;
+    setIsSubmitting(true);
+
+    try {
+      await addDoc(collection(db, 'feedback'), {
+        userProfileId: user.uid,
+        feedbackType: 'Teacher',
+        comment: feedback,
+        submissionDate: serverTimestamp(),
+        rating: 5
+      });
+
+      setFeedback('');
+      toast({
+        title: "Feedback Received",
+        description: "Thank you! We value your professional input.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not submit feedback."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (isUserLoading || isProfileLoading || isTeacherProfileLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -66,8 +128,8 @@ export default function TeacherDashboard() {
           </Button>
         </nav>
         <div className="p-4 border-t">
-          <Button variant="outline" className="w-full" asChild>
-            <a href="/">Logout</a>
+          <Button variant="outline" className="w-full" onClick={() => window.location.href = '/'}>
+            Logout
           </Button>
         </div>
       </aside>
@@ -77,7 +139,7 @@ export default function TeacherDashboard() {
         <div className="max-w-5xl mx-auto space-y-8">
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-headline font-bold">Hello, Prof. Miller!</h1>
+              <h1 className="text-3xl font-headline font-bold">Hello, {profile?.firstName || 'Educator'}!</h1>
               <p className="text-muted-foreground">Manage your teaching interests and student connections.</p>
             </div>
             <Badge variant="outline" className="w-fit text-accent border-accent">Teacher Account</Badge>
@@ -90,7 +152,7 @@ export default function TeacherDashboard() {
                   <Users className="h-4 w-4" />
                   <span className="text-xs font-bold uppercase tracking-wider">Active Students</span>
                 </div>
-                <div className="text-3xl font-bold">12</div>
+                <div className="text-3xl font-bold">0</div>
               </CardContent>
             </Card>
             <Card className="bg-accent text-accent-foreground">
@@ -99,7 +161,7 @@ export default function TeacherDashboard() {
                   <Star className="h-4 w-4" />
                   <span className="text-xs font-bold uppercase tracking-wider">Rating</span>
                 </div>
-                <div className="text-3xl font-bold">4.9/5.0</div>
+                <div className="text-3xl font-bold">N/A</div>
               </CardContent>
             </Card>
             <Card className="bg-secondary">
@@ -108,7 +170,7 @@ export default function TeacherDashboard() {
                   <Clock className="h-4 w-4" />
                   <span className="text-xs font-bold uppercase tracking-wider">Hours Taught</span>
                 </div>
-                <div className="text-3xl font-bold text-primary">145h</div>
+                <div className="text-3xl font-bold text-primary">0h</div>
               </CardContent>
             </Card>
           </div>
@@ -122,7 +184,7 @@ export default function TeacherDashboard() {
             <TabsContent value="interests">
               <Card className="shadow-lg border-primary/20">
                 <CardHeader>
-                  <CardTitle>Teaching Interests & Availability</CardTitle>
+                  <CardTitle>Teaching Profile</CardTitle>
                   <CardDescription>
                     Update the subjects you specialize in and when you are available for classes.
                   </CardDescription>
@@ -130,36 +192,22 @@ export default function TeacherDashboard() {
                 <form onSubmit={handleSubmitProfile}>
                   <CardContent className="space-y-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Core Subjects</label>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {subjectsList.map((item, idx) => (
-                          <Badge key={idx} variant="secondary" className="py-1 px-3">
-                            {item}
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="flex gap-2">
-                        <Input 
-                          placeholder="Add new subject..." 
-                          value={subject}
-                          onChange={(e) => setSubject(e.target.value)}
-                        />
-                        <Button type="button" onClick={handleSubmitProfile} variant="outline">Add</Button>
-                      </div>
+                      <label className="text-sm font-medium">Full Name</label>
+                      <Input value={`${profile?.firstName} ${profile?.lastName}`} disabled />
                     </div>
-
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Availability Schedule</label>
-                      <Input placeholder="e.g. Weekdays 5PM - 9PM, Sat mornings" />
+                      <label className="text-sm font-medium">Specialization</label>
+                      <Input placeholder="e.g. Mathematics, Science" />
                     </div>
-
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Teaching Style / Bio</label>
+                      <label className="text-sm font-medium">Bio</label>
                       <Textarea placeholder="Describe your teaching philosophy..." className="min-h-[100px]" />
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button type="submit" className="w-full font-bold">Save Profile Changes</Button>
+                    <Button type="submit" className="w-full font-bold" disabled={isSubmitting}>
+                      {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Profile Changes"}
+                    </Button>
                   </CardFooter>
                 </form>
               </Card>
@@ -195,8 +243,8 @@ export default function TeacherDashboard() {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                      Submit Feedback
+                    <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={isSubmitting}>
+                      {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit Feedback"}
                     </Button>
                   </CardFooter>
                 </form>

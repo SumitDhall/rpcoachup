@@ -8,34 +8,96 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BookOpen, Send, LayoutDashboard, BrainCircuit, MessageSquare, History, Plus } from 'lucide-react';
+import { BookOpen, Send, LayoutDashboard, BrainCircuit, MessageSquare, History, Plus, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function StudentDashboard() {
+  const { user, isUserLoading } = useUser();
+  const db = useFirestore();
   const { toast } = useToast();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user?.uid]);
+
+  const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
+
   const [interest, setInterest] = useState('');
-  const [interestsList, setInterestsList] = useState(['Mathematics', 'Computer Science']);
   const [feedback, setFeedback] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmitInterest = (e: React.FormEvent) => {
+  const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!interest) return;
-    setInterestsList([...interestsList, interest]);
-    setInterest('');
-    toast({
-      title: "Interest Submitted!",
-      description: "Our AI matching engine is now looking for the best courses for you.",
-    });
+    if (!interest || !user) return;
+    setIsSubmitting(true);
+    
+    try {
+      await addDoc(collection(db, 'studentInterests'), {
+        studentId: user.uid,
+        subject: interest,
+        level: 'N/A',
+        topics: [],
+        submissionDate: serverTimestamp(),
+        status: 'Pending',
+        notes: ''
+      });
+      
+      setInterest('');
+      toast({
+        title: "Interest Submitted!",
+        description: "Our AI matching engine is now looking for the best courses for you.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not submit interest."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleSubmitFeedback = (e: React.FormEvent) => {
+  const handleSubmitFeedback = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFeedback('');
-    toast({
-      title: "Feedback Received",
-      description: "Thank you for helping us improve RP Coach-Up!",
-    });
+    if (!feedback || !user) return;
+    setIsSubmitting(true);
+
+    try {
+      await addDoc(collection(db, 'feedback'), {
+        userProfileId: user.uid,
+        feedbackType: 'Platform',
+        comment: feedback,
+        submissionDate: serverTimestamp(),
+        rating: 5
+      });
+
+      setFeedback('');
+      toast({
+        title: "Feedback Received",
+        description: "Thank you for helping us improve RP Coach-Up!",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not submit feedback."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (isUserLoading || isProfileLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -66,8 +128,8 @@ export default function StudentDashboard() {
           </Button>
         </nav>
         <div className="p-4 border-t">
-          <Button variant="outline" className="w-full" asChild>
-            <a href="/">Logout</a>
+          <Button variant="outline" className="w-full" onClick={() => window.location.href = '/'}>
+            Logout
           </Button>
         </div>
       </aside>
@@ -77,7 +139,7 @@ export default function StudentDashboard() {
         <div className="max-w-5xl mx-auto space-y-8">
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-headline font-bold">Welcome back, Alex!</h1>
+              <h1 className="text-3xl font-headline font-bold">Welcome back, {profile?.firstName || 'Learner'}!</h1>
               <p className="text-muted-foreground">Manage your learning interests and view personalized matches.</p>
             </div>
             <Badge variant="outline" className="w-fit text-primary border-primary">Student Account</Badge>
@@ -94,18 +156,12 @@ export default function StudentDashboard() {
               <div className="grid md:grid-cols-2 gap-6">
                 <Card className="shadow-md">
                   <CardHeader>
-                    <CardTitle className="text-xl">Your Current Interests</CardTitle>
-                    <CardDescription>Topics you&apos;ve expressed interest in learning.</CardDescription>
+                    <CardTitle className="text-xl">Profile Details</CardTitle>
+                    <CardDescription>Your registered information.</CardDescription>
                   </CardHeader>
-                  <CardContent className="flex flex-wrap gap-2">
-                    {interestsList.map((item, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-sm py-1.5 px-3">
-                        {item}
-                      </Badge>
-                    ))}
-                    {interestsList.length === 0 && (
-                      <p className="text-muted-foreground text-sm">No interests added yet.</p>
-                    )}
+                  <CardContent className="space-y-2">
+                    <p className="text-sm"><strong>Name:</strong> {profile?.firstName} {profile?.lastName}</p>
+                    <p className="text-sm"><strong>Email:</strong> {profile?.email}</p>
                   </CardContent>
                 </Card>
 
@@ -115,30 +171,10 @@ export default function StudentDashboard() {
                     <CardDescription>AI-generated matches based on your profile.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-accent/5 transition-colors cursor-pointer">
-                      <div className="bg-primary/10 p-2 rounded-full text-primary">
-                        <Plus className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-sm">Advanced Web Dev</h4>
-                        <p className="text-xs text-muted-foreground">Taught by Dr. Emily Stone</p>
-                      </div>
-                      <Badge className="bg-accent text-accent-foreground">98% Match</Badge>
-                    </div>
-                    <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-accent/5 transition-colors cursor-pointer opacity-80">
-                      <div className="bg-primary/10 p-2 rounded-full text-primary">
-                        <Plus className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-sm">Modern Mathematics</h4>
-                        <p className="text-xs text-muted-foreground">Taught by Prof. Aris</p>
-                      </div>
-                      <Badge className="bg-accent text-accent-foreground">85% Match</Badge>
+                    <div className="text-center py-8 text-muted-foreground text-sm">
+                      Submit interests to see personalized matches here.
                     </div>
                   </CardContent>
-                  <CardFooter>
-                    <Button variant="ghost" className="w-full text-primary" size="sm">View all matches</Button>
-                  </CardFooter>
                 </Card>
               </div>
             </TabsContent>
@@ -169,8 +205,8 @@ export default function StudentDashboard() {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button type="submit" className="w-full gap-2">
-                      <Send className="h-4 w-4" />
+                    <Button type="submit" className="w-full gap-2" disabled={isSubmitting}>
+                      {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                       Submit Interest
                     </Button>
                   </CardFooter>
@@ -211,8 +247,8 @@ export default function StudentDashboard() {
                     </div>
                   </CardContent>
                   <CardFooter>
-                    <Button type="submit" className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-                      Send Feedback
+                    <Button type="submit" className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90" disabled={isSubmitting}>
+                       {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send Feedback"}
                     </Button>
                   </CardFooter>
                 </form>

@@ -10,18 +10,88 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { BookOpen, ArrowLeft, Loader2, User, GraduationCap } from 'lucide-react';
+import { useAuth, useFirestore } from '@/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [role, setRole] = useState('student');
+  const auth = useAuth();
+  const db = useFirestore();
+  const { toast } = useToast();
+  
+  const [role, setRole] = useState('Student');
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+  });
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
-      router.push(`/${role}/dashboard`);
-    }, 1000);
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+
+      // 1. Create Base User Profile
+      const userProfileRef = doc(db, 'users', user.uid);
+      const profileData = {
+        id: user.uid,
+        email: formData.email,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        userType: role,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      await setDoc(userProfileRef, profileData);
+
+      // 2. Create Role-Specific Profile
+      if (role === 'Student') {
+        const studentProfileRef = doc(db, 'users', user.uid, 'studentProfile', 'studentProfile');
+        await setDoc(studentProfileRef, {
+          id: 'studentProfile',
+          userProfileId: user.uid,
+          gradeLevel: '',
+        });
+      } else if (role === 'Teacher') {
+        const teacherProfileRef = doc(db, 'users', user.uid, 'teacherProfile', 'teacherProfile');
+        await setDoc(teacherProfileRef, {
+          id: 'teacherProfile',
+          userProfileId: user.uid,
+          experienceYears: 0,
+          qualifications: '',
+        });
+      }
+
+      toast({
+        title: "Registration Successful",
+        description: `Welcome to RP Coach-Up, ${formData.firstName}!`,
+      });
+
+      router.push(`/${role.toLowerCase()}/dashboard`);
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: error.message || "An error occurred during registration.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -45,11 +115,11 @@ export default function RegisterPage() {
           <CardContent className="space-y-6">
             <div className="space-y-3">
               <Label>I want to join as a...</Label>
-              <RadioGroup defaultValue="student" onValueChange={setRole} className="grid grid-cols-2 gap-4">
+              <RadioGroup defaultValue="Student" onValueChange={setRole} className="grid grid-cols-2 gap-4">
                 <div>
-                  <RadioGroupItem value="student" id="student" className="peer sr-only" />
+                  <RadioGroupItem value="Student" id="Student" className="peer sr-only" />
                   <Label
-                    htmlFor="student"
+                    htmlFor="Student"
                     className="flex flex-col items-center gap-2 justify-center rounded-xl border-2 border-muted bg-popover p-6 hover:bg-accent/5 cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary"
                   >
                     <User className="h-8 w-8 text-primary" />
@@ -58,9 +128,9 @@ export default function RegisterPage() {
                   </Label>
                 </div>
                 <div>
-                  <RadioGroupItem value="teacher" id="teacher" className="peer sr-only" />
+                  <RadioGroupItem value="Teacher" id="Teacher" className="peer sr-only" />
                   <Label
-                    htmlFor="teacher"
+                    htmlFor="Teacher"
                     className="flex flex-col items-center gap-2 justify-center rounded-xl border-2 border-muted bg-popover p-6 hover:bg-accent/5 cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary"
                   >
                     <GraduationCap className="h-8 w-8 text-primary" />
@@ -74,22 +144,22 @@ export default function RegisterPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" placeholder="John" required />
+                <Input id="firstName" placeholder="John" value={formData.firstName} onChange={handleInputChange} required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" placeholder="Doe" required />
+                <Input id="lastName" placeholder="Doe" value={formData.lastName} onChange={handleInputChange} required />
               </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="john@example.com" required />
+              <Input id="email" type="email" placeholder="john@example.com" value={formData.email} onChange={handleInputChange} required />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required />
+              <Input id="password" type="password" value={formData.password} onChange={handleInputChange} required />
             </div>
 
             <div className="flex items-center space-x-2">
