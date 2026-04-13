@@ -230,16 +230,6 @@ export default function AdminPortal() {
         <div className="max-w-6xl mx-auto space-y-8">
           <header className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon" className="rounded-full lg:hidden" asChild>
-                <Link href="/"><ArrowLeft className="h-4 w-4" /></Link>
-              </Button>
-              <Button variant="ghost" size="sm" className="hidden lg:flex gap-2 items-center text-muted-foreground hover:text-primary transition-colors" asChild>
-                <Link href="/">
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Website
-                </Link>
-              </Button>
-              <div className="h-8 w-px bg-border hidden lg:block mx-2" />
               <div>
                 <h1 className="text-3xl font-headline font-bold">Admin Portal</h1>
                 <p className="text-muted-foreground">Monitor platform activity and manage system alerts.</p>
