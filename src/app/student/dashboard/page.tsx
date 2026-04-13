@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { BookOpen, Send, LayoutDashboard, BrainCircuit, MessageSquare, History, Plus, Loader2 } from 'lucide-react';
+import { BookOpen, Send, LayoutDashboard, MessageSquare, History, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -48,7 +48,7 @@ export default function StudentDashboard() {
       setInterest('');
       toast({
         title: "Interest Submitted!",
-        description: "Our AI matching engine is now looking for the best courses for you.",
+        description: "Administrators will review your interests to find the best courses for you.",
       });
     } catch (error) {
       toast({
@@ -115,10 +115,6 @@ export default function StudentDashboard() {
             Dashboard
           </Button>
           <Button variant="ghost" className="w-full justify-start gap-3">
-            <BrainCircuit className="h-4 w-4" />
-            My Matches
-          </Button>
-          <Button variant="ghost" className="w-full justify-start gap-3">
             <MessageSquare className="h-4 w-4" />
             Messages
           </Button>
@@ -140,7 +136,7 @@ export default function StudentDashboard() {
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-headline font-bold">Welcome back, {profile?.firstName || 'Learner'}!</h1>
-              <p className="text-muted-foreground">Manage your learning interests and view personalized matches.</p>
+              <p className="text-muted-foreground">Manage your learning interests and view your profile information.</p>
             </div>
             <Badge variant="outline" className="w-fit text-primary border-primary">Student Account</Badge>
           </header>
@@ -167,12 +163,12 @@ export default function StudentDashboard() {
 
                 <Card className="shadow-md">
                   <CardHeader>
-                    <CardTitle className="text-xl">Suggested Matches</CardTitle>
-                    <CardDescription>AI-generated matches based on your profile.</CardDescription>
+                    <CardTitle className="text-xl">Recent Submissions</CardTitle>
+                    <CardDescription>Your latest interest forms and their status.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="text-center py-8 text-muted-foreground text-sm">
-                      Submit interests to see personalized matches here.
+                      Submit interests to see them tracked here.
                     </div>
                   </CardContent>
                 </Card>

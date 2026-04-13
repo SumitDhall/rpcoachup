@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { BookOpen, Users, BrainCircuit, Star, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { BookOpen, Users, Star, ArrowRight, ShieldCheck, Zap, Search } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function Home() {
@@ -42,15 +42,11 @@ export default function Home() {
           <div className="container mx-auto px-4 relative z-10">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="space-y-8 max-w-2xl">
-                <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/20 px-3 py-1 rounded-full text-accent text-sm font-medium">
-                  <BrainCircuit className="h-4 w-4" />
-                  <span>AI-Powered Matching Now Live</span>
-                </div>
                 <h1 className="text-5xl lg:text-7xl font-headline font-bold leading-[1.1] text-primary">
                   Master Your Future with <span className="text-accent underline decoration-accent/30 underline-offset-8">RP Coach-Up</span>
                 </h1>
                 <p className="text-xl text-muted-foreground leading-relaxed">
-                  The smarter way to find tuition. We use advanced AI to match students with the perfect courses and teachers based on shared interests and goals.
+                  The smarter way to find tuition. We connect students with the perfect courses and teachers based on shared interests and goals.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
                   <Button size="lg" className="h-14 px-8 text-lg rounded-xl" asChild>
@@ -111,17 +107,17 @@ export default function Home() {
         <section id="features" className="py-24 bg-background">
           <div className="container mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-              <h2 className="text-4xl font-headline font-bold">Intelligent Education Matching</h2>
+              <h2 className="text-4xl font-headline font-bold">Expert Education Matching</h2>
               <p className="text-lg text-muted-foreground">
-                Our platform goes beyond simple listings. We analyze compatibility to ensure the best learning outcomes.
+                Our platform streamlines the search for quality education. We facilitate meaningful connections to ensure the best learning outcomes.
               </p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               {[
                 {
-                  icon: BrainCircuit,
-                  title: "AI Analysis",
-                  description: "Sophisticated algorithms match your unique interests with course curriculum and teaching styles."
+                  icon: Search,
+                  title: "Smart Search",
+                  description: "Easily find courses and teachers that align with your unique interests and learning styles."
                 },
                 {
                   icon: Users,
@@ -131,7 +127,7 @@ export default function Home() {
                 {
                   icon: Zap,
                   title: "Fast Results",
-                  description: "Submit your interests and get personalized match suggestions in seconds."
+                  description: "Submit your interests and get personalized connection suggestions in a streamlined portal."
                 }
               ].map((feature, i) => (
                 <Card key={i} className="border-none shadow-xl bg-secondary/20 hover:bg-secondary/40 transition-colors">
@@ -170,7 +166,7 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl space-y-2">
                     <Star className="text-accent h-6 w-6" />
-                    <p className="text-sm font-medium italic">"The AI match was spot on. My physics tutor is exactly what I needed."</p>
+                    <p className="text-sm font-medium italic">"The match was spot on. My physics tutor is exactly what I needed."</p>
                     <p className="text-xs text-primary-foreground/60">— Sarah J., Student</p>
                   </div>
                   <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl space-y-2 mt-8">

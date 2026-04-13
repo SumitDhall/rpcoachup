@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { BookOpen, ArrowLeft, Target, Lightbulb, ShieldCheck, Users, BrainCircuit } from 'lucide-react';
+import { BookOpen, ArrowLeft, Target, Lightbulb, ShieldCheck, Users } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function AboutPage() {
@@ -47,7 +47,7 @@ export default function AboutPage() {
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
                 At RP Coach-Up, we believe that the right connection can change a student's life. 
-                We're using cutting-edge AI to ensure that every student finds the perfect mentor, 
+                We're committed to ensuring that every student finds the perfect mentor, 
                 and every teacher finds a student they are passionate about helping.
               </p>
             </div>
@@ -75,8 +75,7 @@ export default function AboutPage() {
                 <div className="space-y-4">
                   <h2 className="text-3xl font-headline font-bold">Why RP Coach-Up?</h2>
                   <p className="text-muted-foreground leading-relaxed">
-                    Traditional tutoring platforms rely on static filters that don't capture the nuance of learning. 
-                    We analyze interests, teaching styles, and availability to create matches that last.
+                    Traditional tutoring platforms often lack the personal touch. We focus on interests, teaching styles, and availability to create meaningful matches.
                   </p>
                 </div>
 
@@ -84,8 +83,8 @@ export default function AboutPage() {
                   {[
                     {
                       icon: Target,
-                      title: "Precision Matching",
-                      desc: "Our GenAI models analyze student interests and teacher expertise to find the overlap."
+                      title: "Targeted Matching",
+                      desc: "We analyze student interests and teacher expertise to find the perfect educational overlap."
                     },
                     {
                       icon: ShieldCheck,
@@ -114,21 +113,21 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Values / Stats Section */}
+        {/* Impact Section */}
         <section className="py-24 bg-primary text-primary-foreground">
           <div className="container mx-auto px-4">
             <div className="text-center max-w-2xl mx-auto mb-16">
-              <h2 className="text-3xl lg:text-4xl font-headline font-bold mb-4">The Impact of AI in Education</h2>
+              <h2 className="text-3xl lg:text-4xl font-headline font-bold mb-4">The Impact of Quality Education</h2>
               <p className="text-primary-foreground/80">
-                By automating the administrative hurdle of matching, we let teachers focus on teaching and students focus on learning.
+                By streamlining the connection process, we let teachers focus on teaching and students focus on learning.
               </p>
             </div>
             <div className="grid sm:grid-cols-3 gap-8 text-center">
               <Card className="bg-white/10 border-none text-primary-foreground">
                 <CardContent className="pt-8">
-                  <BrainCircuit className="h-10 w-10 mx-auto mb-4 text-accent" />
+                  <Target className="h-10 w-10 mx-auto mb-4 text-accent" />
                   <h3 className="text-2xl font-bold mb-2">95%</h3>
-                  <p className="text-sm text-primary-foreground/70">Matching Satisfaction Rate</p>
+                  <p className="text-sm text-primary-foreground/70">Satisfaction Rate</p>
                 </CardContent>
               </Card>
               <Card className="bg-white/10 border-none text-primary-foreground">
