@@ -196,7 +196,8 @@ export default function StudentDashboard() {
     );
   }
 
-  const feeOptions = [200, 300, 400, 500, 600, 700, 800, 900, 1000];
+  // Monthly fee options from 7,000 to 20,000 with 1,000 increments
+  const feeOptions = Array.from({ length: 14 }, (_, i) => 7000 + i * 1000);
 
   // Sort interests by date in memory (descending)
   const sortedInterests = interests ? [...interests].sort((a, b) => {
@@ -464,7 +465,7 @@ export default function StudentDashboard() {
                       <div className="space-y-2">
                         <Label htmlFor="fees" className="flex items-center gap-2">
                           <IndianRupee className="h-4 w-4 text-muted-foreground" />
-                          Affordable Fees (INR / hour)
+                          Affordable Fees (INR / month)
                         </Label>
                         <Select 
                           value={affordableRange} 
@@ -472,12 +473,12 @@ export default function StudentDashboard() {
                           disabled={isSubmitted}
                         >
                           <SelectTrigger id="fees" className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}>
-                            <SelectValue placeholder="Select hourly fee" />
+                            <SelectValue placeholder="Select monthly fee" />
                           </SelectTrigger>
                           <SelectContent>
                             {feeOptions.map((fee) => (
-                              <SelectItem key={fee} value={`${fee} INR`}>
-                                {fee} INR / hour
+                              <SelectItem key={fee} value={`${fee} INR / month`}>
+                                {fee.toLocaleString()} INR / month
                               </SelectItem>
                             ))}
                           </SelectContent>
