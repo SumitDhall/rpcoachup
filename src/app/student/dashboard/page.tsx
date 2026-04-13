@@ -32,7 +32,8 @@ import {
   Calendar as CalendarIcon,
   IndianRupee,
   Clock,
-  ClipboardList
+  ClipboardList,
+  Edit2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
@@ -80,6 +81,7 @@ export default function StudentDashboard() {
   
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -136,20 +138,10 @@ export default function StudentDashboard() {
         details: `Student Name: ${studentName}. Subject: ${subject}. Phone: ${phone}. Start Date: ${intendedStartDate}. Fees: ${affordableRange}.`
       });
       
-      // Reset Form
-      setStudentName('');
-      setPhone('');
-      setSchool('');
-      setGradeOrClass('');
-      setAddress('');
-      setSubject('');
-      setNotes('');
-      setAffordableRange('');
-      setIntendedStartDate('');
-
+      setIsSubmitted(true);
       toast({
         title: "Interest Submitted!",
-        description: "Administrators will review your details to find the best match for you.",
+        description: "Your requirement is now locked. Administrators will review your details to find the best match for you.",
       });
     } catch (error) {
       toast({
@@ -160,6 +152,10 @@ export default function StudentDashboard() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleEdit = () => {
+    setIsSubmitted(false);
   };
 
   const handleSubmitFeedback = async (e: React.FormEvent) => {
@@ -348,7 +344,9 @@ export default function StudentDashboard() {
                     Student Tuition Requirement Form
                   </CardTitle>
                   <CardDescription>
-                    Provide complete details to help us find the perfect teacher for you.
+                    {isSubmitted 
+                      ? "Your requirement has been submitted and is currently locked for review." 
+                      : "Provide complete details to help us find the perfect teacher for you."}
                   </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmitInterest}>
@@ -366,6 +364,8 @@ export default function StudentDashboard() {
                           value={studentName}
                           onChange={(e) => setStudentName(e.target.value)}
                           required
+                          disabled={isSubmitted}
+                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
                         />
                       </div>
                       <div className="space-y-2">
@@ -380,6 +380,8 @@ export default function StudentDashboard() {
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           required
+                          disabled={isSubmitted}
+                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
                         />
                       </div>
                     </div>
@@ -395,6 +397,8 @@ export default function StudentDashboard() {
                           placeholder="e.g. DPS International" 
                           value={school}
                           onChange={(e) => setSchool(e.target.value)}
+                          disabled={isSubmitted}
+                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
                         />
                       </div>
                       <div className="space-y-2">
@@ -407,6 +411,8 @@ export default function StudentDashboard() {
                           placeholder="e.g. Grade 10, Class A" 
                           value={gradeOrClass}
                           onChange={(e) => setGradeOrClass(e.target.value)}
+                          disabled={isSubmitted}
+                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
                         />
                       </div>
                     </div>
@@ -421,6 +427,8 @@ export default function StudentDashboard() {
                         placeholder="Street address for home tuition or proximity matching" 
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
+                        disabled={isSubmitted}
+                        className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
                       />
                     </div>
 
@@ -435,6 +443,8 @@ export default function StudentDashboard() {
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
                         required
+                        disabled={isSubmitted}
+                        className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
                       />
                     </div>
 
@@ -443,9 +453,10 @@ export default function StudentDashboard() {
                       <Textarea 
                         id="details" 
                         placeholder="Tell us more about current level or specific needs..." 
-                        className="min-h-[80px]" 
+                        className={`min-h-[80px] ${isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}`} 
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
+                        disabled={isSubmitted}
                       />
                     </div>
 
@@ -455,8 +466,12 @@ export default function StudentDashboard() {
                           <IndianRupee className="h-4 w-4 text-muted-foreground" />
                           Affordable Fees (INR / hour)
                         </Label>
-                        <Select value={affordableRange} onValueChange={setAffordableRange}>
-                          <SelectTrigger id="fees">
+                        <Select 
+                          value={affordableRange} 
+                          onValueChange={setAffordableRange}
+                          disabled={isSubmitted}
+                        >
+                          <SelectTrigger id="fees" className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}>
                             <SelectValue placeholder="Select hourly fee" />
                           </SelectTrigger>
                           <SelectContent>
@@ -478,16 +493,29 @@ export default function StudentDashboard() {
                           type="date"
                           value={intendedStartDate}
                           onChange={(e) => setIntendedStartDate(e.target.value)}
+                          disabled={isSubmitted}
+                          className={isSubmitted ? "bg-secondary/50 text-muted-foreground" : ""}
                         />
                       </div>
                     </div>
 
                   </CardContent>
-                  <CardFooter className="bg-secondary/10 rounded-b-lg p-6">
-                    <Button type="submit" className="w-full gap-2 h-12 text-lg font-bold" disabled={isSubmitting}>
+                  <CardFooter className="bg-secondary/10 rounded-b-lg p-6 flex flex-col sm:flex-row gap-4">
+                    <Button type="submit" className="flex-1 gap-2 h-12 text-lg font-bold" disabled={isSubmitting || isSubmitted}>
                       {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
                       Submit Tuition Requirement
                     </Button>
+                    {isSubmitted && (
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={handleEdit}
+                        className="flex-1 gap-2 h-12 text-lg font-bold border-2 border-primary text-primary hover:bg-primary/5"
+                      >
+                        <Edit2 className="h-5 w-5" />
+                        Edit Requirement
+                      </Button>
+                    )}
                   </CardFooter>
                 </form>
               </Card>
