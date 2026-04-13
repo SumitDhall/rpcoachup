@@ -25,7 +25,6 @@ import {
   History, 
   Loader2, 
   LogOut, 
-  Globe,
   User,
   Phone,
   School,
@@ -224,12 +223,6 @@ export default function StudentDashboard() {
           <Button variant="secondary" className="w-full justify-start gap-3">
             <LayoutDashboard className="h-4 w-4" />
             Dashboard
-          </Button>
-          <Button variant="ghost" className="w-full justify-start gap-3" asChild>
-            <Link href="/">
-              <Globe className="h-4 w-4" />
-              Public Website
-            </Link>
           </Button>
           <Button variant="ghost" className="w-full justify-start gap-3">
             <MessageSquare className="h-4 w-4" />
