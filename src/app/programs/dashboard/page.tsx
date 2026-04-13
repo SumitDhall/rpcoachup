@@ -4,17 +4,15 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
   BookOpen, 
-  ArrowLeft, 
   Phone, 
   Mail, 
   MapPin, 
   CheckCircle2, 
   Users, 
-  GraduationCap,
   Calendar
 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -33,12 +31,9 @@ export default function ProgramsDashboard() {
             </div>
             <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
           </Link>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/login" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Dashboard
-            </Link>
-          </Button>
+          <div className="flex items-center gap-4">
+             <Badge variant="outline" className="hidden sm:flex border-primary text-primary">Official Program</Badge>
+          </div>
         </div>
       </header>
 
