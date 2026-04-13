@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -57,10 +56,9 @@ import {
   Bell,
   CheckCircle2,
   RotateCcw,
-  Printer,
   ChevronLeft,
   ChevronRight,
-  FileDown
+  LayoutDashboard
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
@@ -323,10 +321,6 @@ export default function AdminPortal() {
     setIsDetailsOpen(true);
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   // Wait for auth to initialize
   if (isUserLoading || isAdminLoading) {
     return (
@@ -539,12 +533,6 @@ export default function AdminPortal() {
                   <div>
                     <CardTitle>User Accounts Management</CardTitle>
                     <CardDescription>View, manage, and export user records.</CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="default" size="sm" onClick={handlePrint} className="gap-2">
-                      <Printer className="h-4 w-4" />
-                      Print / Save as PDF
-                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-6">
