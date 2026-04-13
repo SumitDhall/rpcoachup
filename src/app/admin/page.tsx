@@ -23,6 +23,16 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { 
   BookOpen, 
   Users, 
@@ -211,6 +221,7 @@ export default function AdminPortal() {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [notificationToDelete, setNotificationToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -236,8 +247,11 @@ export default function AdminPortal() {
   }, [db, adminDoc]);
   const { data: notifications, isLoading: isLoadingNotifications } = useCollection(notificationsQuery);
 
-  const handleDeleteNotification = (id: string) => {
-    deleteDoc(doc(db, 'notifications', id));
+  const handleDeleteNotification = async () => {
+    if (notificationToDelete) {
+      await deleteDoc(doc(db, 'notifications', notificationToDelete));
+      setNotificationToDelete(null);
+    }
   };
 
   const handleSignOut = async () => {
@@ -389,7 +403,7 @@ export default function AdminPortal() {
                               variant="ghost" 
                               size="icon" 
                               className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
-                              onClick={() => handleDeleteNotification(n.id)}
+                              onClick={() => setNotificationToDelete(n.id)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -501,6 +515,24 @@ export default function AdminPortal() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Alert Dialog */}
+      <AlertDialog open={!!notificationToDelete} onOpenChange={(open) => !open && setNotificationToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the notification record from the platform.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteNotification} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete Forever
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
