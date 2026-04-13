@@ -12,6 +12,7 @@ import { useUser } from '@/firebase';
 
 export default function Home() {
   const { user, isUserLoading } = useUser();
+  const heroImg = PlaceHolderImages.find(img => img.id === 'hero-education');
   const flyerImg = PlaceHolderImages.find(img => img.id === 'home-tuition-ad');
   const [mounted, setMounted] = useState(false);
 
@@ -78,15 +79,15 @@ export default function Home() {
                 </div>
               </div>
               <div className="relative group">
-                <div className="absolute -inset-4 bg-accent/20 rounded-2xl blur-2xl transition group-hover:bg-accent/30" />
-                <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border aspect-[4/3]">
+                <div className="absolute -inset-4 bg-primary/10 rounded-2xl blur-3xl transition group-hover:bg-primary/20" />
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border aspect-[16/9]">
                   <Image 
-                    src={flyerImg?.imageUrl || "https://picsum.photos/seed/edu1/800/1000"} 
-                    alt="RP Coach-Up Program Flyer"
-                    width={800}
-                    height={1000}
+                    src={heroImg?.imageUrl || "https://picsum.photos/seed/edu1/1200/600"} 
+                    alt="Students learning"
+                    width={1200}
+                    height={600}
                     className="object-cover w-full h-full"
-                    data-ai-hint="tuition flyer"
+                    data-ai-hint="classroom teacher"
                     priority
                   />
                 </div>
@@ -104,36 +105,48 @@ export default function Home() {
                 Our platform streamlines the search for quality education. We facilitate meaningful connections to ensure the best learning outcomes.
               </p>
             </div>
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                {
-                  icon: Search,
-                  title: "Smart Search",
-                  description: "Easily find courses and teachers that align with your unique interests and learning styles."
-                },
-                {
-                  icon: Users,
-                  title: "Collaborative Learning",
-                  description: "Connect with teachers who are passionate about the exact topics you want to master."
-                },
-                {
-                  icon: Zap,
-                  title: "Fast Results",
-                  description: "Submit your interests and get personalized connection suggestions in a streamlined portal."
-                }
-              ].map((feature, i) => (
-                <Card key={i} className="border-none shadow-xl bg-secondary/20 hover:bg-secondary/40 transition-colors">
-                  <CardContent className="pt-8 space-y-4">
-                    <div className="bg-primary text-primary-foreground h-12 w-12 rounded-lg flex items-center justify-center">
-                      <feature.icon className="h-6 w-6" />
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div className="space-y-6">
+                <div className="grid gap-8">
+                  {[
+                    {
+                      icon: Search,
+                      title: "Smart Search",
+                      description: "Easily find courses and teachers that align with your unique interests and learning styles."
+                    },
+                    {
+                      icon: Users,
+                      title: "Collaborative Learning",
+                      description: "Connect with teachers who are passionate about the exact topics you want to master."
+                    },
+                    {
+                      icon: Zap,
+                      title: "Fast Results",
+                      description: "Submit your interests and get personalized connection suggestions in a streamlined portal."
+                    }
+                  ].map((feature, i) => (
+                    <div key={i} className="flex gap-4">
+                      <div className="bg-primary/10 p-3 rounded-xl h-fit">
+                        <feature.icon className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-headline font-bold mb-1">{feature.title}</h3>
+                        <p className="text-muted-foreground">{feature.description}</p>
+                      </div>
                     </div>
-                    <h3 className="text-xl font-headline font-bold">{feature.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {feature.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+                  ))}
+                </div>
+              </div>
+              <div className="relative rounded-2xl overflow-hidden border shadow-xl">
+                 <Image 
+                    src={flyerImg?.imageUrl || "https://picsum.photos/seed/tutorad/800/1000"} 
+                    alt="RP Coach-Up Program Flyer"
+                    width={800}
+                    height={1000}
+                    className="object-cover w-full h-auto"
+                    data-ai-hint="tuition flyer"
+                  />
+              </div>
             </div>
           </div>
         </section>
