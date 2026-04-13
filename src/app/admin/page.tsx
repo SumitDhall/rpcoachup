@@ -41,9 +41,10 @@ import {
   Bell,
   Trash2,
   ArrowLeft,
-  LogOut
+  LogOut,
+  ShieldAlert
 } from 'lucide-react';
-import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 
@@ -138,6 +139,7 @@ export default function AdminPortal() {
   const db = useFirestore();
   const auth = useAuth();
   const router = useRouter();
+  const { user, isUserLoading } = useUser();
   const [activeTab, setActiveTab] = useState('notifications');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -147,14 +149,24 @@ export default function AdminPortal() {
     setMounted(true);
   }, []);
 
+  // Admin access check via sentinel collection
+  const adminDocRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, 'roles_admin', user.uid);
+  }, [db, user?.uid]);
+  const { data: adminDoc, isLoading: isAdminLoading } = useDoc(adminDocRef);
+
+  // Queries are only enabled if the user is verified as an admin
   const usersQuery = useMemoFirebase(() => {
+    if (!db || !adminDoc) return null;
     return query(collection(db, 'users'), limit(50));
-  }, [db]);
+  }, [db, adminDoc]);
   const { data: users, isLoading: isLoadingUsers } = useCollection(usersQuery);
 
   const notificationsQuery = useMemoFirebase(() => {
+    if (!db || !adminDoc) return null;
     return query(collection(db, 'notifications'), limit(50));
-  }, [db]);
+  }, [db, adminDoc]);
   const { data: notifications, isLoading: isLoadingNotifications } = useCollection(notificationsQuery);
 
   const handleDeleteNotification = (id: string) => {
@@ -170,6 +182,46 @@ export default function AdminPortal() {
     setSelectedUser(user);
     setIsDetailsOpen(true);
   };
+
+  // Wait for auth to initialize
+  if (isUserLoading || isAdminLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-muted-foreground font-medium">Verifying Administrative Access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect if not admin (and not loading)
+  if (!user || !adminDoc) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background p-4">
+        <Card className="max-w-md w-full border-destructive/20 shadow-xl">
+          <CardHeader className="text-center">
+            <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit mb-4">
+              <ShieldAlert className="h-8 w-8 text-destructive" />
+            </div>
+            <CardTitle className="text-2xl">Access Denied</CardTitle>
+            <CardDescription>
+              You do not have administrative permissions to view this portal.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center text-sm text-muted-foreground">
+            If you believe this is an error, please ensure your account UID is registered in the <code>roles_admin</code> collection.
+          </CardContent>
+          <div className="p-6 pt-0 flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={handleSignOut}>Sign Out</Button>
+            <Button className="flex-1" asChild>
+              <Link href="/">Return Home</Link>
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const sortedNotifications = [...(notifications || [])].sort((a, b) => {
     const timeA = a.timestamp?.toDate?.() || 0;
@@ -296,43 +348,45 @@ export default function AdminPortal() {
                   {isLoadingUsers ? (
                     <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
                   ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Role</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {users?.map((u) => (
-                          <TableRow key={u.id}>
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-2">
-                                {u.userType === 'Student' ? <UserCheck className="h-4 w-4 text-primary" /> : <GraduationCap className="h-4 w-4 text-accent" />}
-                                {u.firstName} {u.lastName}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                            <TableCell>
-                              <Badge variant={u.userType === 'Student' ? 'outline' : 'secondary'}>
-                                {u.userType}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleViewDetails(u)}
-                              >
-                                Details
-                              </Button>
-                            </TableCell>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Role</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {users?.map((u) => (
+                            <TableRow key={u.id}>
+                              <TableCell className="font-medium whitespace-nowrap">
+                                <div className="flex items-center gap-2">
+                                  {u.userType === 'Student' ? <UserCheck className="h-4 w-4 text-primary" /> : <GraduationCap className="h-4 w-4 text-accent" />}
+                                  {u.firstName} {u.lastName}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-muted-foreground whitespace-nowrap">{u.email}</TableCell>
+                              <TableCell>
+                                <Badge variant={u.userType === 'Student' ? 'outline' : 'secondary'}>
+                                  {u.userType}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right whitespace-nowrap">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleViewDetails(u)}
+                                >
+                                  Details
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                   )}
                 </CardContent>
               </Card>
