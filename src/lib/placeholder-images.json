@@ -1,3 +1,22 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-education",
+      "description": "A vibrant modern classroom with a teacher and students engaged in learning",
+      "imageUrl": "https://picsum.photos/seed/classroom1/1200/600",
+      "imageHint": "classroom teacher"
+    },
+    {
+      "id": "teacher-mentoring",
+      "description": "A teacher mentoring a student one-on-one in a bright educational setting",
+      "imageUrl": "https://picsum.photos/seed/classroom2/600/400",
+      "imageHint": "teacher classroom"
+    },
+    {
+      "id": "online-course",
+      "description": "A teacher conducting a digital class on a professional learning platform",
+      "imageUrl": "https://picsum.photos/seed/classroom3/600/400",
+      "imageHint": "online classroom"
+    }
+  ]
 }

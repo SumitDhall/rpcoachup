@@ -3,21 +3,21 @@
   "placeholderImages": [
     {
       "id": "hero-education",
-      "description": "A group of diverse students studying together in a modern library",
-      "imageUrl": "https://picsum.photos/seed/edu1/1200/600",
-      "imageHint": "students studying"
+      "description": "A vibrant modern classroom with a teacher and students engaged in learning",
+      "imageUrl": "https://picsum.photos/seed/classroom1/1200/600",
+      "imageHint": "classroom teacher"
     },
     {
       "id": "teacher-mentoring",
-      "description": "A teacher mentoring a student one-on-one",
-      "imageUrl": "https://picsum.photos/seed/edu2/600/400",
-      "imageHint": "teacher mentoring"
+      "description": "A teacher mentoring a student one-on-one in a bright educational setting",
+      "imageUrl": "https://picsum.photos/seed/classroom2/600/400",
+      "imageHint": "teacher classroom"
     },
     {
       "id": "online-course",
-      "description": "A laptop showing a digital learning platform",
-      "imageUrl": "https://picsum.photos/seed/edu3/600/400",
-      "imageHint": "online learning"
+      "description": "A teacher conducting a digital class on a professional learning platform",
+      "imageUrl": "https://picsum.photos/seed/classroom3/600/400",
+      "imageHint": "online classroom"
     }
   ]
 }
