@@ -59,7 +59,8 @@ import {
   RotateCcw,
   Printer,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FileDown
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
@@ -190,6 +191,12 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
                         <span className="text-xs">School: {int.school} ({int.gradeOrClass})</span>
                       </div>
                     )}
+                    {int.school && (
+                      <div className="flex items-center gap-2">
+                        <LayoutDashboard className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs">Class/Grade: {int.gradeOrClass}</span>
+                      </div>
+                    )}
                     {int.address && (
                       <div className="flex items-start gap-2">
                         <MapPin className="h-3 w-3 text-muted-foreground mt-0.5" />
@@ -289,7 +296,7 @@ export default function AdminPortal() {
   // Queries are only enabled if the user is verified as an admin
   const usersQuery = useMemoFirebase(() => {
     if (!db || !adminDoc) return null;
-    return query(collection(db, 'users'), limit(50));
+    return query(collection(db, 'users'), limit(500)); // Larger limit for admin
   }, [db, adminDoc]);
   const { data: users, isLoading: isLoadingUsers } = useCollection(usersQuery);
 
@@ -368,39 +375,47 @@ export default function AdminPortal() {
 
   // Pagination logic
   const totalUsers = users?.length || 0;
-  const totalPages = Math.ceil(totalUsers / pageSize);
+  const totalPages = Math.ceil(totalUsers / pageSize) || 1;
   const paginatedUsers = users?.slice((currentPage - 1) * pageSize, currentPage * pageSize) || [];
 
   return (
     <div className="flex min-h-screen bg-background">
       <style jsx global>{`
         @media print {
-          aside, header, .no-print, button, .pagination-controls {
+          aside, header, .no-print, button, .pagination-controls, .tabs-list {
             display: none !important;
           }
           main {
             margin: 0 !important;
-            padding: 0 !important;
+            padding: 20px !important;
             width: 100% !important;
+            background: white !important;
           }
           .printable-area {
-            display: block !important;
             border: none !important;
             box-shadow: none !important;
+            width: 100% !important;
           }
           table {
             width: 100% !important;
             border-collapse: collapse !important;
           }
           th, td {
-            border: 1px solid #ddd !important;
-            padding: 8px !important;
+            border: 1px solid #eee !important;
+            padding: 10px !important;
             text-align: left !important;
           }
           .printable-header {
             display: block !important;
-            margin-bottom: 20px !important;
+            margin-bottom: 30px !important;
             text-align: center !important;
+            border-bottom: 2px solid #266EDB !important;
+            padding-bottom: 15px !important;
+          }
+          .badge-print {
+            border: 1px solid #ccc !important;
+            padding: 2px 8px !important;
+            border-radius: 4px !important;
           }
         }
         .printable-header {
@@ -409,7 +424,7 @@ export default function AdminPortal() {
       `}</style>
 
       {/* Admin Sidebar */}
-      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
+      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50 no-print">
         <div className="p-6 flex items-center gap-2">
           <div className="bg-primary p-1 rounded-lg">
             <BookOpen className="text-primary-foreground h-5 w-5" />
@@ -432,7 +447,10 @@ export default function AdminPortal() {
           <Button 
             variant={activeTab === 'users' ? 'secondary' : 'ghost'} 
             className="w-full justify-start gap-3"
-            onClick={() => setActiveTab('users')}
+            onClick={() => {
+                setActiveTab('users');
+                setCurrentPage(1);
+            }}
           >
             <Users className="h-4 w-4" />
             Manage Users
@@ -516,21 +534,32 @@ export default function AdminPortal() {
 
           {activeTab === 'users' && (
             <div className="space-y-6">
-              <Card className="printable-area">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
+              <Card className="printable-area overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7 border-b no-print">
                   <div>
                     <CardTitle>User Accounts Management</CardTitle>
-                    <CardDescription className="no-print">View and manage all registered students and teachers.</CardDescription>
+                    <CardDescription>View, manage, and export user records.</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" onClick={handlePrint} className="no-print gap-2">
-                    <Printer className="h-4 w-4" />
-                    Print Current Page
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="default" size="sm" onClick={handlePrint} className="gap-2">
+                      <Printer className="h-4 w-4" />
+                      Print / Save as PDF
+                    </Button>
+                  </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
+                  {/* Print-only Report Header */}
                   <div className="printable-header">
-                    <h2 className="text-xl font-bold">RP Coach-Up User Accounts Report</h2>
-                    <p className="text-sm text-muted-foreground">Page {currentPage} of {totalPages} | Generated on {new Date().toLocaleDateString()}</p>
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                        <BookOpen className="h-8 w-8 text-primary" />
+                        <h1 className="text-3xl font-bold text-primary">RP Coach-Up</h1>
+                    </div>
+                    <h2 className="text-2xl font-bold mb-2">User Accounts Administration Report</h2>
+                    <div className="flex justify-center gap-8 text-sm text-muted-foreground">
+                        <p>Generated: {mounted ? new Date().toLocaleString() : ''}</p>
+                        <p>Records on Page: {paginatedUsers.length}</p>
+                        <p>Page {currentPage} of {totalPages}</p>
+                    </div>
                   </div>
 
                   {isLoadingUsers ? (
@@ -541,16 +570,16 @@ export default function AdminPortal() {
                         <Table id="users-table">
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Name</TableHead>
-                              <TableHead>Email</TableHead>
-                              <TableHead>Role</TableHead>
+                              <TableHead>Full Name</TableHead>
+                              <TableHead>Email Address</TableHead>
+                              <TableHead>Account Type</TableHead>
                               <TableHead className="text-right no-print">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {paginatedUsers.map((u) => (
                               <TableRow key={u.id}>
-                                <TableCell className="font-medium whitespace-nowrap">
+                                <TableCell className="font-medium">
                                   <div className="flex items-center gap-2">
                                     <span className="no-print">
                                       {u.userType === 'Student' ? <UserCheck className="h-4 w-4 text-primary" /> : <GraduationCap className="h-4 w-4 text-accent" />}
@@ -558,19 +587,21 @@ export default function AdminPortal() {
                                     {u.firstName} {u.lastName}
                                   </div>
                                 </TableCell>
-                                <TableCell className="text-muted-foreground whitespace-nowrap">{u.email}</TableCell>
+                                <TableCell className="text-muted-foreground">{u.email}</TableCell>
                                 <TableCell>
-                                  <Badge variant={u.userType === 'Student' ? 'outline' : 'secondary'}>
-                                    {u.userType}
-                                  </Badge>
+                                  <div className="badge-print">
+                                    <Badge variant={u.userType === 'Student' ? 'outline' : 'secondary'}>
+                                        {u.userType}
+                                    </Badge>
+                                  </div>
                                 </TableCell>
-                                <TableCell className="text-right whitespace-nowrap no-print">
+                                <TableCell className="text-right no-print">
                                   <Button 
                                     variant="ghost" 
                                     size="sm"
                                     onClick={() => handleViewDetails(u)}
                                   >
-                                    Details
+                                    View Profile
                                   </Button>
                                 </TableCell>
                               </TableRow>
@@ -580,30 +611,31 @@ export default function AdminPortal() {
                       </div>
 
                       {/* Pagination Controls */}
-                      <div className="flex items-center justify-between no-print pt-4 border-t">
+                      <div className="flex items-center justify-between no-print pt-6 border-t mt-4">
                         <p className="text-sm text-muted-foreground">
-                          Showing {paginatedUsers.length} of {totalUsers} users
+                          Displaying {paginatedUsers.length} of {totalUsers} total registered users
                         </p>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
-                            className="gap-1"
+                            className="gap-2"
                           >
                             <ChevronLeft className="h-4 w-4" />
                             Previous
                           </Button>
-                          <span className="text-sm font-medium">
-                            Page {currentPage} of {totalPages}
-                          </span>
+                          <div className="flex items-center gap-1 min-w-[100px] justify-center text-sm font-medium">
+                            <span>Page {currentPage}</span>
+                            <span className="text-muted-foreground">/ {totalPages}</span>
+                          </div>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages}
-                            className="gap-1"
+                            className="gap-2"
                           >
                             Next
                             <ChevronRight className="h-4 w-4" />
@@ -665,7 +697,7 @@ export default function AdminPortal() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the notification record from the platform.
+              This action cannot be undone. This will permanently delete the notification record from the platform database.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
