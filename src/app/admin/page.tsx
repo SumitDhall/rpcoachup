@@ -110,23 +110,36 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
     setStatusChangeTarget(null);
   };
 
-  const handleDownloadResume = (fileName: string) => {
-    // Simulate the download flow for a prototype.
-    // In production, this would use window.open(storageUrl) or a direct download from Firebase Storage.
-    const blob = new Blob([`Simulated content for resume: ${fileName}`], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-    
-    toast({
-      title: "Download Started",
-      description: `Downloading simulation of ${fileName}. Real file retrieval requires Firebase Storage.`,
-    });
+  const handleDownloadResume = (fileName: string, dataUrl: string) => {
+    if (!dataUrl) {
+      toast({
+        variant: "destructive",
+        title: "Download Failed",
+        description: "The original file content was not found for this record.",
+      });
+      return;
+    }
+
+    try {
+      // The dataUrl is already the correctly encoded data from the teacher's upload
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Download Complete",
+        description: `Successfully retrieved ${fileName}.`,
+      });
+    } catch (e) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An error occurred while attempting to reconstruct the file.",
+      });
+    }
   };
 
   if (isLoadingProfile || isLoadingInterests) {
@@ -248,7 +261,7 @@ function UserDetailsContent({ userId, userType }: { userId: string; userType: st
                             size="icon" 
                             variant="ghost" 
                             className="h-8 w-8 text-green-700 hover:bg-green-100"
-                            onClick={() => handleDownloadResume(int.resumeName)}
+                            onClick={() => handleDownloadResume(int.resumeName, int.resumeData)}
                           >
                             <Download className="h-4 w-4" />
                           </Button>

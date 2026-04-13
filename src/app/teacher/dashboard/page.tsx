@@ -84,6 +84,15 @@ export default function TeacherDashboard() {
     if (file) {
       const extension = file.name.split('.').pop()?.toLowerCase();
       if (extension === 'doc' || extension === 'docx') {
+        if (file.size > 1024 * 1024) { // 1MB Limit for prototype Firestore storage
+           toast({
+            variant: "destructive",
+            title: "File Too Large",
+            description: "Please upload a file smaller than 1MB for this prototype."
+          });
+          e.target.value = '';
+          return;
+        }
         setResumeFile(file);
       } else {
         toast({
@@ -109,6 +118,16 @@ export default function TeacherDashboard() {
     setIsSubmitting(true);
 
     try {
+      // Read file content as base64 string to store in Firestore (Prototype approach)
+      const reader = new FileReader();
+      const fileDataPromise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(resumeFile);
+      });
+
+      const resumeDataUrl = await fileDataPromise;
+
       const submissionData = {
         teacherId: user.uid,
         teacherName,
@@ -119,6 +138,8 @@ export default function TeacherDashboard() {
         hoursPerWeek,
         expectedSalary,
         resumeName: resumeFile.name,
+        resumeData: resumeDataUrl, // The actual file content
+        resumeType: resumeFile.type,
         submissionDate: serverTimestamp(),
         status: 'Pending',
         notes
@@ -162,6 +183,7 @@ export default function TeacherDashboard() {
         description: "Administrators will review your profile and contact you shortly.",
       });
     } catch (error) {
+      console.error(error);
       toast({
         variant: "destructive",
         title: "Error",
