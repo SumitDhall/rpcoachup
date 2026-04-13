@@ -1,0 +1,23 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hero-education",
+      "description": "A group of diverse students studying together in a modern library",
+      "imageUrl": "https://picsum.photos/seed/edu1/1200/600",
+      "imageHint": "students studying"
+    },
+    {
+      "id": "teacher-mentoring",
+      "description": "A teacher mentoring a student one-on-one",
+      "imageUrl": "https://picsum.photos/seed/edu2/600/400",
+      "imageHint": "teacher mentoring"
+    },
+    {
+      "id": "online-course",
+      "description": "A laptop showing a digital learning platform",
+      "imageUrl": "https://picsum.photos/seed/edu3/600/400",
+      "imageHint": "online learning"
+    }
+  ]
+}
