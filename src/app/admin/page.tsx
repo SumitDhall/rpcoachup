@@ -2,6 +2,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +38,8 @@ import {
   Clock,
   AlertCircle,
   Bell,
-  Trash2
+  Trash2,
+  ArrowLeft
 } from 'lucide-react';
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc } from 'firebase/firestore';
@@ -168,8 +170,8 @@ export default function AdminPortal() {
           </Button>
         </nav>
         <div className="p-4 border-t">
-          <Button variant="outline" className="w-full" onClick={() => window.location.href = '/'}>
-            Logout Portal
+          <Button variant="outline" className="w-full" asChild>
+            <Link href="/">Logout Portal</Link>
           </Button>
         </div>
       </aside>
@@ -178,9 +180,21 @@ export default function AdminPortal() {
       <main className="flex-1 lg:ml-64 p-4 lg:p-8">
         <div className="max-w-6xl mx-auto space-y-8">
           <header className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-headline font-bold">Admin Portal</h1>
-              <p className="text-muted-foreground">Monitor platform activity and manage system alerts.</p>
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="icon" className="rounded-full lg:hidden" asChild>
+                <Link href="/"><ArrowLeft className="h-4 w-4" /></Link>
+              </Button>
+              <Button variant="ghost" size="sm" className="hidden lg:flex gap-2 items-center text-muted-foreground hover:text-primary transition-colors" asChild>
+                <Link href="/">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Website
+                </Link>
+              </Button>
+              <div className="h-8 w-px bg-border hidden lg:block mx-2" />
+              <div>
+                <h1 className="text-3xl font-headline font-bold">Admin Portal</h1>
+                <p className="text-muted-foreground">Monitor platform activity and manage system alerts.</p>
+              </div>
             </div>
           </header>
 
