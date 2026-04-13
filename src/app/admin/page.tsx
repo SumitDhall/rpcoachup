@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -33,10 +34,11 @@ import {
   BookMarked,
   User,
   ClipboardList,
-  Clock
+  Clock,
+  AlertCircle
 } from 'lucide-react';
 import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, query, limit, doc, where, orderBy } from 'firebase/firestore';
+import { collection, query, limit, doc, where } from 'firebase/firestore';
 
 // Component to fetch and display submitted interests for a specific user
 function UserInterestsSection({ userId, userType }: { userId: string; userType: string }) {
@@ -50,20 +52,36 @@ function UserInterestsSection({ userId, userType }: { userId: string; userType: 
   const collectionName = userType === 'Student' ? 'studentInterests' : 'teacherInterests';
   const idField = userType === 'Student' ? 'studentId' : 'teacherId';
 
+  // Simplified query: removed orderBy to avoid requiring composite indexes
   const interestsQuery = useMemoFirebase(() => {
     return query(
       collection(db, collectionName),
       where(idField, '==', userId),
-      orderBy('submissionDate', 'desc'),
       limit(10)
     );
   }, [db, userId, collectionName, idField]);
 
-  const { data: interests, isLoading } = useCollection(interestsQuery);
+  const { data: interests, isLoading, error } = useCollection(interestsQuery);
 
   if (isLoading) {
     return <div className="flex justify-center p-4"><Loader2 className="h-4 w-4 animate-spin text-primary" /></div>;
   }
+
+  if (error) {
+    return (
+      <div className="flex items-center gap-2 p-3 text-xs text-destructive bg-destructive/10 rounded-lg">
+        <AlertCircle className="h-4 w-4" />
+        <span>Failed to load interests.</span>
+      </div>
+    );
+  }
+
+  // Sort interests in memory if needed
+  const sortedInterests = [...(interests || [])].sort((a, b) => {
+    const dateA = a.submissionDate?.toDate?.() || 0;
+    const dateB = b.submissionDate?.toDate?.() || 0;
+    return dateB - dateA;
+  });
 
   return (
     <div className="space-y-4 pt-4 border-t">
@@ -72,13 +90,13 @@ function UserInterestsSection({ userId, userType }: { userId: string; userType: 
         {userType} Interests & Submissions
       </h4>
       
-      {!interests || interests.length === 0 ? (
+      {sortedInterests.length === 0 ? (
         <p className="text-sm text-muted-foreground italic bg-secondary/20 p-3 rounded-lg text-center">
           No interests have been submitted by this user yet.
         </p>
       ) : (
         <div className="space-y-3">
-          {interests.map((interest) => (
+          {sortedInterests.map((interest) => (
             <div key={interest.id} className="bg-secondary/30 p-3 rounded-lg border border-border/50">
               <div className="flex justify-between items-start mb-2">
                 <span className="font-bold text-sm text-primary">{interest.subject}</span>
@@ -121,16 +139,28 @@ function UserRoleDetails({ userId, userType }: { userId: string; userType: strin
     return doc(db, profilePath);
   }, [db, profilePath]);
 
-  const { data: details, isLoading } = useDoc(docRef);
+  const { data: details, isLoading, error } = useDoc(docRef);
 
   if (isLoading) {
     return <div className="flex justify-center p-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   }
 
+  if (error) {
+    return (
+      <div className="space-y-4 pt-4 border-t">
+        <div className="flex items-center gap-2 p-3 text-xs text-destructive bg-destructive/10 rounded-lg">
+          <AlertCircle className="h-4 w-4" />
+          <span>Error loading profile details.</span>
+        </div>
+        <UserInterestsSection userId={userId} userType={userType} />
+      </div>
+    );
+  }
+
   if (!details) {
     return (
       <div className="space-y-4 pt-4 border-t">
-        <p className="text-sm text-muted-foreground italic">No detailed role-specific profile found.</p>
+        <p className="text-sm text-muted-foreground italic">No detailed role-specific profile document found.</p>
         <UserInterestsSection userId={userId} userType={userType} />
       </div>
     );
@@ -164,7 +194,6 @@ function UserRoleDetails({ userId, userType }: { userId: string; userType: strin
         </div>
       </div>
 
-      {/* Show submitted interests (the main request) */}
       <UserInterestsSection userId={userId} userType={userType} />
     </div>
   );
@@ -181,11 +210,10 @@ export default function AdminPortal() {
     setMounted(true);
   }, []);
 
-  // Fetch real users from Firestore
   const usersQuery = useMemoFirebase(() => {
     return query(collection(db, 'users'), limit(50));
   }, [db]);
-  const { data: users, isLoading: isLoadingUsers } = useCollection(usersQuery);
+  const { data: users, isLoading: isLoadingUsers, error: usersError } = useCollection(usersQuery);
 
   const handleViewDetails = (user: any) => {
     setSelectedUser(user);
@@ -248,6 +276,11 @@ export default function AdminPortal() {
                 <CardContent>
                   {isLoadingUsers ? (
                     <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                  ) : usersError ? (
+                    <div className="flex flex-col items-center gap-2 p-8 text-destructive">
+                      <AlertCircle className="h-10 w-10" />
+                      <p>Error loading users. Please check permissions.</p>
+                    </div>
                   ) : (
                     <Table>
                       <TableHeader>
@@ -349,7 +382,6 @@ export default function AdminPortal() {
                 </div>
               </div>
 
-              {/* Dynamic Role-Specific Content and Interests */}
               <UserRoleDetails 
                 userId={selectedUser.id} 
                 userType={selectedUser.userType} 
