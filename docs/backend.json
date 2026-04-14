@@ -130,7 +130,7 @@
         },
         "phone": {
           "type": "string",
-          "description": "Mandatory contact phone number."
+          "description": "Contact phone number."
         },
         "school": {
           "type": "string",
@@ -175,7 +175,6 @@
         "id",
         "studentId",
         "studentName",
-        "phone",
         "subject",
         "submissionDate",
         "status"
@@ -201,7 +200,7 @@
         },
         "phone": {
           "type": "string",
-          "description": "Mandatory contact phone number."
+          "description": "Contact phone number."
         },
         "qualifications": {
           "type": "string",
@@ -245,7 +244,6 @@
         "id",
         "teacherId",
         "teacherName",
-        "phone",
         "submissionDate",
         "status"
       ]

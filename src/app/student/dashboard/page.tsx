@@ -89,14 +89,14 @@ export default function StudentDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject || !phone || !studentName) return;
+    if (!subject || !studentName) return; // subject and name are still required for the match
     setIsSubmitting(true);
     
     try {
       const submissionData = {
         studentId: user?.uid,
         studentName,
-        phone,
+        phone: phone || 'Not Provided',
         school,
         gradeOrClass,
         address,
@@ -182,16 +182,16 @@ export default function StudentDashboard() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <Label>Student Name</Label>
-                        <Input disabled={isSubmitted} value={studentName} onChange={e => setStudentName(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
+                        <Input disabled={isSubmitted} value={studentName} onChange={e => setStudentName(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} required />
                       </div>
                       <div className="space-y-1">
-                        <Label>Phone</Label>
+                        <Label>Phone (Optional)</Label>
                         <Input disabled={isSubmitted} value={phone} onChange={e => setPhone(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
                       </div>
                     </div>
                     <div className="space-y-1">
                       <Label>Subject</Label>
-                      <Input disabled={isSubmitted} value={subject} onChange={e => setSubject(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
+                      <Input disabled={isSubmitted} value={subject} onChange={e => setSubject(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} required />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">

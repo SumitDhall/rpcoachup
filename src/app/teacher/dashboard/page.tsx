@@ -75,14 +75,14 @@ export default function TeacherDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!teacherName || !phone) return;
+    if (!teacherName) return; // name is required
     setIsSubmitting(true);
 
     try {
       await addDoc(collection(db, 'teacherInterests'), {
         teacherId: user?.uid,
         teacherName,
-        phone,
+        phone: phone || 'Not Provided',
         qualifications,
         subjects,
         submissionDate: serverTimestamp(),
@@ -159,10 +159,10 @@ export default function TeacherDashboard() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <Label>Full Name</Label>
-                        <Input disabled={isSubmitted} value={teacherName} onChange={e => setTeacherName(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
+                        <Input disabled={isSubmitted} value={teacherName} onChange={e => setTeacherName(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} required />
                       </div>
                       <div className="space-y-1">
-                        <Label>Phone</Label>
+                        <Label>Phone (Optional)</Label>
                         <Input disabled={isSubmitted} value={phone} onChange={e => setPhone(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
                       </div>
                     </div>

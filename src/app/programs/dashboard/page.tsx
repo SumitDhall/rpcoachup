@@ -18,7 +18,7 @@ import {
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function ProgramsDashboard() {
-  const classroomImg = PlaceHolderImages.find(img => img.id === 'teacher-mentoring');
+  const onlineCourseImg = PlaceHolderImages.find(img => img.id === 'online-course');
 
   return (
     <div className="min-h-screen bg-background">
@@ -93,12 +93,12 @@ export default function ProgramsDashboard() {
               <div className="absolute -inset-4 bg-primary/20 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative rounded-3xl overflow-hidden border-4 border-white shadow-2xl max-w-[450px]">
                 <Image 
-                  src="https://picsum.photos/seed/tutorad/800/1000" 
+                  src={onlineCourseImg?.imageUrl || "https://picsum.photos/seed/classroom3/800/1000"} 
                   alt="Home Tuition Program"
                   width={800}
                   height={1000}
                   className="w-full h-auto object-cover transform transition-transform duration-500 group-hover:scale-105"
-                  data-ai-hint="tuition flyer"
+                  data-ai-hint="online classroom"
                   priority
                 />
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent text-white">
