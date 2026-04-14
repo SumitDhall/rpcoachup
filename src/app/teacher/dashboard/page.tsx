@@ -170,7 +170,6 @@ export default function TeacherDashboard() {
                           disabled={isSubmitted} 
                           value={teacherName} 
                           onChange={e => setTeacherName(e.target.value)} 
-                          className={isSubmitted ? "bg-secondary/50" : ""} 
                           required 
                         />
                       </div>
@@ -181,7 +180,6 @@ export default function TeacherDashboard() {
                           disabled={isSubmitted} 
                           value={phone} 
                           onChange={e => setPhone(e.target.value)} 
-                          className={isSubmitted ? "bg-secondary/50" : ""} 
                           placeholder="Contact number" 
                         />
                       </div>
@@ -194,7 +192,6 @@ export default function TeacherDashboard() {
                         disabled={isSubmitted} 
                         value={email} 
                         onChange={e => setEmail(e.target.value)} 
-                        className={isSubmitted ? "bg-secondary/50" : ""} 
                         placeholder="Your email address" 
                       />
                     </div>
@@ -206,7 +203,6 @@ export default function TeacherDashboard() {
                         disabled={isSubmitted} 
                         value={qualifications} 
                         onChange={e => setQualifications(e.target.value)} 
-                        className={isSubmitted ? "bg-secondary/50" : ""} 
                         placeholder="e.g., M.Sc Mathematics, B.Ed" 
                       />
                     </div>
@@ -218,7 +214,6 @@ export default function TeacherDashboard() {
                         disabled={isSubmitted} 
                         value={subjects} 
                         onChange={e => setSubjects(e.target.value)} 
-                        className={isSubmitted ? "bg-secondary/50" : ""} 
                         required
                         placeholder="e.g., Physics (Class 11-12), Chemistry, Calculus" 
                       />

@@ -23,8 +23,6 @@ import {
   MessageSquare, 
   Loader2, 
   LogOut, 
-  Calendar as CalendarIcon,
-  IndianRupee,
   ClipboardList,
   Edit2,
   AlertCircle,
@@ -152,9 +150,6 @@ export default function StudentDashboard() {
           <Button variant="secondary" className="w-full justify-start gap-3">
             <LayoutDashboard className="h-4 w-4" /> Dashboard
           </Button>
-          <Button variant="ghost" className="w-full justify-start gap-3">
-            <MessageSquare className="h-4 w-4" /> Messages
-          </Button>
         </nav>
         <div className="p-4 border-t">
           <Button variant="outline" className="w-full text-destructive" onClick={handleSignOut}>
@@ -195,7 +190,6 @@ export default function StudentDashboard() {
                           disabled={isSubmitted} 
                           value={studentName} 
                           onChange={e => setStudentName(e.target.value)} 
-                          className={isSubmitted ? "bg-secondary/50" : ""} 
                           required 
                         />
                       </div>
@@ -206,7 +200,6 @@ export default function StudentDashboard() {
                           disabled={isSubmitted} 
                           value={subject} 
                           onChange={e => setSubject(e.target.value)} 
-                          className={isSubmitted ? "bg-secondary/50" : ""} 
                           required 
                           placeholder="e.g., Mathematics, Physics" 
                         />
@@ -221,7 +214,6 @@ export default function StudentDashboard() {
                           disabled={isSubmitted} 
                           value={phone} 
                           onChange={e => setPhone(e.target.value)} 
-                          className={isSubmitted ? "bg-secondary/50" : ""} 
                           placeholder="Mobile or Whatsapp" 
                         />
                       </div>
@@ -232,7 +224,6 @@ export default function StudentDashboard() {
                           disabled={isSubmitted} 
                           value={email} 
                           onChange={e => setEmail(e.target.value)} 
-                          className={isSubmitted ? "bg-secondary/50" : ""} 
                           placeholder="Your email address" 
                         />
                       </div>
@@ -242,7 +233,7 @@ export default function StudentDashboard() {
                       <div className="space-y-2">
                         <Label>Monthly Fee Budget (INR)</Label>
                         <Select disabled={isSubmitted} value={affordableRange} onValueChange={setAffordableRange}>
-                          <SelectTrigger className={isSubmitted ? "bg-secondary/50" : ""}>
+                          <SelectTrigger>
                             <SelectValue placeholder="Select budget range" />
                           </SelectTrigger>
                           <SelectContent>
@@ -259,7 +250,6 @@ export default function StudentDashboard() {
                           disabled={isSubmitted} 
                           value={intendedStartDate} 
                           onChange={e => setIntendedStartDate(e.target.value)} 
-                          className={isSubmitted ? "bg-secondary/50" : ""} 
                         />
                       </div>
                     </div>
@@ -271,7 +261,6 @@ export default function StudentDashboard() {
                         disabled={isSubmitted} 
                         value={notes} 
                         onChange={e => setNotes(e.target.value)} 
-                        className={isSubmitted ? "bg-secondary/50" : ""} 
                         placeholder="e.g., Specific school name, preferred timings, address, topics to cover..." 
                       />
                     </div>

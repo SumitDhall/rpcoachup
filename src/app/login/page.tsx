@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -8,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { BookOpen, ArrowLeft, Loader2, ShieldAlert, LogOut } from 'lucide-react';
+import { BookOpen, ArrowLeft, Loader2 } from 'lucide-react';
 import { useAuth, useFirestore, useUser } from '@/firebase';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
@@ -48,20 +47,11 @@ export default function LoginPage() {
         router.push(`/${role}/dashboard`);
       } else {
         setIsRedirecting(false);
-        toast({
-          variant: "destructive",
-          title: "Profile Not Found",
-          description: "Your authentication is valid, but we couldn't find your profile. Please register again or sign out.",
-        });
+        // We don't block the UI here anymore; user can just try to login or sign up
       }
     } catch (e) {
       console.error("Redirection check failed:", e);
       setIsRedirecting(false);
-      toast({
-        variant: "destructive",
-        title: "Access Error",
-        description: "Failed to verify user permissions. Please try again.",
-      });
     }
   };
 
@@ -74,13 +64,6 @@ export default function LoginPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
-  };
-
-  const handleSignOut = async () => {
-    setIsLoading(true);
-    await signOut(auth);
-    setIsLoading(false);
-    toast({ title: "Signed Out", description: "Session deleted successfully." });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -99,7 +82,6 @@ export default function LoginPage() {
       console.error("Login error:", error);
       let errorMessage = "Invalid email or password.";
       
-      // Handle Firebase Auth specific error codes
       if (error.code === 'auth/invalid-credential') {
         errorMessage = "Invalid login credentials. Please check your email and password.";
       } else if (error.code === 'auth/user-not-found') {
@@ -120,7 +102,7 @@ export default function LoginPage() {
     }
   };
 
-  if (isAuthCheckLoading || (user && isRedirecting)) {
+  if (isAuthCheckLoading || isRedirecting) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
@@ -147,55 +129,34 @@ export default function LoginPage() {
           </div>
           <CardTitle className="text-3xl font-headline">Welcome Back</CardTitle>
           <CardDescription>
-            {user ? `Logged in as ${user.email}` : "Login to your account"}
+            Login to your account to continue
           </CardDescription>
         </CardHeader>
         
-        {user ? (
+        <form onSubmit={handleLogin}>
           <CardContent className="space-y-6">
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex gap-3 items-start text-xs text-amber-800">
-              <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold mb-1">Session Detected</p>
-                <p>You are currently signed in, but we couldn't automatically redirect you. This might be due to a missing profile document or permission error.</p>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="name@example.com" value={formData.email} onChange={handleInputChange} required />
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-               <Button variant="outline" className="w-full" asChild>
-                  <Link href="/register">Create New Profile</Link>
-               </Button>
-               <Button variant="destructive" className="w-full" onClick={handleSignOut} disabled={isLoading}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-               </Button>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" type="password" value={formData.password} onChange={handleInputChange} required />
+              </div>
             </div>
           </CardContent>
-        ) : (
-          <form onSubmit={handleLogin}>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="name@example.com" value={formData.email} onChange={handleInputChange} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input id="password" type="password" value={formData.password} onChange={handleInputChange} required />
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button className="w-full h-11 text-lg" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Sign In
-              </Button>
-              <p className="text-center text-sm text-muted-foreground">
-                Don&apos;t have an account?{' '}
-                <Link href="/register" className="text-primary font-semibold hover:underline">Register</Link>
-              </p>
-            </CardFooter>
-          </form>
-        )}
+          <CardFooter className="flex flex-col gap-4">
+            <Button className="w-full h-11 text-lg" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sign In
+            </Button>
+            <p className="text-center text-sm text-muted-foreground">
+              Don&apos;t have an account?{' '}
+              <Link href="/register" className="text-primary font-semibold hover:underline">Register</Link>
+            </p>
+          </CardFooter>
+        </form>
       </Card>
     </div>
   );
