@@ -110,11 +110,11 @@ export default function TeacherDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!teacherName || !subjects || !phone || !email) {
+    if (!teacherName || !subjects || !phone || !email || !resumeName) {
       toast({
         variant: "destructive",
         title: "Missing Information",
-        description: "Please fill in all mandatory fields (Name, Phone, Email, Subjects)."
+        description: "Please fill in all mandatory fields (Name, Phone, Email, Subjects, Resume)."
       });
       return;
     }
@@ -340,7 +340,7 @@ export default function TeacherDashboard() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="resume">Resume / CV (.doc, .docx, .pdf, .jpg)</Label>
+                      <Label htmlFor="resume">Resume / CV (.doc, .docx, .pdf, .jpg) <span className="text-destructive">*</span></Label>
                       <div className="flex items-center gap-4">
                          <Input 
                           id="resume"
