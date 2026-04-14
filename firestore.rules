@@ -1,9 +1,10 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Broadest possible access for development and troubleshooting.
-    // This removes all authentication and role-based restrictions.
+    // TOTAL ACCESS POLICY
+    // This rule allows any user (authenticated or not) to read and write any document.
+    // This is the definitive fix for "Missing or insufficient permissions" errors
+    // while you are building and testing your application's logic.
     match /{document=**} {
       allow read, write: if true;
     }
