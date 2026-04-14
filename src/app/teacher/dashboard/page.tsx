@@ -36,7 +36,14 @@ import {
   Menu,
   CheckCircle2,
   MessageSquare,
-  Star
+  Star,
+  User,
+  Phone,
+  Mail,
+  GraduationCap,
+  Briefcase,
+  FileText,
+  Info
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
@@ -75,6 +82,7 @@ export default function TeacherDashboard() {
   const [qualifications, setQualifications] = useState('');
   const [experienceYears, setExperienceYears] = useState('');
   const [subjects, setSubjects] = useState('');
+  const [expectedSalary, setExpectedSalary] = useState('');
   const [resumeName, setResumeName] = useState('');
   const [resumeData, setResumeData] = useState('');
 
@@ -109,35 +117,49 @@ export default function TeacherDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!teacherName || !subjects || !phone || !email || !resumeName) {
-      toast({ variant: "destructive", title: "Missing Info", description: "Complete mandatory fields." });
+    if (!teacherName || !subjects || !phone || !email || !resumeName || !qualifications || !experienceYears) {
+      toast({ variant: "destructive", title: "Missing Information", description: "Please complete all mandatory fields, including your resume." });
       return;
     }
     setIsSubmitting(true);
     try {
       await addDoc(collection(db, 'teacherInterests'), {
         teacherId: user?.uid,
-        teacherName, phone, email,
-        qualifications: qualifications || 'N/A',
-        experienceYears: experienceYears || '0',
-        subjects, resumeName, resumeData,
+        teacherName,
+        phone,
+        email,
+        qualifications,
+        experienceYears,
+        subjects,
+        expectedSalary: expectedSalary || 'Negotiable',
+        resumeName,
+        resumeData,
         submissionDate: serverTimestamp(),
         status: 'Pending'
       });
+      
       addDocumentNonBlocking(collection(db, 'notifications'), {
         type: 'interest',
-        subject: `New Teacher Profile: ${teacherName}`,
-        body: `${teacherName} submitted a specialty profile for ${subjects}.`,
+        subject: `New Teacher Application: ${teacherName}`,
+        body: `${teacherName} submitted a specialty profile for ${subjects}. Experience: ${experienceYears} years.`,
         userEmail: email,
         userName: teacherName,
         timestamp: serverTimestamp(),
         read: false
       });
+
       setShowSuccessDialog(true);
-      setQualifications(''); setExperienceYears(''); setSubjects(''); setResumeName(''); setResumeData(''); setPhone('');
+      // Reset form
+      setQualifications(''); 
+      setExperienceYears(''); 
+      setSubjects(''); 
+      setResumeName(''); 
+      setResumeData(''); 
+      setPhone('');
+      setExpectedSalary('');
     } catch (error) {
       console.error(error);
-      toast({ variant: "destructive", title: "Error", description: "Failed to submit profile." });
+      toast({ variant: "destructive", title: "Submission Error", description: "Failed to submit your professional profile. Please try again." });
     } finally {
       setIsSubmitting(false);
     }
@@ -177,7 +199,9 @@ export default function TeacherDashboard() {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <BookOpen className="text-primary h-6 w-6" />
+        <div className="bg-primary p-1 rounded-lg">
+          <BookOpen className="text-primary-foreground h-5 w-5" />
+        </div>
         <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
       </Link>
       <nav className="flex-1 px-4 space-y-1">
@@ -203,7 +227,9 @@ export default function TeacherDashboard() {
     <div className="flex min-h-screen bg-background flex-col lg:flex-row">
       <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card sticky top-0 z-40">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <BookOpen className="text-primary h-6 w-6" />
+          <div className="bg-primary p-1.5 rounded-lg">
+            <BookOpen className="text-primary-foreground h-6 w-6" />
+          </div>
           <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
         </Link>
         <Sheet>
@@ -227,41 +253,102 @@ export default function TeacherDashboard() {
               <h1 className="text-3xl font-headline font-bold text-primary">Teacher Portal</h1>
               <p className="text-muted-foreground">Welcome, Educator {profile?.firstName}</p>
             </div>
-            <Badge variant="outline" className="border-primary text-primary">Verified Teacher</Badge>
+            <Badge variant="outline" className="border-primary text-primary bg-primary/5 uppercase font-bold">Verified Teacher</Badge>
           </header>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsContent value="profile">
-              <Card className="shadow-lg border-primary/10">
-                <CardHeader>
+              <Card className="shadow-2xl border-primary/10 overflow-hidden">
+                <CardHeader className="bg-primary/5 border-b">
                   <CardTitle>Professional Specialty Profile</CardTitle>
-                  <CardDescription>Update your subjects and professional details.</CardDescription>
+                  <CardDescription>Update your teaching subjects, qualifications, and professional background.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmitInterest}>
-                  <CardContent className="space-y-6">
-                    <div className="grid sm:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="teacherName">Full Name *</Label>
-                        <Input id="teacherName" value={teacherName} onChange={e => setTeacherName(e.target.value)} required />
+                  <CardContent className="space-y-8 pt-8">
+                    {/* Basic Information */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+                        <User className="h-4 w-4" /> Personal Information
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Phone / WhatsApp *</Label>
-                        <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} required />
+                      <div className="grid sm:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="teacherName">Full Name *</Label>
+                          <Input id="teacherName" value={teacherName} onChange={e => setTeacherName(e.target.value)} required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Professional Email *</Label>
+                          <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="phone">Phone / WhatsApp *</Label>
+                          <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} required placeholder="+91" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="salary">Expected Monthly Salary (Optional)</Label>
+                          <Input id="salary" value={expectedSalary} onChange={e => setExpectedSalary(e.target.value)} placeholder="e.g., ₹15,000" />
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="subjects">Subjects *</Label>
-                      <Textarea id="subjects" value={subjects} onChange={e => setSubjects(e.target.value)} required />
+
+                    {/* Professional Details */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+                        <GraduationCap className="h-4 w-4" /> Academic & Professional Background
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="qualifications">Highest Qualification *</Label>
+                          <Input id="qualifications" value={qualifications} onChange={e => setQualifications(e.target.value)} required placeholder="e.g., M.Sc Mathematics, B.Ed" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="experience">Years of Experience *</Label>
+                          <Input id="experience" type="number" value={experienceYears} onChange={e => setExperienceYears(e.target.value)} required placeholder="e.g., 5" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="subjects">Subjects Specialized In *</Label>
+                        <Textarea 
+                          id="subjects" 
+                          value={subjects} 
+                          onChange={e => setSubjects(e.target.value)} 
+                          required 
+                          placeholder="Please list the subjects you are qualified to teach (e.g., Physics, Chemistry for Class XI-XII)." 
+                          className="min-h-[100px]"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="resume">Resume *</Label>
-                      <Input id="resume" type="file" accept=".pdf,.doc,.docx" onChange={handleFileChange} required />
+
+                    {/* Document Upload */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+                        <FileText className="h-4 w-4" /> Supporting Documents
+                      </div>
+                      <div className="p-6 border-2 border-dashed rounded-xl bg-secondary/5 space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="resume" className="text-base">Upload Professional Resume / CV *</Label>
+                          <Input 
+                            id="resume" 
+                            type="file" 
+                            accept=".pdf,.doc,.docx" 
+                            onChange={handleFileChange} 
+                            required 
+                            className="h-12 pt-2 cursor-pointer bg-background"
+                          />
+                          <p className="text-[10px] text-muted-foreground">Accepted formats: PDF, DOC, DOCX. Max size: 5MB.</p>
+                        </div>
+                        {resumeName && (
+                          <div className="flex items-center gap-2 text-xs font-medium text-primary bg-primary/5 p-2 rounded-lg w-fit">
+                            <CheckCircle2 className="h-3 w-3" />
+                            File Selected: {resumeName}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
-                  <CardFooter className="border-t pt-6">
-                    <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-12 text-lg">
+                  <CardFooter className="border-t bg-secondary/5 pt-6 pb-8">
+                    <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-14 text-xl shadow-lg shadow-primary/20">
                       {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                      Submit Profile
+                      Submit Professional Profile
                     </Button>
                   </CardFooter>
                 </form>
@@ -270,17 +357,40 @@ export default function TeacherDashboard() {
 
             <TabsContent value="history">
               <Card>
-                <CardHeader><CardTitle>My Professional Records</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle>My Professional Records</CardTitle>
+                  <CardDescription>View your submitted specialty profiles and application status.</CardDescription>
+                </CardHeader>
                 <CardContent className="space-y-4">
-                  {isLoadingInterests ? <Loader2 className="animate-spin mx-auto" /> : (rawInterests && rawInterests.length > 0 ? [...rawInterests].sort((a,b) => b.submissionDate?.toMillis() - a.submissionDate?.toMillis()).map(i => (
-                    <div key={i.id} className="p-4 border rounded-xl border-l-4 border-l-primary flex items-center justify-between bg-card shadow-sm">
-                      <div><p className="font-bold">{i.subjects}</p><p className="text-[10px] text-muted-foreground">{i.experienceYears} yrs experience</p></div>
-                      <Badge variant={i.status === 'Pending' ? 'outline' : 'default'}>{i.status}</Badge>
-                    </div>
-                  )) : (
-                    <div className="text-center py-12 border rounded-xl border-dashed">
-                      <p className="text-sm text-muted-foreground">No records found.</p>
-                      <Button variant="link" onClick={() => setActiveTab('profile')}>Submit your specialties</Button>
+                  {isLoadingInterests ? (
+                    <div className="flex justify-center p-8"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
+                  ) : (rawInterests && rawInterests.length > 0 ? (
+                    [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => (
+                      <div key={i.id} className="p-5 border rounded-xl border-l-4 border-l-primary flex flex-col sm:flex-row sm:items-center justify-between bg-card shadow-sm gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-lg">{i.subjects}</p>
+                            <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600' : ''}>
+                              {i.status}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-x-4 text-xs text-muted-foreground">
+                            <p className="flex items-center gap-1"><Briefcase className="h-3 w-3" /> {i.experienceYears} yrs exp.</p>
+                            <p className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}</p>
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm" asChild>
+                           <Link href="/programs/dashboard">Program Details</Link>
+                        </Button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-16 border-2 border-dashed rounded-2xl bg-secondary/5">
+                      <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto mb-4 text-primary">
+                        <Briefcase className="h-8 w-8" />
+                      </div>
+                      <p className="text-muted-foreground font-medium mb-4">No professional records found.</p>
+                      <Button onClick={() => setActiveTab('profile')}>Submit your first profile</Button>
                     </div>
                   ))}
                 </CardContent>
@@ -288,30 +398,44 @@ export default function TeacherDashboard() {
             </TabsContent>
 
             <TabsContent value="feedback">
-              <Card className="border-accent/10 shadow-xl">
-                <CardHeader>
+              <Card className="border-accent/10 shadow-xl overflow-hidden">
+                <CardHeader className="bg-accent/5 border-b">
                   <CardTitle>Teacher Experience Feedback</CardTitle>
-                  <CardDescription>We value your expertise. Let us know how we can support you better.</CardDescription>
+                  <CardDescription>Your insights help us improve the platform for both students and educators.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmitFeedback}>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                      <Label>Platform Rating</Label>
-                      <div className="flex gap-2">
+                  <CardContent className="space-y-8 pt-8">
+                    <div className="space-y-4">
+                      <Label className="text-lg">Overall Platform Satisfaction</Label>
+                      <div className="flex gap-3">
                         {[1, 2, 3, 4, 5].map(star => (
-                          <Button key={star} type="button" variant={Number(feedbackRating) >= star ? "default" : "outline"} size="icon" className="h-10 w-10" onClick={() => setFeedbackRating(star.toString())}>
-                            <Star className={`h-5 w-5 ${Number(feedbackRating) >= star ? "fill-current" : ""}`} />
+                          <Button 
+                            key={star} 
+                            type="button" 
+                            variant={Number(feedbackRating) >= star ? "default" : "outline"} 
+                            size="icon" 
+                            className={`h-12 w-12 rounded-xl transition-all ${Number(feedbackRating) >= star ? 'bg-accent text-accent-foreground scale-110 shadow-md' : 'hover:border-accent/50'}`} 
+                            onClick={() => setFeedbackRating(star.toString())}
+                          >
+                            <Star className={`h-6 w-6 ${Number(feedbackRating) >= star ? "fill-current" : ""}`} />
                           </Button>
                         ))}
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="feedbackComment">Your Experience / Feedback</Label>
-                      <Textarea id="feedbackComment" value={feedbackComment} onChange={e => setFeedbackComment(e.target.value)} required placeholder="Share your teaching experience with RP Coach-Up..." />
+                      <Label htmlFor="feedbackComment" className="text-lg">Your Feedback / Suggestions</Label>
+                      <Textarea 
+                        id="feedbackComment" 
+                        value={feedbackComment} 
+                        onChange={e => setFeedbackComment(e.target.value)} 
+                        required 
+                        placeholder="Share your teaching experience with RP Coach-Up. How can we better support you?" 
+                        className="min-h-[150px] text-base"
+                      />
                     </div>
                   </CardContent>
-                  <CardFooter className="border-t pt-6">
-                    <Button type="submit" disabled={isSubmitting} className="w-full h-12 font-bold text-lg bg-accent text-accent-foreground">
+                  <CardFooter className="border-t bg-secondary/5 pt-6 pb-8">
+                    <Button type="submit" disabled={isSubmitting} className="w-full h-14 font-bold text-xl bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg shadow-accent/20">
                       {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                       Submit Feedback
                     </Button>
@@ -324,14 +448,26 @@ export default function TeacherDashboard() {
       </main>
 
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-primary">Profile Received!</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your professional profile has been received. Our team will contact you within 7 working days. You can monitor progress in the Professional Records tab.
+            <div className="mx-auto bg-green-100 p-3 rounded-full w-fit mb-4">
+              <CheckCircle2 className="h-10 w-10 text-green-600" />
+            </div>
+            <AlertDialogTitle className="text-center text-2xl text-primary">Profile Received!</AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-base">
+              Your professional specialty profile has been received. Our team will review your qualifications and resume and contact you within **7 working days** for verification.
+              <br /><br />
+              You can monitor the status of your application in the **Professional Records** tab.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogAction onClick={() => {setShowSuccessDialog(false); setActiveTab('history');}}>OK</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogFooter className="sm:justify-center mt-6">
+            <AlertDialogAction 
+              onClick={() => {setShowSuccessDialog(false); setActiveTab('history');}}
+              className="px-10 h-12 rounded-xl text-lg font-bold"
+            >
+              Understand, Thank You
+            </AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
