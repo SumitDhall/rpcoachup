@@ -1,7 +1,6 @@
-
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -38,7 +37,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp, query, where, limit, orderBy } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { notifyAdmin } from '@/app/actions/notifications';
 
@@ -57,14 +56,24 @@ export default function StudentDashboard() {
 
   const interestsQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
+    // Note: orderBy removed to avoid index requirement, sorted on client side
     return query(
       collection(db, 'studentInterests'),
       where('studentId', '==', user.uid),
-      orderBy('submissionDate', 'desc'),
-      limit(50)
+      limit(100)
     );
   }, [db, user?.uid]);
-  const { data: interests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
+  const { data: rawInterests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
+
+  // Client-side sorting
+  const interests = useMemo(() => {
+    if (!rawInterests) return null;
+    return [...rawInterests].sort((a, b) => {
+      const timeA = a.submissionDate?.toMillis?.() || 0;
+      const timeB = b.submissionDate?.toMillis?.() || 0;
+      return timeB - timeA;
+    });
+  }, [rawInterests]);
 
   const [studentName, setStudentName] = useState('');
   const [phone, setPhone] = useState('');
