@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
   Table, 
@@ -20,8 +20,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -35,41 +33,33 @@ import {
 } from "@/components/ui/alert-dialog"
 import { 
   BookOpen, 
-  Users, 
   Settings, 
   Loader2,
   UserCheck,
   GraduationCap,
-  Mail,
-  Calendar,
-  Award,
-  BookMarked,
-  User,
-  ClipboardList,
-  Clock,
   Trash2,
   LogOut,
   ShieldAlert,
   Phone,
   School,
   MapPin,
-  CheckCircle2,
-  RotateCcw,
   ChevronLeft,
   ChevronRight,
-  LayoutDashboard,
-  Briefcase,
-  FileText,
-  IndianRupee,
-  Download,
   UserPlus,
   UserMinus,
   Search,
   Bell,
-  History
+  History,
+  Database,
+  AlertTriangle,
+  ClipboardList,
+  IndianRupee,
+  FileText,
+  Download,
+  User
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -544,6 +534,65 @@ function UserDetailsContent({ user }: { user: any }) {
   );
 }
 
+function PurgeCollectionButton({ collectionName, label, onPurge }: { collectionName: string, label: string, onPurge: () => void }) {
+  const db = useFirestore();
+  const { toast } = useToast();
+  const [isPurging, setIsPurging] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handlePurge = async () => {
+    setIsPurging(true);
+    try {
+      const q = query(collection(db, collectionName), limit(500));
+      const snapshot = await getDocs(q);
+      
+      const batch = writeBatch(db);
+      snapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      
+      await batch.commit();
+      onPurge();
+      toast({ title: "Collection Cleared", description: `All documents in ${collectionName} have been deleted.` });
+    } catch (error) {
+      console.error(error);
+      toast({ variant: "destructive", title: "Purge Failed", description: "Could not clear collection." });
+    } finally {
+      setIsPurging(false);
+      setShowConfirm(false);
+    }
+  };
+
+  return (
+    <>
+      <Button variant="outline" className="justify-start gap-2 h-12 text-destructive border-destructive/20 hover:bg-destructive/5" onClick={() => setShowConfirm(true)}>
+        <Trash2 className="h-4 w-4" />
+        {label}
+      </Button>
+
+      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Are you absolutely sure?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete all documents in the <strong>{collectionName}</strong> collection. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handlePurge} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isPurging}>
+              {isPurging ? <Loader2 className="animate-spin h-4 w-4" /> : 'Yes, Delete All'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
 function SystemSettingsLogs() {
   const db = useFirestore();
   const logsQuery = useMemoFirebase(() => {
@@ -703,7 +752,10 @@ export default function AdminPortal() {
             <GraduationCap className="h-4 w-4" /> Teachers
           </Button>
           <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('settings')}>
-            <Settings className="h-4 w-4" /> System Logs
+            <History className="h-4 w-4" /> Activity Logs
+          </Button>
+          <Button variant={activeTab === 'maintenance' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('maintenance')}>
+            <Database className="h-4 w-4" /> Maintenance
           </Button>
         </nav>
         <div className="p-4 border-t">
@@ -721,7 +773,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader><CardTitle>Notifications</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                {isLoadingNotifications ? <Loader2 className="animate-spin mx-auto" /> : notifications?.map(n => (
+                {isLoadingNotifications ? <Loader2 className="animate-spin mx-auto" /> : (notifications && notifications.length > 0 ? notifications.map(n => (
                   <div key={n.id} className="flex items-start justify-between p-4 border rounded-xl bg-card">
                     <div className="flex gap-3">
                       {n.type === 'registration' ? <UserCheck className="h-5 w-5 text-primary" /> : <ClipboardList className="h-5 w-5 text-accent" />}
@@ -732,7 +784,7 @@ export default function AdminPortal() {
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => setNotificationToDelete(n.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
-                ))}
+                )) : <p className="text-center py-8 text-muted-foreground italic">No notifications.</p>)}
               </CardContent>
             </Card>
           )}
@@ -773,12 +825,63 @@ export default function AdminPortal() {
           )}
 
           {activeTab === 'settings' && <SystemSettingsLogs />}
+
+          {activeTab === 'maintenance' && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Database className="h-5 w-5 text-primary" />
+                  <div>
+                    <CardTitle>Database Maintenance</CardTitle>
+                    <CardDescription>Purge test data and clear collections. Use with caution.</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-xl flex gap-4 items-start mb-6">
+                  <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-sm text-destructive">Danger Zone</h4>
+                    <p className="text-xs text-muted-foreground">These actions are permanent. Use them only when you need to "clean" the database for fresh test cycles. Note: User accounts themselves (Authentication) must be deleted via the Firebase Console.</p>
+                  </div>
+                </div>
+                
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <PurgeCollectionButton 
+                    collectionName="studentInterests" 
+                    label="Clear Student Interests" 
+                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all student interests')}
+                  />
+                  <PurgeCollectionButton 
+                    collectionName="teacherInterests" 
+                    label="Clear Teacher Interests" 
+                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all teacher interests')}
+                  />
+                  <PurgeCollectionButton 
+                    collectionName="matchProposals" 
+                    label="Clear All Matches" 
+                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all match proposals')}
+                  />
+                  <PurgeCollectionButton 
+                    collectionName="notifications" 
+                    label="Clear Notifications" 
+                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all notifications')}
+                  />
+                  <PurgeCollectionButton 
+                    collectionName="systemLogs" 
+                    label="Clear Activity Logs" 
+                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all system logs')}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
 
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{selectedUser?.firstName}'s Profile</DialogTitle></DialogHeader>
+          <DialogHeader><CardTitle>{selectedUser?.firstName}'s Profile</CardTitle></DialogHeader>
           {selectedUser && <UserDetailsContent user={selectedUser} />}
         </DialogContent>
       </Dialog>
