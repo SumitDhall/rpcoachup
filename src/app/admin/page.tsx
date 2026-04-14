@@ -31,6 +31,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { 
   BookOpen, 
   Settings, 
@@ -57,7 +62,8 @@ import {
   FileText,
   Download,
   User,
-  Mail
+  Mail,
+  Menu
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
@@ -756,41 +762,69 @@ export default function AdminPortal() {
     );
   }
 
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
+      <div className="p-6 flex items-center gap-2">
+        <BookOpen className="text-primary h-6 w-6" />
+        <span className="font-headline font-bold text-lg">RP Coach-Up</span>
+      </div>
+      <nav className="flex-1 px-4 space-y-1">
+        <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('notifications')}>
+          <Bell className="h-4 w-4" /> Notifications
+        </Button>
+        <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('students')}>
+          <UserCheck className="h-4 w-4" /> Students
+        </Button>
+        <Button variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('teachers')}>
+          <GraduationCap className="h-4 w-4" /> Teachers
+        </Button>
+        <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('settings')}>
+          <History className="h-4 w-4" /> Activity Logs
+        </Button>
+        <Button variant={activeTab === 'maintenance' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('maintenance')}>
+          <Database className="h-4 w-4" /> Maintenance
+        </Button>
+      </nav>
+      <div className="p-4 border-t">
+        <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
+          <LogOut className="h-4 w-4 mr-2" /> Sign Out
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="flex min-h-screen bg-background">
-      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
-        <div className="p-6 flex items-center gap-2">
+    <div className="flex min-h-screen bg-background flex-col lg:flex-row">
+      {/* Mobile Top Bar */}
+      <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card sticky top-0 z-40">
+        <div className="flex items-center gap-2">
           <BookOpen className="text-primary h-6 w-6" />
-          <span className="font-headline font-bold text-lg">RP Coach-Up</span>
+          <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
         </div>
-        <nav className="flex-1 px-4 space-y-1">
-          <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('notifications')}>
-            <Bell className="h-4 w-4" /> Notifications
-          </Button>
-          <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('students')}>
-            <UserCheck className="h-4 w-4" /> Students
-          </Button>
-          <Button variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('teachers')}>
-            <GraduationCap className="h-4 w-4" /> Teachers
-          </Button>
-          <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('settings')}>
-            <History className="h-4 w-4" /> Activity Logs
-          </Button>
-          <Button variant={activeTab === 'maintenance' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('maintenance')}>
-            <Database className="h-4 w-4" /> Maintenance
-          </Button>
-        </nav>
-        <div className="p-4 border-t">
-          <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4 mr-2" /> Sign Out
-          </Button>
-        </div>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Menu className="h-6 w-6 text-primary" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-64">
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+      </header>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
+        <SidebarContent />
       </aside>
 
-      <main className="flex-1 lg:ml-64 p-8">
+      <main className="flex-1 lg:ml-64 p-4 lg:p-8">
         <div className="max-w-6xl mx-auto space-y-8">
-          <header className="flex items-center justify-between">
-            <h1 className="text-3xl font-headline font-bold">Admin Portal</h1>
+          <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-headline font-bold">Admin Portal</h1>
+              <p className="text-muted-foreground">System Administration and Matching</p>
+            </div>
             <div className="flex items-center gap-4">
               <Badge variant="outline" className="h-8 px-4 font-bold border-primary text-primary bg-primary/5 uppercase">
                 System Administrator
