@@ -102,20 +102,22 @@ function createAdminNotification(db: any, type: 'registration' | 'interest' | 'a
 }
 
 // Component to handle student assignments for a teacher
-function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: string; teacherName: string }) {
+function StudentAssignmentManager({ teacherId, teacherName, isAdmin }: { teacherId: string; teacherName: string; isAdmin: boolean }) {
   const db = useFirestore();
   const { user: adminUser } = useUser();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
 
   const studentsQuery = useMemoFirebase(() => {
+    if (!db || !isAdmin) return null;
     return query(collection(db, 'users'), where('userType', '==', 'Student'), limit(100));
-  }, [db]);
+  }, [db, isAdmin]);
   const { data: students, isLoading: isLoadingStudents } = useCollection(studentsQuery);
 
   const matchesQuery = useMemoFirebase(() => {
+    if (!db || !isAdmin || !teacherId) return null;
     return query(collection(db, 'matchProposals'), where('teacherId', '==', teacherId));
-  }, [db, teacherId]);
+  }, [db, isAdmin, teacherId]);
   const { data: currentMatches, isLoading: isLoadingMatches } = useCollection(matchesQuery);
 
   const matchedStudentIds = useMemo(() => {
@@ -136,7 +138,6 @@ function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: strin
     addDocumentNonBlocking(collection(db, 'matchProposals'), matchData);
     logSystemEvent(db, adminUser, 'assignment', `Assigned Student: ${studentFullName} to Teacher: ${teacherName}`);
     
-    // Create Notification
     createAdminNotification(
       db, 
       'assignment', 
@@ -146,7 +147,6 @@ function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: strin
       studentFullName
     );
 
-    // Send Simulated Email
     sendNotificationEmail({
       recipientType: 'user',
       type: 'assignment',
@@ -183,6 +183,7 @@ function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: strin
     );
   }, [students, searchTerm]);
 
+  if (!isAdmin) return null;
   if (isLoadingStudents || isLoadingMatches) {
     return <div className="flex justify-center p-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   }
@@ -255,20 +256,22 @@ function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: strin
 }
 
 // Component to handle teacher assignments for a student
-function TeacherAssignmentManager({ studentId, studentName }: { studentId: string; studentName: string }) {
+function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { studentId: string; studentName: string; isAdmin: boolean }) {
   const db = useFirestore();
   const { user: adminUser } = useUser();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
 
   const teachersQuery = useMemoFirebase(() => {
+    if (!db || !isAdmin) return null;
     return query(collection(db, 'users'), where('userType', '==', 'Teacher'), limit(100));
-  }, [db]);
+  }, [db, isAdmin]);
   const { data: teachers, isLoading: isLoadingTeachers } = useCollection(teachersQuery);
 
   const matchesQuery = useMemoFirebase(() => {
+    if (!db || !isAdmin || !studentId) return null;
     return query(collection(db, 'matchProposals'), where('studentId', '==', studentId));
-  }, [db, studentId]);
+  }, [db, isAdmin, studentId]);
   const { data: currentMatches, isLoading: isLoadingMatches } = useCollection(matchesQuery);
 
   const matchedTeacherIds = useMemo(() => {
@@ -289,7 +292,6 @@ function TeacherAssignmentManager({ studentId, studentName }: { studentId: strin
     addDocumentNonBlocking(collection(db, 'matchProposals'), matchData);
     logSystemEvent(db, adminUser, 'assignment', `Assigned Teacher: ${teacherFullName} to Student: ${studentName}`);
 
-    // Create Notification
     createAdminNotification(
       db, 
       'assignment', 
@@ -299,7 +301,6 @@ function TeacherAssignmentManager({ studentId, studentName }: { studentId: strin
       teacherFullName
     );
 
-    // Send Simulated Email
     sendNotificationEmail({
       recipientType: 'user',
       type: 'assignment',
@@ -336,6 +337,7 @@ function TeacherAssignmentManager({ studentId, studentName }: { studentId: strin
     );
   }, [teachers, searchTerm]);
 
+  if (!isAdmin) return null;
   if (isLoadingTeachers || isLoadingMatches) {
     return <div className="flex justify-center p-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   }
@@ -408,7 +410,7 @@ function TeacherAssignmentManager({ studentId, studentName }: { studentId: strin
 }
 
 // Component to fetch and display role-specific profile details and interests
-function UserDetailsContent({ user }: { user: any }) {
+function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) {
   const db = useFirestore();
   const { user: adminUser } = useUser();
   const { toast } = useToast();
@@ -419,8 +421,9 @@ function UserDetailsContent({ user }: { user: any }) {
     : `users/${user.id}/teacherProfile/teacherProfile`;
 
   const docRef = useMemoFirebase(() => {
+    if (!db || !isAdmin) return null;
     return doc(db, profilePath);
-  }, [db, profilePath]);
+  }, [db, profilePath, isAdmin]);
 
   const { data: details, isLoading: isLoadingProfile } = useDoc(docRef);
 
@@ -428,12 +431,13 @@ function UserDetailsContent({ user }: { user: any }) {
   const interestField = user.userType === 'Student' ? 'studentId' : 'teacherId';
   
   const interestsQuery = useMemoFirebase(() => {
+    if (!db || !isAdmin || !user.id) return null;
     return query(
       collection(db, interestCollection), 
       where(interestField, '==', user.id),
       limit(50)
     );
-  }, [db, user.id, interestCollection, interestField]);
+  }, [db, user.id, interestCollection, interestField, isAdmin]);
 
   const { data: interests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
 
@@ -451,7 +455,6 @@ function UserDetailsContent({ user }: { user: any }) {
     
     updateDocumentNonBlocking(interestRef, { status: newStatus });
     
-    // 1. Create Internal Notification
     createAdminNotification(
       db,
       'status_update',
@@ -461,10 +464,8 @@ function UserDetailsContent({ user }: { user: any }) {
       statusChangeTarget.userName
     );
 
-    // 2. Log Activity
     logSystemEvent(db, adminUser, 'status_update', `Updated status to ${newStatus} for ${statusChangeTarget.userName}'s interest in ${statusChangeTarget.subject}`);
 
-    // 3. Send Simulated Email to User
     sendNotificationEmail({
       recipientType: 'user',
       type: 'status_update',
@@ -508,6 +509,7 @@ function UserDetailsContent({ user }: { user: any }) {
     }
   };
 
+  if (!isAdmin) return null;
   if (isLoadingProfile || isLoadingInterests) {
     return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
@@ -628,9 +630,9 @@ function UserDetailsContent({ user }: { user: any }) {
       </div>
 
       {user.userType === 'Student' ? (
-        <TeacherAssignmentManager studentId={user.id} studentName={`${user.firstName} ${user.lastName}`} />
+        <TeacherAssignmentManager studentId={user.id} studentName={`${user.firstName} ${user.lastName}`} isAdmin={isAdmin} />
       ) : (
-        <StudentAssignmentManager teacherId={user.id} teacherName={`${user.firstName} ${user.lastName}`} />
+        <StudentAssignmentManager teacherId={user.id} teacherName={`${user.firstName} ${user.lastName}`} isAdmin={isAdmin} />
       )}
 
       <AlertDialog open={!!statusChangeTarget} onOpenChange={(open) => !open && setStatusChangeTarget(null)}>
@@ -651,13 +653,14 @@ function UserDetailsContent({ user }: { user: any }) {
   );
 }
 
-function PurgeCollectionButton({ collectionName, label, onPurge }: { collectionName: string, label: string, onPurge: () => void }) {
+function PurgeCollectionButton({ collectionName, label, onPurge, isAdmin }: { collectionName: string, label: string, onPurge: () => void, isAdmin: boolean }) {
   const db = useFirestore();
   const { toast } = useToast();
   const [isPurging, setIsPurging] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handlePurge = async () => {
+    if (!isAdmin) return;
     setIsPurging(true);
     try {
       const q = query(collection(db, collectionName), limit(500));
@@ -710,13 +713,15 @@ function PurgeCollectionButton({ collectionName, label, onPurge }: { collectionN
   );
 }
 
-function SystemSettingsLogs() {
+function SystemSettingsLogs({ isAdmin }: { isAdmin: boolean }) {
   const db = useFirestore();
   const logsQuery = useMemoFirebase(() => {
+    if (!db || !isAdmin) return null;
     return query(collection(db, 'systemLogs'), orderBy('timestamp', 'desc'), limit(100));
-  }, [db]);
+  }, [db, isAdmin]);
   const { data: logs, isLoading } = useCollection(logsQuery);
 
+  if (!isAdmin) return null;
   if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
 
   return (
@@ -768,14 +773,16 @@ function SystemSettingsLogs() {
   );
 }
 
-function AdminMessagesView() {
+function AdminMessagesView({ isAdmin }: { isAdmin: boolean }) {
   const db = useFirestore();
   const messagesQuery = useMemoFirebase(() => {
+    if (!db || !isAdmin) return null;
     return query(collection(db, 'messages'), orderBy('timestamp', 'desc'), limit(100));
-  }, [db]);
+  }, [db, isAdmin]);
   const { data: messages, isLoading } = useCollection(messagesQuery);
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
 
+  if (!isAdmin) return null;
   if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
 
   return (
@@ -859,16 +866,29 @@ export default function AdminPortal() {
   }, [db, user?.uid]);
   const { data: adminDoc, isLoading: isAdminLoading } = useDoc(adminDocRef);
 
+  const isAdmin = !!adminDoc;
+
+  // Defensive Redirection for non-admins
+  useEffect(() => {
+    if (!isUserLoading && !isAdminLoading && !isAdmin) {
+      toast({
+        variant: "destructive",
+        title: "Access Restricted",
+        description: "You do not have permission to view the Admin Portal.",
+      });
+    }
+  }, [isUserLoading, isAdminLoading, isAdmin, router]);
+
   const usersQuery = useMemoFirebase(() => {
-    if (!db || !adminDoc) return null;
+    if (!db || !isAdmin) return null;
     return query(collection(db, 'users'), limit(500));
-  }, [db, adminDoc]);
+  }, [db, isAdmin]);
   const { data: users, isLoading: isLoadingUsers } = useCollection(usersQuery);
 
   const notificationsQuery = useMemoFirebase(() => {
-    if (!db || !adminDoc) return null;
+    if (!db || !isAdmin) return null;
     return query(collection(db, 'notifications'), limit(50));
-  }, [db, adminDoc]);
+  }, [db, isAdmin]);
   const { data: rawNotifications, isLoading: isLoadingNotifications } = useCollection(notificationsQuery);
 
   const notifications = useMemo(() => {
@@ -881,7 +901,7 @@ export default function AdminPortal() {
   }, [rawNotifications]);
 
   const handleDeleteNotification = async () => {
-    if (notificationToDelete) {
+    if (notificationToDelete && isAdmin) {
       await deleteDoc(doc(db, 'notifications', notificationToDelete));
       setNotificationToDelete(null);
     }
@@ -910,7 +930,7 @@ export default function AdminPortal() {
     );
   }
 
-  if (!user || !adminDoc) {
+  if (!user || !isAdmin) {
     return (
       <div className="flex h-screen items-center justify-center p-4">
         <Card className="max-w-md w-full border-destructive/20 shadow-xl">
@@ -981,7 +1001,7 @@ export default function AdminPortal() {
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64">
             <SheetHeader className="sr-only">
-              <SheetTitle>Navigation Menu</SheetTitle>
+              <SheetTitle>Admin Navigation</SheetTitle>
             </SheetHeader>
             <SidebarContent />
           </SheetContent>
@@ -1032,7 +1052,7 @@ export default function AdminPortal() {
             </Card>
           )}
 
-          {activeTab === 'messages' && <AdminMessagesView />}
+          {activeTab === 'messages' && <AdminMessagesView isAdmin={isAdmin} />}
 
           {(activeTab === 'students' || activeTab === 'teachers') && (
             <Card>
@@ -1080,7 +1100,7 @@ export default function AdminPortal() {
             </Card>
           )}
 
-          {activeTab === 'settings' && <SystemSettingsLogs />}
+          {activeTab === 'settings' && <SystemSettingsLogs isAdmin={isAdmin} />}
 
           {activeTab === 'maintenance' && (
             <Card>
@@ -1107,26 +1127,31 @@ export default function AdminPortal() {
                     collectionName="studentInterests" 
                     label="Clear Student Interests" 
                     onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all student interests')}
+                    isAdmin={isAdmin}
                   />
                   <PurgeCollectionButton 
                     collectionName="teacherInterests" 
                     label="Clear Teacher Interests" 
                     onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all teacher interests')}
+                    isAdmin={isAdmin}
                   />
                   <PurgeCollectionButton 
                     collectionName="matchProposals" 
                     label="Clear All Matches" 
                     onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all match proposals')}
+                    isAdmin={isAdmin}
                   />
                   <PurgeCollectionButton 
                     collectionName="notifications" 
                     label="Clear Notifications" 
                     onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all notifications')}
+                    isAdmin={isAdmin}
                   />
                   <PurgeCollectionButton 
                     collectionName="messages" 
                     label="Clear Message History" 
                     onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all messages')}
+                    isAdmin={isAdmin}
                   />
                 </div>
               </CardContent>
@@ -1148,7 +1173,7 @@ export default function AdminPortal() {
               </div>
             </DialogTitle>
           </DialogHeader>
-          {selectedUser && <UserDetailsContent user={selectedUser} />}
+          {selectedUser && <UserDetailsContent user={selectedUser} isAdmin={isAdmin} />}
         </DialogContent>
       </Dialog>
 
