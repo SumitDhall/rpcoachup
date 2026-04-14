@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -71,6 +70,7 @@ export default function TeacherDashboard() {
     });
   }, [rawInterests]);
 
+  const [activeTab, setActiveTab] = useState('profile');
   const [teacherName, setTeacherName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -178,7 +178,7 @@ export default function TeacherDashboard() {
     <div className="flex flex-col h-full">
       <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
         <BookOpen className="text-primary h-6 w-6" />
-        <span className="font-headline font-bold text-lg">RP Coach-Up</span>
+        <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
       </Link>
       <nav className="flex-1 px-4 space-y-1">
         <Button variant="secondary" className="w-full justify-start gap-3">
@@ -195,7 +195,6 @@ export default function TeacherDashboard() {
 
   return (
     <div className="flex min-h-screen bg-background flex-col lg:flex-row">
-      {/* Mobile Top Bar */}
       <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card sticky top-0 z-40">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <BookOpen className="text-primary h-6 w-6" />
@@ -216,7 +215,6 @@ export default function TeacherDashboard() {
         </Sheet>
       </header>
 
-      {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
         <SidebarContent />
       </aside>
@@ -231,7 +229,7 @@ export default function TeacherDashboard() {
             <Badge variant="outline" className="w-fit border-primary text-primary">Verified Teacher Account</Badge>
           </header>
 
-          <Tabs defaultValue="profile" className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="bg-muted w-full max-w-md grid grid-cols-2">
               <TabsTrigger value="profile">Update Specialization</TabsTrigger>
               <TabsTrigger value="history">History</TabsTrigger>
@@ -432,7 +430,7 @@ export default function TeacherDashboard() {
                     <div className="text-center py-12 border rounded-xl border-dashed">
                       <ClipboardList className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                       <p className="text-sm text-muted-foreground font-medium">No teaching records found.</p>
-                      <Button variant="link" onClick={() => (document.querySelector('[data-value="profile"]') as HTMLElement)?.click()}>
+                      <Button variant="link" onClick={() => setActiveTab('profile')}>
                         Submit your specialties
                       </Button>
                     </div>

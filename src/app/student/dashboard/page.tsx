@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -91,6 +90,7 @@ export default function StudentDashboard() {
     });
   }, [rawInterests]);
 
+  const [activeTab, setActiveTab] = useState('interests');
   const [studentName, setStudentName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -170,7 +170,6 @@ export default function StudentDashboard() {
       
       setShowSuccessDialog(true);
 
-      // Reset form fields except profile defaults
       setSubject('');
       setSchool('');
       setGradeLevel('');
@@ -207,7 +206,7 @@ export default function StudentDashboard() {
     <div className="flex flex-col h-full">
       <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
         <BookOpen className="text-primary h-6 w-6" />
-        <span className="font-headline font-bold text-lg">RP Coach-Up</span>
+        <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
       </Link>
       <nav className="flex-1 px-4 space-y-1">
         <Button variant="secondary" className="w-full justify-start gap-3">
@@ -224,7 +223,6 @@ export default function StudentDashboard() {
 
   return (
     <div className="flex min-h-screen bg-background flex-col lg:flex-row">
-      {/* Mobile Top Bar */}
       <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card sticky top-0 z-40">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <BookOpen className="text-primary h-6 w-6" />
@@ -245,7 +243,6 @@ export default function StudentDashboard() {
         </Sheet>
       </header>
 
-      {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
         <SidebarContent />
       </aside>
@@ -260,7 +257,7 @@ export default function StudentDashboard() {
             <Badge variant="outline" className="w-fit border-primary text-primary bg-primary/5">Student Portal</Badge>
           </header>
 
-          <Tabs defaultValue="interests" className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid grid-cols-2 w-full max-w-md bg-muted">
               <TabsTrigger value="interests">New Tuition Request</TabsTrigger>
               <TabsTrigger value="history">Inquiry History</TabsTrigger>
@@ -467,7 +464,7 @@ export default function StudentDashboard() {
                     <div className="text-center py-16 border-2 border-dashed rounded-2xl">
                       <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                       <p className="text-muted-foreground font-medium">You haven't submitted any inquiries yet.</p>
-                      <Button variant="link" className="mt-2 text-primary font-bold" onClick={() => (document.querySelector('[data-value="interests"]') as HTMLElement)?.click()}>
+                      <Button variant="link" className="mt-2 text-primary font-bold" onClick={() => setActiveTab('interests')}>
                         Start your first request now
                       </Button>
                     </div>
@@ -479,7 +476,6 @@ export default function StudentDashboard() {
         </div>
       </main>
 
-      {/* Success Dialog */}
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <AlertDialogContent className="sm:max-w-[425px]">
           <AlertDialogHeader className="flex flex-col items-center gap-4 py-4">
