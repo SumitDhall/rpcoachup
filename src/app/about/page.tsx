@@ -188,7 +188,7 @@ export default function AboutPage() {
         </div>
       </header>
 
-      <main className="flex-1">
+      <main className="flex-1 overflow-x-hidden">
         {/* Hero Section */}
         <section className="py-16 lg:py-24 bg-gradient-to-b from-secondary/20 to-background">
           <div className="container mx-auto px-4 text-center lg:text-left">
@@ -253,8 +253,8 @@ export default function AboutPage() {
         </section>
 
         {/* Feedback Section */}
-        <section className="py-24 bg-secondary/10">
-          <div className="container mx-auto px-4 overflow-x-hidden">
+        <section className="py-24 bg-secondary/10 overflow-hidden">
+          <div className="container mx-auto px-4">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <h2 className="text-3xl sm:text-4xl font-headline font-bold text-primary mb-4">The Community Voice</h2>
               <p className="text-muted-foreground">Hear directly from our students and educators about their learning journeys.</p>
@@ -262,11 +262,11 @@ export default function AboutPage() {
 
             <div className="grid lg:grid-cols-2 gap-16 lg:gap-12">
               {/* Student Feedback */}
-              <div className="space-y-6">
-                <h3 className="text-2xl font-headline font-bold flex items-center gap-2 text-primary">
+              <div className="space-y-6 w-full max-w-full">
+                <h3 className="text-2xl font-headline font-bold flex items-center gap-2 text-primary px-2">
                   <Users className="h-6 w-6 shrink-0" /> Student Success
                 </h3>
-                <div className="px-4 sm:px-10 relative">
+                <div className="px-10 relative">
                   {isLoadingStudentFB ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
                   ) : studentFeedback.length > 0 ? (
@@ -292,11 +292,8 @@ export default function AboutPage() {
                           </CarouselItem>
                         ))}
                       </CarouselContent>
-                      <CarouselPrevious className="hidden sm:flex -left-10" />
-                      <CarouselNext className="hidden sm:flex -right-10" />
-                      {/* Mobile Arrows inside the padding area to prevent overflow */}
-                      <CarouselPrevious className="flex sm:hidden left-0 h-8 w-8" />
-                      <CarouselNext className="flex sm:hidden right-0 h-8 w-8" />
+                      <CarouselPrevious className="flex -left-8 sm:-left-12 h-8 w-8" />
+                      <CarouselNext className="flex -right-8 sm:-right-12 h-8 w-8" />
                     </Carousel>
                   ) : (
                     <p className="text-sm italic text-muted-foreground text-center py-8">No student feedback yet.</p>
@@ -305,11 +302,11 @@ export default function AboutPage() {
               </div>
 
               {/* Teacher Feedback */}
-              <div className="space-y-6">
-                <h3 className="text-2xl font-headline font-bold flex items-center gap-2 text-accent">
+              <div className="space-y-6 w-full max-w-full">
+                <h3 className="text-2xl font-headline font-bold flex items-center gap-2 text-accent px-2">
                   <Users className="h-6 w-6 shrink-0" /> Educator Experiences
                 </h3>
-                <div className="px-4 sm:px-10 relative">
+                <div className="px-10 relative">
                   {isLoadingTeacherFB ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin text-accent" /></div>
                   ) : teacherFeedback.length > 0 ? (
@@ -332,11 +329,8 @@ export default function AboutPage() {
                           </CarouselItem>
                         ))}
                       </CarouselContent>
-                      <CarouselPrevious className="hidden sm:flex -left-10" />
-                      <CarouselNext className="hidden sm:flex -right-10" />
-                      {/* Mobile Arrows inside the padding area to prevent overflow */}
-                      <CarouselPrevious className="flex sm:hidden left-0 h-8 w-8" />
-                      <CarouselNext className="flex sm:hidden right-0 h-8 w-8" />
+                      <CarouselPrevious className="flex -left-8 sm:-left-12 h-8 w-8" />
+                      <CarouselNext className="flex -right-8 sm:-right-12 h-8 w-8" />
                     </Carousel>
                   ) : (
                     <p className="text-sm italic text-muted-foreground text-center py-8">No teacher feedback yet.</p>
