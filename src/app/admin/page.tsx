@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -73,6 +72,7 @@ import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, order
 import { signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
+import { sendNotificationEmail } from '@/app/actions/notifications';
 
 // Helper to log system events
 function logSystemEvent(db: any, admin: any, type: string, description: string) {
@@ -429,7 +429,7 @@ function UserDetailsContent({ user }: { user: any }) {
     
     updateDocumentNonBlocking(interestRef, { status: newStatus });
     
-    // Create Notification
+    // 1. Create Internal Notification
     createAdminNotification(
       db,
       'status_update',
@@ -439,7 +439,18 @@ function UserDetailsContent({ user }: { user: any }) {
       statusChangeTarget.userName
     );
 
+    // 2. Log Activity
     logSystemEvent(db, adminUser, 'status_update', `Updated status to ${newStatus} for ${statusChangeTarget.userName}'s interest in ${statusChangeTarget.subject}`);
+
+    // 3. Send Simulated Email to User
+    sendNotificationEmail({
+      recipientType: 'user',
+      type: 'status_update',
+      userType: user.userType,
+      userName: statusChangeTarget.userName,
+      userEmail: statusChangeTarget.userEmail,
+      details: `Your inquiry for "${statusChangeTarget.subject}" is now: ${newStatus}`
+    });
 
     setStatusChangeTarget(null);
   };
@@ -874,7 +885,7 @@ export default function AdminPortal() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64">
-            <SheetHeader className="sr-only">
+            <SheetHeader>
               <SheetTitle>Navigation Menu</SheetTitle>
             </SheetHeader>
             <SidebarContent />

@@ -45,7 +45,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
-import { notifyAdmin } from '@/app/actions/notifications';
+import { sendNotificationEmail } from '@/app/actions/notifications';
 
 export default function TeacherDashboard() {
   const { user, isUserLoading } = useUser();
@@ -161,12 +161,24 @@ export default function TeacherDashboard() {
         read: false
       });
 
-      notifyAdmin({
+      // 1. Notify Admin
+      sendNotificationEmail({
+        recipientType: 'admin',
         type: 'interest',
         userType: 'Teacher',
         userName: teacherName,
         userEmail: email,
         details: `Subjects: ${subjects}, Exp: ${experienceYears} yrs, Salary: ${expectedSalary}`
+      });
+
+      // 2. Notify Teacher
+      sendNotificationEmail({
+        recipientType: 'user',
+        type: 'interest',
+        userType: 'Teacher',
+        userName: teacherName,
+        userEmail: email,
+        details: `Specialization: ${subjects}`
       });
       
       setShowSuccessDialog(true);
@@ -197,7 +209,7 @@ export default function TeacherDashboard() {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <BookOpen className="text-primary h-6 w-6" />
+        < BookOpen className="text-primary h-6 w-6" />
         <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
       </Link>
       <nav className="flex-1 px-4 space-y-1">

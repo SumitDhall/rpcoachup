@@ -56,7 +56,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
-import { notifyAdmin } from '@/app/actions/notifications';
+import { sendNotificationEmail } from '@/app/actions/notifications';
 
 export default function StudentDashboard() {
   const { user, isUserLoading } = useUser();
@@ -160,12 +160,24 @@ export default function StudentDashboard() {
         read: false
       });
 
-      notifyAdmin({
+      // 1. Notify Admin
+      sendNotificationEmail({
+        recipientType: 'admin',
         type: 'interest',
         userType: 'Student',
         userName: studentName,
         userEmail: email,
         details: `Subject: ${subject}, Grade: ${gradeLevel}, School: ${school}, Budget: ${affordableRange}`
+      });
+
+      // 2. Notify Student
+      sendNotificationEmail({
+        recipientType: 'user',
+        type: 'interest',
+        userType: 'Student',
+        userName: studentName,
+        userEmail: email,
+        details: `Subject: ${subject}`
       });
       
       setShowSuccessDialog(true);
