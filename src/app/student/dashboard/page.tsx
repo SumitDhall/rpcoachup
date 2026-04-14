@@ -45,7 +45,8 @@ import {
   Menu,
   History,
   MessageSquare,
-  Star
+  Star,
+  Info
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
@@ -122,8 +123,8 @@ export default function StudentDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject || !studentName || !phone || !email || !school || !gradeLevel) {
-      toast({ variant: "destructive", title: "Required Fields Missing", description: "Please complete mandatory fields." });
+    if (!subject || !studentName || !phone || !email || !school || !gradeLevel || !address || !affordableRange) {
+      toast({ variant: "destructive", title: "Required Fields Missing", description: "Please complete all mandatory fields, including address and budget." });
       return; 
     }
     setIsSubmitting(true);
@@ -137,27 +138,40 @@ export default function StudentDashboard() {
         school,
         gradeOrClass: gradeLevel,
         address,
-        affordableRange: affordableRange || 'Flexible',
-        intendedStartDate: intendedStartDate || 'TBD',
+        affordableRange,
+        intendedStartDate: intendedStartDate || 'Immediately',
         submissionDate: serverTimestamp(),
         status: 'Pending',
         notes: notes || ''
       };
+      
       await addDoc(collection(db, 'studentInterests'), submissionData);
+      
       addDocumentNonBlocking(collection(db, 'notifications'), {
         type: 'interest',
         subject: `Student Tuition Inquiry: ${subject}`,
-        body: `Student ${studentName} requested tuition for ${subject}.`,
+        body: `Student ${studentName} requested tuition for ${subject}. Budget: ${affordableRange}.`,
         userEmail: email,
         userName: studentName,
         timestamp: serverTimestamp(),
         read: false
       });
+
+      // Simulated confirmation email
+      sendNotificationEmail({
+        recipientType: 'user',
+        type: 'interest',
+        userType: 'Student',
+        userName: studentName,
+        userEmail: email,
+        details: `Your inquiry for ${subject} has been submitted successfully.`
+      });
+
       setShowSuccessDialog(true);
       setSubject(''); setSchool(''); setGradeLevel(''); setAddress(''); setNotes(''); setPhone(''); setAffordableRange(''); setIntendedStartDate('');
     } catch (error) {
       console.error(error);
-      toast({ variant: "destructive", title: "Submission Failed", description: "An error occurred." });
+      toast({ variant: "destructive", title: "Submission Failed", description: "An error occurred while saving your inquiry." });
     } finally {
       setIsSubmitting(false);
     }
@@ -192,6 +206,17 @@ export default function StudentDashboard() {
   };
 
   const gradeOptions = Array.from({ length: 12 }, (_, i) => `Class ${i + 1}`);
+  
+  const budgetRanges = [
+    "Below ₹2,000",
+    "₹2,000 - ₹5,000",
+    "₹5,000 - ₹10,000",
+    "₹10,000 - ₹15,000",
+    "₹15,000 - ₹20,000",
+    "Above ₹20,000",
+    "Per Session Basis",
+    "Negotiable"
+  ];
 
   if (isUserLoading || isProfileLoading) {
     return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -200,7 +225,9 @@ export default function StudentDashboard() {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <BookOpen className="text-primary h-6 w-6" />
+        <div className="bg-primary p-1 rounded-lg">
+          <BookOpen className="text-primary-foreground h-5 w-5" />
+        </div>
         <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
       </Link>
       <nav className="flex-1 px-4 space-y-1">
@@ -226,7 +253,9 @@ export default function StudentDashboard() {
     <div className="flex min-h-screen bg-background flex-col lg:flex-row">
       <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card sticky top-0 z-40">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <BookOpen className="text-primary h-6 w-6" />
+          <div className="bg-primary p-1.5 rounded-lg">
+            <BookOpen className="text-primary-foreground h-6 w-6" />
+          </div>
           <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
         </Link>
         <Sheet>
@@ -255,51 +284,121 @@ export default function StudentDashboard() {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsContent value="interests">
-              <Card className="border-primary/10 shadow-xl">
-                <CardHeader>
+              <Card className="border-primary/10 shadow-xl overflow-hidden">
+                <CardHeader className="bg-primary/5 border-b">
                   <CardTitle>Tuition Requirement Form</CardTitle>
-                  <CardDescription>Fill out the details to match with a teacher.</CardDescription>
+                  <CardDescription>Provide detailed requirements to find the best matching teacher.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmitInterest}>
-                  <CardContent className="space-y-6">
-                    <div className="grid sm:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="studentName">Student Full Name *</Label>
-                        <Input id="studentName" value={studentName} onChange={e => setStudentName(e.target.value)} required />
+                  <CardContent className="space-y-8 pt-8">
+                    {/* Basic Info Group */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+                        <User className="h-4 w-4" /> Personal Information
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="subject">Subject Needed *</Label>
-                        <Input id="subject" value={subject} onChange={e => setSubject(e.target.value)} required placeholder="e.g., Mathematics" />
-                      </div>
-                    </div>
-                    <div className="grid sm:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="school">Current School *</Label>
-                        <Input id="school" value={school} onChange={e => setSchool(e.target.value)} required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="gradeLevel">Class / Grade *</Label>
-                        <Select value={gradeLevel} onValueChange={setGradeLevel} required>
-                          <SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger>
-                          <SelectContent>
-                            {gradeOptions.map(grade => <SelectItem key={grade} value={grade}>{grade}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                      <div className="grid sm:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="studentName">Student Full Name *</Label>
+                          <Input id="studentName" value={studentName} onChange={e => setStudentName(e.target.value)} required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="subject">Subject Needed *</Label>
+                          <Input id="subject" value={subject} onChange={e => setSubject(e.target.value)} required placeholder="e.g., Mathematics, Science" />
+                        </div>
                       </div>
                     </div>
-                    <div className="grid sm:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Contact Phone *</Label>
-                        <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} required />
+
+                    {/* Academic Info Group */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+                        <School className="h-4 w-4" /> Academic Details
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="school">Current School *</Label>
+                          <Input id="school" value={school} onChange={e => setSchool(e.target.value)} required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="gradeLevel">Class / Grade *</Label>
+                          <Select value={gradeLevel} onValueChange={setGradeLevel} required>
+                            <SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger>
+                            <SelectContent>
+                              {gradeOptions.map(grade => <SelectItem key={grade} value={grade}>{grade}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Contact & Location Group */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+                        <MapPin className="h-4 w-4" /> Contact & Location
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="phone">Contact Phone *</Label>
+                          <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} required placeholder="+91" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Contact Email *</Label>
+                          <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email">Contact Email *</Label>
-                        <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                        <Label htmlFor="address">Full Home Address *</Label>
+                        <Textarea 
+                          id="address" 
+                          value={address} 
+                          onChange={e => setAddress(e.target.value)} 
+                          required 
+                          placeholder="Please provide your complete landmark address for home tuition." 
+                          className="min-h-[100px]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Budget & Timeline Group */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+                        <IndianRupee className="h-4 w-4" /> Budget & Timeline
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label htmlFor="budget">Monthly Fee Budget (INR) *</Label>
+                          <Select value={affordableRange} onValueChange={setAffordableRange} required>
+                            <SelectTrigger id="budget"><SelectValue placeholder="Select Budget Range" /></SelectTrigger>
+                            <SelectContent>
+                              {budgetRanges.map(range => <SelectItem key={range} value={range}>{range}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="startDate">Intended Start Date</Label>
+                          <Input id="startDate" type="date" value={intendedStartDate} onChange={e => setIntendedStartDate(e.target.value)} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Additional Info */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
+                        <Info className="h-4 w-4" /> Additional Information
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="notes">Notes / Special Requirements</Label>
+                        <Textarea 
+                          id="notes" 
+                          value={notes} 
+                          onChange={e => setNotes(e.target.value)} 
+                          placeholder="e.g., Preferred teacher gender, specific topics to focus on, or timing preferences." 
+                          className="min-h-[80px]"
+                        />
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter className="border-t pt-6">
-                    <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-12 text-lg">
+                  <CardFooter className="border-t bg-secondary/5 pt-6 pb-8">
+                    <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-14 text-xl shadow-lg shadow-primary/20">
                       {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                       Submit Request
                     </Button>
@@ -310,17 +409,37 @@ export default function StudentDashboard() {
 
             <TabsContent value="history">
               <Card>
-                <CardHeader><CardTitle>Inquiry History</CardTitle></CardHeader>
+                <CardHeader>
+                  <CardTitle>Inquiry History</CardTitle>
+                  <CardDescription>Track the status of your submitted tuition requests.</CardDescription>
+                </CardHeader>
                 <CardContent className="space-y-4">
-                  {isLoadingInterests ? <Loader2 className="animate-spin mx-auto" /> : (rawInterests && rawInterests.length > 0 ? [...rawInterests].sort((a,b) => b.submissionDate?.toMillis() - a.submissionDate?.toMillis()).map(i => (
-                    <div key={i.id} className="p-4 border rounded-xl flex items-center justify-between bg-card shadow-sm border-l-4 border-l-primary">
-                      <div><p className="font-bold">{i.subject}</p><p className="text-xs text-muted-foreground">{i.gradeOrClass}</p></div>
-                      <Badge variant={i.status === 'Pending' ? 'outline' : 'default'}>{i.status}</Badge>
+                  {isLoadingInterests ? <Loader2 className="animate-spin mx-auto text-primary" /> : (rawInterests && rawInterests.length > 0 ? [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => (
+                    <div key={i.id} className="p-5 border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between bg-card shadow-sm border-l-4 border-l-primary gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-bold text-lg">{i.subject}</p>
+                          <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600' : ''}>
+                            {i.status}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                          <p>Class: {i.gradeOrClass}</p>
+                          <p>Budget: {i.affordableRange}</p>
+                          <p className="col-span-2">Date: {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/5 self-start sm:self-center" asChild>
+                         <Link href={`/programs/dashboard`}>View Details</Link>
+                      </Button>
                     </div>
                   )) : (
-                    <div className="text-center py-12 border-2 border-dashed rounded-xl">
-                      <p className="text-muted-foreground">No inquiries found.</p>
-                      <Button variant="link" onClick={() => setActiveTab('interests')}>Start your first request now</Button>
+                    <div className="text-center py-16 border-2 border-dashed rounded-2xl bg-secondary/5">
+                      <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto mb-4 text-primary">
+                        <History className="h-8 w-8" />
+                      </div>
+                      <p className="text-muted-foreground font-medium mb-4">No tuition requests found yet.</p>
+                      <Button onClick={() => setActiveTab('interests')}>Start your first request now</Button>
                     </div>
                   ))}
                 </CardContent>
@@ -328,27 +447,35 @@ export default function StudentDashboard() {
             </TabsContent>
 
             <TabsContent value="feedback">
-              <Card className="border-accent/10 shadow-xl">
-                <CardHeader>
+              <Card className="border-accent/10 shadow-xl overflow-hidden">
+                <CardHeader className="bg-accent/5 border-b">
                   <CardTitle>Share Your Feedback</CardTitle>
                   <CardDescription>Tell us about your experience with RP Coach-Up and your teachers.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmitFeedback}>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                      <Label>Rating</Label>
-                      <div className="flex gap-2">
+                  <CardContent className="space-y-8 pt-8">
+                    <div className="space-y-4">
+                      <Label className="text-lg">Overall Satisfaction</Label>
+                      <div className="flex gap-3">
                         {[1, 2, 3, 4, 5].map(star => (
-                          <Button key={star} type="button" variant={Number(feedbackRating) >= star ? "default" : "outline"} size="icon" className="h-10 w-10" onClick={() => setFeedbackRating(star.toString())}>
-                            <Star className={`h-5 w-5 ${Number(feedbackRating) >= star ? "fill-current" : ""}`} />
+                          <Button 
+                            key={star} 
+                            type="button" 
+                            variant={Number(feedbackRating) >= star ? "default" : "outline"} 
+                            size="icon" 
+                            className={`h-12 w-12 rounded-xl transition-all ${Number(feedbackRating) >= star ? 'bg-accent text-accent-foreground scale-110 shadow-md' : 'hover:border-accent/50'}`} 
+                            onClick={() => setFeedbackRating(star.toString())}
+                          >
+                            <Star className={`h-6 w-6 ${Number(feedbackRating) >= star ? "fill-current" : ""}`} />
                           </Button>
                         ))}
                       </div>
                     </div>
+                    
                     <div className="space-y-2">
-                      <Label htmlFor="feedbackTeacher">Who is this feedback for?</Label>
+                      <Label htmlFor="feedbackTeacher" className="text-lg">Who is this feedback for?</Label>
                       <Select value={feedbackTeacher} onValueChange={setFeedbackTeacher}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="General Platform Feedback">General Platform Feedback</SelectItem>
                           {matches?.map(m => (
@@ -357,13 +484,21 @@ export default function StudentDashboard() {
                         </SelectContent>
                       </Select>
                     </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="feedbackComment">Comment</Label>
-                      <Textarea id="feedbackComment" value={feedbackComment} onChange={e => setFeedbackComment(e.target.value)} required placeholder="How can we improve? What did you like?" />
+                      <Label htmlFor="feedbackComment" className="text-lg">Your Comments</Label>
+                      <Textarea 
+                        id="feedbackComment" 
+                        value={feedbackComment} 
+                        onChange={e => setFeedbackComment(e.target.value)} 
+                        required 
+                        placeholder="How can we improve? What did you like about your experience?" 
+                        className="min-h-[150px] text-base"
+                      />
                     </div>
                   </CardContent>
-                  <CardFooter className="border-t pt-6">
-                    <Button type="submit" disabled={isSubmitting} className="w-full h-12 font-bold text-lg bg-accent text-accent-foreground hover:bg-accent/90">
+                  <CardFooter className="border-t bg-secondary/5 pt-6 pb-8">
+                    <Button type="submit" disabled={isSubmitting} className="w-full h-14 font-bold text-xl bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg shadow-accent/20">
                       {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                       Submit Feedback
                     </Button>
@@ -376,16 +511,29 @@ export default function StudentDashboard() {
       </main>
 
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-primary">Request Submitted!</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your request has been received. Our management will contact you within 7 working days. You can check the status in the Inquiry History tab.
+            <div className="mx-auto bg-green-100 p-3 rounded-full w-fit mb-4">
+              <CheckCircle2 className="h-10 w-10 text-green-600" />
+            </div>
+            <AlertDialogTitle className="text-center text-2xl text-primary">Request Submitted!</AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-base">
+              Your inquiry has been received. Our management team will contact you within **7 working days**. 
+              <br /><br />
+              You can track the progress of this request in the **Inquiry History** tab.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogAction onClick={() => {setShowSuccessDialog(false); setActiveTab('history');}}>OK</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogFooter className="sm:justify-center mt-6">
+            <AlertDialogAction 
+              onClick={() => {setShowSuccessDialog(false); setActiveTab('history');}}
+              className="px-10 h-12 rounded-xl text-lg font-bold"
+            >
+              Great, Thank You
+            </AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
   );
 }
+
