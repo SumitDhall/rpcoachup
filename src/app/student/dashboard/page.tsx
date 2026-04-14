@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -27,6 +28,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   Sheet,
   SheetContent,
   SheetTrigger,
@@ -50,11 +57,12 @@ import {
   MapPin,
   GraduationCap,
   CheckCircle2,
-  Menu
+  Menu,
+  MessageSquare
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp, query, where, limit, orderBy } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { sendNotificationEmail } from '@/app/actions/notifications';
 
@@ -81,6 +89,17 @@ export default function StudentDashboard() {
   }, [db, user?.uid]);
   const { data: rawInterests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
 
+  const messagesQuery = useMemoFirebase(() => {
+    if (!db || !user?.email) return null;
+    return query(
+      collection(db, 'messages'),
+      where('recipientEmail', '==', user.email),
+      orderBy('timestamp', 'desc'),
+      limit(50)
+    );
+  }, [db, user?.email]);
+  const { data: messages, isLoading: isLoadingMessages } = useCollection(messagesQuery);
+
   const interests = useMemo(() => {
     if (!rawInterests) return null;
     return [...rawInterests].sort((a, b) => {
@@ -104,6 +123,7 @@ export default function StudentDashboard() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<any>(null);
 
   useEffect(() => {
     if (profile) {
@@ -196,7 +216,7 @@ export default function StudentDashboard() {
       toast({ 
         variant: "destructive", 
         title: "Submission Failed", 
-        description: "An unexpected error occurred. Please try again." 
+        description: "An unexpected error occurred." 
       });
     } finally {
       setIsSubmitting(false);
@@ -221,8 +241,11 @@ export default function StudentDashboard() {
         <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
       </Link>
       <nav className="flex-1 px-4 space-y-1">
-        <Button variant="secondary" className="w-full justify-start gap-3">
+        <Button variant={activeTab === 'interests' || activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('interests')}>
           <LayoutDashboard className="h-4 w-4" /> Dashboard
+        </Button>
+        <Button variant={activeTab === 'messages' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('messages')}>
+          <MessageSquare className="h-4 w-4" /> Messages
         </Button>
       </nav>
       <div className="p-4 border-t">
@@ -270,16 +293,21 @@ export default function StudentDashboard() {
           </header>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid grid-cols-2 w-full max-w-md bg-muted">
-              <TabsTrigger value="interests">New Tuition Request</TabsTrigger>
-              <TabsTrigger value="history">Inquiry History</TabsTrigger>
+            <TabsList className={`grid w-full max-w-md bg-muted ${activeTab === 'messages' ? 'grid-cols-1' : 'grid-cols-2'}`}>
+              {(activeTab === 'interests' || activeTab === 'history') && (
+                <>
+                  <TabsTrigger value="interests">New Tuition Request</TabsTrigger>
+                  <TabsTrigger value="history">Inquiry History</TabsTrigger>
+                </>
+              )}
+              {activeTab === 'messages' && <TabsTrigger value="messages">Inbox</TabsTrigger>}
             </TabsList>
 
             <TabsContent value="interests">
               <Card className="border-primary/10 shadow-xl">
                 <CardHeader>
                   <CardTitle>Tuition Requirement Form</CardTitle>
-                  <CardDescription>All fields marked with an asterisk (*) are required for matching.</CardDescription>
+                  <CardDescription>Fill out the details to match with a teacher.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmitInterest}>
                   <CardContent className="space-y-6">
@@ -288,25 +316,13 @@ export default function StudentDashboard() {
                         <Label htmlFor="studentName" className="flex items-center gap-1">
                           <User className="h-3 w-3" /> Student Full Name <span className="text-destructive">*</span>
                         </Label>
-                        <Input 
-                          id="studentName"
-                          value={studentName} 
-                          onChange={e => setStudentName(e.target.value)} 
-                          required 
-                          placeholder="Full name of student"
-                        />
+                        <Input id="studentName" value={studentName} onChange={e => setStudentName(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="subject" className="flex items-center gap-1">
                           <BookOpen className="h-3 w-3" /> Subject Needed <span className="text-destructive">*</span>
                         </Label>
-                        <Input 
-                          id="subject"
-                          value={subject} 
-                          onChange={e => setSubject(e.target.value)} 
-                          required 
-                          placeholder="e.g., Mathematics" 
-                        />
+                        <Input id="subject" value={subject} onChange={e => setSubject(e.target.value)} required placeholder="e.g., Mathematics" />
                       </div>
                     </div>
 
@@ -315,26 +331,16 @@ export default function StudentDashboard() {
                         <Label htmlFor="school" className="flex items-center gap-1">
                           <School className="h-3 w-3" /> Current School <span className="text-destructive">*</span>
                         </Label>
-                        <Input 
-                          id="school"
-                          value={school} 
-                          onChange={e => setSchool(e.target.value)} 
-                          placeholder="Name of the school" 
-                          required
-                        />
+                        <Input id="school" value={school} onChange={e => setSchool(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="gradeLevel" className="flex items-center gap-1">
                           <GraduationCap className="h-3 w-3" /> Class / Grade <span className="text-destructive">*</span>
                         </Label>
                         <Select value={gradeLevel} onValueChange={setGradeLevel} required>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Class" />
-                          </SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger>
                           <SelectContent>
-                            {gradeOptions.map(grade => (
-                              <SelectItem key={grade} value={grade}>{grade}</SelectItem>
-                            ))}
+                            {gradeOptions.map(grade => <SelectItem key={grade} value={grade}>{grade}</SelectItem>)}
                           </SelectContent>
                         </Select>
                       </div>
@@ -345,83 +351,45 @@ export default function StudentDashboard() {
                         <Label htmlFor="phone" className="flex items-center gap-1">
                           <Phone className="h-3 w-3" /> Contact Phone <span className="text-destructive">*</span>
                         </Label>
-                        <Input 
-                          id="phone"
-                          value={phone} 
-                          onChange={e => setPhone(e.target.value)} 
-                          placeholder="Mobile or Whatsapp Number" 
-                          required
-                        />
+                        <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email" className="flex items-center gap-1">
                           <Mail className="h-3 w-3" /> Contact Email <span className="text-destructive">*</span>
                         </Label>
-                        <Input 
-                          id="email"
-                          type="email"
-                          value={email} 
-                          onChange={e => setEmail(e.target.value)} 
-                          placeholder="Your email address" 
-                          required
-                        />
+                        <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
                       </div>
                     </div>
 
                     <div className="grid sm:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label className="flex items-center gap-1">
-                          <IndianRupee className="h-3 w-3" /> Monthly Fee Budget (INR)
-                        </Label>
+                        <Label className="flex items-center gap-1"><IndianRupee className="h-3 w-3" /> Budget (INR)</Label>
                         <Select value={affordableRange} onValueChange={setAffordableRange}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select budget range" />
-                          </SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder="Select budget" /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Flexible">Flexible / Not Decided</SelectItem>
+                            <SelectItem value="Flexible">Flexible</SelectItem>
                             {feeOptions.map(f => <SelectItem key={f} value={`${f} INR`}>{f} INR</SelectItem>)}
-                            <SelectItem value="Above 20000 INR">Above 20,000 INR</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="startDate" className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" /> Intended Start Date
-                        </Label>
-                        <Input 
-                          id="startDate"
-                          type="date" 
-                          value={intendedStartDate} 
-                          onChange={e => setIntendedStartDate(e.target.value)} 
-                        />
+                        <Label htmlFor="startDate" className="flex items-center gap-1"><Calendar className="h-3 w-3" /> Start Date</Label>
+                        <Input id="startDate" type="date" value={intendedStartDate} onChange={e => setIntendedStartDate(e.target.value)} />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="address" className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" /> Full Address
-                      </Label>
-                      <Input 
-                        id="address"
-                        value={address} 
-                        onChange={e => setAddress(e.target.value)} 
-                        placeholder="House number, street, locality..."
-                      />
+                      <Label htmlFor="address" className="flex items-center gap-1"><MapPin className="h-3 w-3" /> Address</Label>
+                      <Input id="address" value={address} onChange={e => setAddress(e.target.value)} />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="notes">Additional Requirements</Label>
-                      <Textarea 
-                        id="notes"
-                        value={notes} 
-                        onChange={e => setNotes(e.target.value)} 
-                        placeholder="Preferred timings, specific topics you're struggling with, or any other preferences..." 
-                        className="min-h-[100px]"
-                      />
+                      <Label htmlFor="notes">Notes</Label>
+                      <Textarea id="notes" value={notes} onChange={e => setNotes(e.target.value)} className="min-h-[80px]" />
                     </div>
                   </CardContent>
                   <CardFooter className="border-t pt-6">
-                    <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-12 text-lg shadow-lg shadow-primary/20">
+                    <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-12 text-lg shadow-lg">
                       {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                       Submit Request
                     </Button>
@@ -433,52 +401,60 @@ export default function StudentDashboard() {
             <TabsContent value="history">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <History className="h-5 w-5 text-primary" />
-                    Application History
-                  </CardTitle>
-                  <CardDescription>Track the status of your tuition inquiries.</CardDescription>
+                  <CardTitle className="flex items-center gap-2"><History className="h-5 w-5 text-primary" /> Application History</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {isLoadingInterests ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
                   ) : interests && interests.length > 0 ? (
                     interests.map(i => (
-                      <div key={i.id} className="p-5 border rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card hover:bg-secondary/5 transition-all shadow-sm border-l-4 border-l-primary">
-                        <div className="flex items-start gap-4">
-                          <div className="bg-primary/10 p-2.5 rounded-xl">
-                            <ClipboardList className="h-5 w-5 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-lg">{i.subject}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {i.gradeOrClass} | {i.school}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground mt-1">
-                              Submitted: {i.submissionDate?.toDate?.()?.toLocaleString() || 'Syncing...'}
-                            </p>
-                          </div>
+                      <div key={i.id} className="p-5 border rounded-2xl flex items-center justify-between gap-4 bg-card shadow-sm border-l-4 border-l-primary">
+                        <div>
+                          <p className="font-bold text-lg">{i.subject}</p>
+                          <p className="text-xs text-muted-foreground">{i.gradeOrClass} | {i.school}</p>
                         </div>
-                        <div className="w-full sm:w-auto text-right">
-                          <Badge 
-                            variant={i.status === 'Pending' ? 'outline' : 'default'} 
-                            className={`px-3 py-1 font-bold ${
-                              i.status === 'Completed' ? 'bg-green-600' : 
-                              i.status === 'In-Progress' ? 'bg-blue-500 hover:bg-blue-600' : ''
-                            }`}
-                          >
-                            {i.status}
-                          </Badge>
-                        </div>
+                        <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600' : i.status === 'In-Progress' ? 'bg-blue-500' : ''}>
+                          {i.status}
+                        </Badge>
                       </div>
                     ))
                   ) : (
                     <div className="text-center py-16 border-2 border-dashed rounded-2xl">
-                      <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                      <p className="text-muted-foreground font-medium">You haven't submitted any inquiries yet.</p>
-                      <Button variant="link" className="mt-2 text-primary font-bold" onClick={() => setActiveTab('interests')}>
-                        Start your first request now
-                      </Button>
+                      <p className="text-muted-foreground">No inquiries found.</p>
+                      <Button variant="link" className="mt-2 text-primary font-bold" onClick={() => setActiveTab('interests')}>Start your first request now</Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="messages">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5 text-primary" /> My Messages</CardTitle>
+                  <CardDescription>Archive of simulated emails and updates sent to you.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {isLoadingMessages ? (
+                    <div className="flex justify-center py-12"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
+                  ) : messages && messages.length > 0 ? (
+                    messages.map(msg => (
+                      <div 
+                        key={msg.id} 
+                        className="p-4 border rounded-xl hover:bg-secondary/5 transition-colors cursor-pointer group"
+                        onClick={() => setSelectedMessage(msg)}
+                      >
+                        <div className="flex justify-between items-start mb-1">
+                          <h4 className="font-bold text-sm group-hover:text-primary transition-colors">{msg.subject}</h4>
+                          <span className="text-[10px] text-muted-foreground">{msg.timestamp?.toDate?.()?.toLocaleDateString()}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">{msg.body}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-16 border-2 border-dashed rounded-2xl">
+                      <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-muted-foreground">No messages yet.</p>
                     </div>
                   )}
                 </CardContent>
@@ -491,9 +467,7 @@ export default function StudentDashboard() {
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <AlertDialogContent className="sm:max-w-[425px]">
           <AlertDialogHeader className="flex flex-col items-center gap-4 py-4">
-            <div className="bg-green-100 p-3 rounded-full">
-              <CheckCircle2 className="h-12 w-12 text-green-600" />
-            </div>
+            <div className="bg-green-100 p-3 rounded-full"><CheckCircle2 className="h-12 w-12 text-green-600" /></div>
             <div className="text-center">
               <AlertDialogTitle className="text-2xl font-headline font-bold text-primary">Request Submitted!</AlertDialogTitle>
               <AlertDialogDescription className="text-base mt-2">
@@ -501,16 +475,23 @@ export default function StudentDashboard() {
               </AlertDialogDescription>
             </div>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction 
-              onClick={() => setShowSuccessDialog(false)}
-              className="w-full h-12 text-lg font-bold"
-            >
-              OK
-            </AlertDialogAction>
-          </AlertDialogFooter>
+          <AlertDialogFooter><AlertDialogAction onClick={() => setShowSuccessDialog(false)} className="w-full h-12 text-lg font-bold">OK</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!selectedMessage} onOpenChange={(open) => !open && setSelectedMessage(null)}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{selectedMessage?.subject}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4 border-t">
+            <p className="text-[10px] text-muted-foreground text-right">{selectedMessage?.timestamp?.toDate?.()?.toLocaleString()}</p>
+            <div className="bg-secondary/20 p-4 rounded-xl text-sm whitespace-pre-wrap leading-relaxed">
+              {selectedMessage?.body}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

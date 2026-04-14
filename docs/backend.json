@@ -252,10 +252,10 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Notification",
       "type": "object",
-      "description": "Represents a system notification or email simulation record for the administrator.",
+      "description": "Represents a system notification record for the administrator dashboard.",
       "properties": {
         "id": { "type": "string" },
-        "type": { "type": "string", "enum": ["registration", "interest"] },
+        "type": { "type": "string", "enum": ["registration", "interest", "assignment", "status_update"] },
         "subject": { "type": "string" },
         "body": { "type": "string" },
         "userEmail": { "type": "string" },
@@ -264,6 +264,22 @@
         "read": { "type": "boolean" }
       },
       "required": ["id", "type", "subject", "body", "timestamp"]
+    },
+    "Message": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Message",
+      "type": "object",
+      "description": "Stores simulated email content for students and teachers to read in their dashboard.",
+      "properties": {
+        "id": { "type": "string" },
+        "recipientEmail": { "type": "string" },
+        "subject": { "type": "string" },
+        "body": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "type": { "type": "string" },
+        "read": { "type": "boolean" }
+      },
+      "required": ["id", "recipientEmail", "subject", "body", "timestamp"]
     },
     "MatchProposal": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -345,11 +361,27 @@
           "schema": {
             "$ref": "#/backend/entities/Notification"
           },
-          "description": "Stores system notifications intended for administrators. Any registered user can create a notification, but only admins can read and manage them.",
+          "description": "Stores system notifications intended for administrators.",
           "params": [
             {
               "name": "notificationId",
               "description": "Unique identifier for the notification."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/messages/{messageId}",
+        "definition": {
+          "entityName": "Message",
+          "schema": {
+            "$ref": "#/backend/entities/Message"
+          },
+          "description": "Stores simulated email content readable by users and admins.",
+          "params": [
+            {
+              "name": "messageId",
+              "description": "Unique identifier for the message."
             }
           ]
         }

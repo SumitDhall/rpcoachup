@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -29,7 +30,6 @@ service cloud.firestore {
     // Student Interests
     match /studentInterests/{id} {
       allow create: if isSignedIn();
-      // Broaden read for authenticated users to avoid complex query failures in dashboards
       allow read: if isSignedIn();
       allow update, delete: if isAdmin();
     }
@@ -37,7 +37,6 @@ service cloud.firestore {
     // Teacher Interests
     match /teacherInterests/{id} {
       allow create: if isSignedIn();
-      // Broaden read for authenticated users to avoid complex query failures in dashboards
       allow read: if isSignedIn();
       allow update, delete: if isAdmin();
     }
@@ -46,6 +45,13 @@ service cloud.firestore {
     match /notifications/{id} {
       allow create: if isSignedIn();
       allow read, update, delete: if isAdmin();
+    }
+
+    // Messages
+    match /messages/{id} {
+      allow create: if isSignedIn();
+      allow read: if isAdmin() || (isSignedIn() && request.auth.token.email == resource.data.recipientEmail);
+      allow update, delete: if isAdmin();
     }
 
     // Admin Role Registry
