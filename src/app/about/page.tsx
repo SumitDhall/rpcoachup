@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -22,18 +21,43 @@ export default function AboutPage() {
     setCurrentYear(new Date().getFullYear());
   }, []);
 
-  // Fetch Feedback
-  const studentFeedbackQuery = useMemoFirebase(() => {
+  // Fetch Feedback without complex orderBy in the query to avoid composite index requirement
+  // We will sort on the client side.
+  const studentFeedbackBaseQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, 'feedback'), where('userType', '==', 'Student'), orderBy('createdAt', 'desc'), limit(4));
-  }, [db]);
-  const teacherFeedbackQuery = useMemoFirebase(() => {
-    if (!db) return null;
-    return query(collection(db, 'feedback'), where('userType', '==', 'Teacher'), orderBy('createdAt', 'desc'), limit(4));
+    return query(collection(db, 'feedback'), where('userType', '==', 'Student'), limit(20));
   }, [db]);
 
-  const { data: studentFeedback, isLoading: isLoadingStudentFB } = useCollection(studentFeedbackQuery);
-  const { data: teacherFeedback, isLoading: isLoadingTeacherFB } = useCollection(teacherFeedbackQuery);
+  const teacherFeedbackBaseQuery = useMemoFirebase(() => {
+    if (!db) return null;
+    return query(collection(db, 'feedback'), where('userType', '==', 'Teacher'), limit(20));
+  }, [db]);
+
+  const { data: rawStudentFeedback, isLoading: isLoadingStudentFB } = useCollection(studentFeedbackBaseQuery);
+  const { data: rawTeacherFeedback, isLoading: isLoadingTeacherFB } = useCollection(teacherFeedbackBaseQuery);
+
+  // Client-side sorting and limiting
+  const studentFeedback = useMemo(() => {
+    if (!rawStudentFeedback) return [];
+    return [...rawStudentFeedback]
+      .sort((a, b) => {
+        const dateA = a.createdAt?.toMillis?.() || 0;
+        const dateB = b.createdAt?.toMillis?.() || 0;
+        return dateB - dateA;
+      })
+      .slice(0, 4);
+  }, [rawStudentFeedback]);
+
+  const teacherFeedback = useMemo(() => {
+    if (!rawTeacherFeedback) return [];
+    return [...rawTeacherFeedback]
+      .sort((a, b) => {
+        const dateA = a.createdAt?.toMillis?.() || 0;
+        const dateB = b.createdAt?.toMillis?.() || 0;
+        return dateB - dateA;
+      })
+      .slice(0, 4);
+  }, [rawTeacherFeedback]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -147,7 +171,9 @@ export default function AboutPage() {
                   <Users className="h-6 w-6" /> Student Success Stories
                 </h3>
                 <div className="grid gap-4">
-                  {isLoadingStudentFB ? <Loader2 className="animate-spin text-primary" /> : (studentFeedback && studentFeedback.length > 0 ? studentFeedback.map(fb => (
+                  {isLoadingStudentFB ? (
+                    <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
+                  ) : (studentFeedback && studentFeedback.length > 0 ? studentFeedback.map(fb => (
                     <Card key={fb.id} className="border-none shadow-md">
                       <CardContent className="pt-6">
                         <div className="flex gap-1 mb-2">
@@ -171,7 +197,9 @@ export default function AboutPage() {
                   <Users className="h-6 w-6" /> Educator Experiences
                 </h3>
                 <div className="grid gap-4">
-                  {isLoadingTeacherFB ? <Loader2 className="animate-spin text-accent" /> : (teacherFeedback && teacherFeedback.length > 0 ? teacherFeedback.map(fb => (
+                  {isLoadingTeacherFB ? (
+                    <div className="flex justify-center p-8"><Loader2 className="animate-spin text-accent" /></div>
+                  ) : (teacherFeedback && teacherFeedback.length > 0 ? teacherFeedback.map(fb => (
                     <Card key={fb.id} className="border-none shadow-md">
                       <CardContent className="pt-6">
                         <div className="flex gap-1 mb-2">
