@@ -14,7 +14,7 @@ import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, addDoc, collection, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { notifyAdmin } from '@/app/actions/notifications';
+import { sendNotificationEmail } from '@/app/actions/notifications';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -91,7 +91,8 @@ export default function RegisterPage() {
       await batch.commit();
 
       // 4. Notify Admin (AI Simulation & Console Log)
-      notifyAdmin({
+      sendNotificationEmail({
+        recipientType: 'admin',
         type: 'registration',
         userType: role,
         userName: `${formData.firstName} ${formData.lastName}`,
