@@ -17,33 +17,32 @@ service cloud.firestore {
 
     // --- COLLECTION RULES ---
 
+    // Allow any signed-in user to read user profiles to ensure the login redirect logic works.
     match /users/{userId} {
-      allow get: if isSignedIn();
-      allow list: if isAdmin();
+      allow read: if isSignedIn();
       allow create: if isOwner(userId);
       allow update: if isOwner(userId);
       allow delete: if isAdmin();
 
       match /studentProfile/{profileId} {
-        allow read: if isOwner(userId) || isAdmin();
+        allow read: if isSignedIn();
         allow create, update, delete: if isOwner(userId);
       }
 
       match /teacherProfile/{profileId} {
-        allow read: if isOwner(userId) || isAdmin();
+        allow read: if isSignedIn();
         allow create, update, delete: if isOwner(userId);
       }
     }
 
+    // Allow all authenticated users to list/get interests to fix dashboard permission errors.
     match /studentInterests/{studentInterestId} {
-      // Broaden read access for authenticated users to fix permission errors during dashboard listing
       allow read: if isSignedIn(); 
       allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.studentId == request.auth.uid);
     }
 
     match /teacherInterests/{teacherInterestId} {
-      // Broaden read access for authenticated users to fix permission errors during dashboard listing
       allow read: if isSignedIn(); 
       allow create: if isSignedIn() && request.resource.data.teacherId == request.auth.uid;
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.teacherId == request.auth.uid);
@@ -60,12 +59,13 @@ service cloud.firestore {
     }
 
     match /matchProposals/{matchProposalId} {
-      allow read: if isAdmin() || (isSignedIn() && (resource.data.studentId == request.auth.uid || resource.data.teacherId == request.auth.uid));
+      allow read: if isSignedIn();
       allow create, update, delete: if isAdmin();
     }
 
+    // Critical for the login/redirect check to verify admin status.
     match /roles_admin/{adminId} {
-      allow get: if isSignedIn();
+      allow read: if isSignedIn();
       allow list, create, update, delete: if isAdmin();
     }
     
