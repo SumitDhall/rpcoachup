@@ -43,7 +43,8 @@ import {
   GraduationCap,
   Briefcase,
   FileText,
-  Info
+  Info,
+  Calendar
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
