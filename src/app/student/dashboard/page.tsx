@@ -11,13 +11,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,13 +34,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { 
-  BookOpen, 
-  LayoutDashboard, 
-  Loader2, 
-  LogOut, 
+import {
+  BookOpen,
+  LayoutDashboard,
+  Loader2,
+  LogOut,
   ClipboardList,
-  AlertCircle,
   History,
   User,
   Phone,
@@ -62,7 +55,7 @@ import {
   X
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp, query, where, limit, orderBy } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { sendNotificationEmail } from '@/app/actions/notifications';
@@ -92,7 +85,6 @@ export default function StudentDashboard() {
 
   const messagesQuery = useMemoFirebase(() => {
     if (!db || !user?.email) return null;
-    // Removed orderBy to avoid requiring a composite index during prototyping
     return query(
       collection(db, 'messages'),
       where('recipientEmail', '==', user.email),
@@ -180,7 +172,7 @@ export default function StudentDashboard() {
 
       await addDoc(collection(db, 'studentInterests'), submissionData);
       
-      await addDoc(collection(db, 'notifications'), {
+      addDocumentNonBlocking(collection(db, 'notifications'), {
         type: 'interest',
         subject: `Student Tuition Inquiry: ${subject}`,
         body: `Student ${studentName} (${gradeLevel}) requested tuition for ${subject} at ${school}. Contact: ${phone}`,
@@ -190,16 +182,24 @@ export default function StudentDashboard() {
         read: false
       });
 
-      sendNotificationEmail({
+      // Handle Simulated Emails with persistence on client to ensure Auth context
+      const adminResult = await sendNotificationEmail({
         recipientType: 'admin',
         type: 'interest',
         userType: 'Student',
         userName: studentName,
         userEmail: email,
-        details: `Subject: ${subject}, Grade: ${gradeLevel}, School: ${school}, Budget: ${affordableRange}`
+        details: `Subject: ${subject}, Grade: ${gradeLevel}, School: ${school}`
       });
+      if (adminResult.success && adminResult.email) {
+        addDocumentNonBlocking(collection(db, 'messages'), {
+          ...adminResult.email,
+          timestamp: serverTimestamp(),
+          read: false
+        });
+      }
 
-      sendNotificationEmail({
+      const userResult = await sendNotificationEmail({
         recipientType: 'user',
         type: 'interest',
         userType: 'Student',
@@ -207,6 +207,13 @@ export default function StudentDashboard() {
         userEmail: email,
         details: `Subject: ${subject}`
       });
+      if (userResult.success && userResult.email) {
+        addDocumentNonBlocking(collection(db, 'messages'), {
+          ...userResult.email,
+          timestamp: serverTimestamp(),
+          read: false
+        });
+      }
       
       setShowSuccessDialog(true);
 
@@ -221,11 +228,7 @@ export default function StudentDashboard() {
 
     } catch (error) {
       console.error(error);
-      toast({ 
-        variant: "destructive", 
-        title: "Submission Failed", 
-        description: "An unexpected error occurred." 
-      });
+      toast({ variant: "destructive", title: "Submission Failed", description: "An unexpected error occurred." });
     } finally {
       setIsSubmitting(false);
     }
@@ -235,11 +238,7 @@ export default function StudentDashboard() {
   const gradeOptions = Array.from({ length: 12 }, (_, i) => `Class ${i + 1}`);
 
   if (isUserLoading || isProfileLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
   const SidebarContent = () => (
@@ -277,7 +276,7 @@ export default function StudentDashboard() {
               <Menu className="h-6 w-6 text-primary" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64">
+          <SheetContent side="left">
             <SheetHeader className="p-4 border-b">
               <SheetTitle className="flex items-center gap-2">
                 <BookOpen className="h-5 w-5 text-primary" />

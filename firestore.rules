@@ -33,7 +33,7 @@ service cloud.firestore {
     // Student Interests
     match /studentInterests/{id} {
       allow create: if isSignedIn();
-      allow read: if isSignedIn(); // Allow all signed in users for matching discovery, though UI limits this
+      allow read: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 
@@ -53,9 +53,6 @@ service cloud.firestore {
     // Messages - Support both single document read and filtered list queries
     match /messages/{id} {
       allow create: if isSignedIn();
-      allow get: if isAdmin() || (isSignedIn() && request.auth.token.email == resource.data.recipientEmail);
-      allow list: if isAdmin() || (isSignedIn() && request.auth.token.email == request.query.filters[0].op == '==' && request.query.filters[0].field == 'recipientEmail' && request.query.filters[0].value == request.auth.token.email);
-      // Fallback list rule for simpler engines
       allow read: if isAdmin() || (isSignedIn() && request.auth.token.email == resource.data.recipientEmail);
       allow update, delete: if isAdmin();
     }
