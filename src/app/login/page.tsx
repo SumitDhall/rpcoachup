@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -47,7 +48,6 @@ export default function LoginPage() {
         router.push(`/${role}/dashboard`);
       } else {
         setIsRedirecting(false);
-        // We don't block the UI here anymore; user can just try to login or sign up
       }
     } catch (e) {
       console.error("Redirection check failed:", e);
@@ -141,7 +141,12 @@ export default function LoginPage() {
                 <Input id="email" type="email" placeholder="name@example.com" value={formData.email} onChange={handleInputChange} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Link href="/forgot-password" title="Reset your password" className="text-xs text-primary font-medium hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
                 <Input id="password" type="password" value={formData.password} onChange={handleInputChange} required />
               </div>
             </div>
