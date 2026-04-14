@@ -118,7 +118,7 @@ export default function TeacherDashboard() {
         expectedSalary: expectedSalary || 'N/A',
         subjects,
         resumeName: resumeName || '',
-        resumeData: resumeData || '',
+        resumeData: resumeData || '', // Stored as plain Base64 Data URI
         submissionDate: serverTimestamp(),
         status: 'Pending',
         notes: notes || ''
@@ -301,12 +301,12 @@ export default function TeacherDashboard() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="resume">Resume / CV (PDF/Image)</Label>
+                      <Label htmlFor="resume">Resume / CV (.doc, .docx, .pdf, .jpg)</Label>
                       <div className="flex items-center gap-4">
                          <Input 
                           id="resume"
                           type="file"
-                          accept=".pdf,image/*"
+                          accept=".doc,.docx,.pdf,image/*"
                           disabled={isSubmitted} 
                           onChange={handleFileChange}
                           className="flex-1 cursor-pointer"

@@ -2,8 +2,8 @@
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -56,7 +56,8 @@ import {
   IndianRupee,
   FileText,
   Download,
-  User
+  User,
+  Mail
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
@@ -392,12 +393,18 @@ function UserDetailsContent({ user }: { user: any }) {
     }
 
     try {
+      // Data URI download (no decryption needed)
       const link = document.createElement('a');
       link.href = dataUrl;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      toast({
+        title: "Download Started",
+        description: `Downloading ${fileName}`,
+      });
     } catch (e) {
       toast({
         variant: "destructive",
@@ -446,6 +453,12 @@ function UserDetailsContent({ user }: { user: any }) {
                     <div className="flex items-center gap-2">
                       <Phone className="h-3 w-3 text-muted-foreground" />
                       <span className="text-xs">{int.phone}</span>
+                    </div>
+                  )}
+                  {int.email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs">{int.email}</span>
                     </div>
                   )}
 
@@ -767,19 +780,29 @@ export default function AdminPortal() {
 
       <main className="flex-1 lg:ml-64 p-8">
         <div className="max-w-6xl mx-auto space-y-8">
-          <h1 className="text-3xl font-headline font-bold">Admin Portal</h1>
+          <header className="flex items-center justify-between">
+            <h1 className="text-3xl font-headline font-bold">Admin Portal</h1>
+            <div className="flex items-center gap-4">
+              <Badge variant="outline" className="h-8 px-4 font-bold border-primary text-primary bg-primary/5 uppercase">
+                System Administrator
+              </Badge>
+            </div>
+          </header>
 
           {activeTab === 'notifications' && (
             <Card>
               <CardHeader><CardTitle>Notifications</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                {isLoadingNotifications ? <Loader2 className="animate-spin mx-auto" /> : (notifications && notifications.length > 0 ? notifications.map(n => (
-                  <div key={n.id} className="flex items-start justify-between p-4 border rounded-xl bg-card">
+                {isLoadingNotifications ? <Loader2 className="animate-spin mx-auto text-primary" /> : (notifications && notifications.length > 0 ? notifications.map(n => (
+                  <div key={n.id} className="flex items-start justify-between p-4 border rounded-xl bg-card shadow-sm hover:border-primary/20 transition-colors">
                     <div className="flex gap-3">
-                      {n.type === 'registration' ? <UserCheck className="h-5 w-5 text-primary" /> : <ClipboardList className="h-5 w-5 text-accent" />}
+                      <div className="bg-primary/10 p-2 rounded-lg h-fit">
+                        {n.type === 'registration' ? <UserCheck className="h-5 w-5 text-primary" /> : <ClipboardList className="h-5 w-5 text-accent" />}
+                      </div>
                       <div>
                         <h4 className="font-bold text-sm">{n.subject}</h4>
-                        <p className="text-xs text-muted-foreground">{n.body}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{n.body}</p>
+                        <p className="text-[10px] text-muted-foreground mt-2">{n.timestamp?.toDate?.()?.toLocaleString()}</p>
                       </div>
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => setNotificationToDelete(n.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
@@ -792,34 +815,45 @@ export default function AdminPortal() {
           {(activeTab === 'students' || activeTab === 'teachers') && (
             <Card>
               <CardHeader>
-                <CardTitle>{activeTab === 'students' ? 'Students' : 'Teachers'}</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>{activeTab === 'students' ? 'Students' : 'Teachers'}</CardTitle>
+                  <Badge variant="secondary">{filteredUsers.length} Total</Badge>
+                </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead className="text-right">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedUsers.map(u => (
-                      <TableRow key={u.id}>
-                        <TableCell>{u.firstName} {u.lastName}</TableCell>
-                        <TableCell>{u.email}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>Profile</Button>
-                        </TableCell>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead className="text-right">Action</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <div className="flex justify-center gap-2 mt-4">
-                  <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
-                  <span className="text-xs self-center">Page {currentPage} of {totalPages}</span>
-                  <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedUsers.length > 0 ? paginatedUsers.map(u => (
+                        <TableRow key={u.id} className="hover:bg-secondary/5">
+                          <TableCell className="font-medium">{u.firstName} {u.lastName}</TableCell>
+                          <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                          <TableCell className="text-right">
+                            <Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View Details</Button>
+                          </TableCell>
+                        </TableRow>
+                      )) : (
+                        <TableRow>
+                          <TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No users found.</TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
+                {totalPages > 1 && (
+                  <div className="flex justify-center gap-2 mt-4">
+                    <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button>
+                    <span className="text-xs self-center font-medium">Page {currentPage} of {totalPages}</span>
+                    <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -881,7 +915,17 @@ export default function AdminPortal() {
 
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader><CardTitle>{selectedUser?.firstName}'s Profile</CardTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                {selectedUser?.firstName[0]}{selectedUser?.lastName[0]}
+              </div>
+              <div>
+                <p>{selectedUser?.firstName} {selectedUser?.lastName}</p>
+                <p className="text-xs font-normal text-muted-foreground">{selectedUser?.email}</p>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
           {selectedUser && <UserDetailsContent user={selectedUser} />}
         </DialogContent>
       </Dialog>
@@ -891,7 +935,7 @@ export default function AdminPortal() {
           <AlertDialogHeader><AlertDialogTitle>Delete Alert?</AlertDialogTitle></AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteNotification} className="bg-destructive">Delete</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteNotification} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
