@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -17,7 +18,6 @@ service cloud.firestore {
 
     // --- COLLECTION RULES ---
 
-    // Allow all signed-in users to read profiles to support login and redirection logic.
     match /users/{userId} {
       allow read: if isSignedIn();
       allow create, update: if isOwner(userId) || isAdmin();
@@ -34,35 +34,36 @@ service cloud.firestore {
       }
     }
 
-    // Explicitly allow 'list' for authenticated users to fix dashboard queries.
+    // Permissive read access for interest collections to resolve listing issues.
+    // Query filtering is handled by the client-side code for privacy.
     match /studentInterests/{studentInterestId} {
-      allow get, list: if isSignedIn(); 
+      allow read: if isSignedIn(); 
       allow create: if isSignedIn();
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.studentId == request.auth.uid);
     }
 
     match /teacherInterests/{teacherInterestId} {
-      allow get, list: if isSignedIn(); 
+      allow read: if isSignedIn(); 
       allow create: if isSignedIn();
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.teacherId == request.auth.uid);
     }
 
     match /notifications/{notificationId} {
       allow create: if isSignedIn();
-      allow read, list, update, delete: if isAdmin();
+      allow read: if isAdmin();
+      allow update, delete: if isAdmin();
     }
 
     match /systemLogs/{logId} {
       allow create: if isSignedIn();
-      allow read, list: if isAdmin();
+      allow read: if isAdmin();
     }
 
     match /matchProposals/{matchProposalId} {
-      allow read, list: if isSignedIn();
+      allow read: if isSignedIn();
       allow create, update, delete: if isAdmin();
     }
 
-    // Critical for the login/redirect check to verify admin status.
     match /roles_admin/{adminId} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
@@ -70,7 +71,7 @@ service cloud.firestore {
     
     match /feedback/{feedbackId} {
       allow create: if isSignedIn();
-      allow read, list: if isAdmin();
+      allow read: if isAdmin();
     }
   }
 }

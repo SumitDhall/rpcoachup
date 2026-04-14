@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { BookOpen, ArrowLeft, Loader2, ShieldAlert } from 'lucide-react';
+import { BookOpen, ArrowLeft, Loader2, ShieldAlert, LogOut } from 'lucide-react';
 import { useAuth, useFirestore, useUser } from '@/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,19 +22,14 @@ export default function LoginPage() {
   const { toast } = useToast();
   
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
 
-  // Automatically redirect if user is already logged in
-  useEffect(() => {
-    if (!isAuthCheckLoading && user) {
-      handleRoleRedirect(user.uid);
-    }
-  }, [user, isAuthCheckLoading]);
-
   const handleRoleRedirect = async (uid: string) => {
+    setIsRedirecting(true);
     try {
       // 1. Check Admin status
       const adminDocRef = doc(db, 'roles_admin', uid);
@@ -52,19 +47,35 @@ export default function LoginPage() {
         const role = (userData.userType || 'Student').toLowerCase();
         router.push(`/${role}/dashboard`);
       } else {
+        setIsRedirecting(false);
         toast({
           variant: "destructive",
           title: "Profile Not Found",
-          description: "Your authentication is valid, but we couldn't find your platform profile. Please contact support.",
+          description: "Your authentication is valid, but we couldn't find your profile. Please register again or sign out.",
         });
       }
     } catch (e) {
       console.error("Redirection check failed:", e);
+      setIsRedirecting(false);
     }
   };
 
+  // Automatically redirect if user is already logged in
+  useEffect(() => {
+    if (!isAuthCheckLoading && user && !isRedirecting) {
+      handleRoleRedirect(user.uid);
+    }
+  }, [user, isAuthCheckLoading]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSignOut = async () => {
+    setIsLoading(true);
+    await signOut(auth);
+    setIsLoading(false);
+    toast({ title: "Signed Out", description: "Session deleted successfully." });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -73,22 +84,17 @@ export default function LoginPage() {
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      const user = userCredential.user;
-      await handleRoleRedirect(user.uid);
+      await handleRoleRedirect(userCredential.user.uid);
       
       toast({ 
         title: "Login Successful", 
-        description: "Welcome back to RP Coach-Up!" 
+        description: "Welcome back!" 
       });
     } catch (error: any) {
       console.error("Login error:", error);
-      let errorMessage = "Invalid credentials or system error.";
-      
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        errorMessage = "The email or password you entered is incorrect.";
-      } else if (error.code === 'auth/too-many-requests') {
-        errorMessage = "Too many failed login attempts. Please try again later.";
-      }
+      let errorMessage = "Invalid credentials.";
+      if (error.code === 'auth/wrong-password') errorMessage = "Incorrect password.";
+      if (error.code === 'auth/user-not-found') errorMessage = "Account not found.";
 
       toast({
         variant: "destructive",
@@ -100,10 +106,13 @@ export default function LoginPage() {
     }
   };
 
-  if (isAuthCheckLoading) {
+  if (isAuthCheckLoading || (user && isRedirecting)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="text-sm text-muted-foreground">Authenticating and verifying profile...</p>
+        </div>
       </div>
     );
   }
@@ -123,42 +132,56 @@ export default function LoginPage() {
             </div>
           </div>
           <CardTitle className="text-3xl font-headline">Welcome Back</CardTitle>
-          <CardDescription>Login to your RP Coach-Up account</CardDescription>
+          <CardDescription>
+            {user ? `Logged in as ${user.email}` : "Login to your account"}
+          </CardDescription>
         </CardHeader>
-        <form onSubmit={handleLogin}>
+        
+        {user ? (
           <CardContent className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="name@example.com" value={formData.email} onChange={handleInputChange} required />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Link href="#" className="text-xs text-primary hover:underline">Forgot password?</Link>
-                </div>
-                <Input id="password" type="password" value={formData.password} onChange={handleInputChange} required />
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex gap-3 items-start text-xs text-amber-800">
+              <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold mb-1">Session Detected</p>
+                <p>You are currently signed in, but we couldn't automatically redirect you. This might be due to a missing profile document.</p>
               </div>
             </div>
-
-            <div className="p-3 bg-secondary/50 rounded-lg border flex gap-3 items-start text-xs text-muted-foreground">
-              <ShieldAlert className="h-4 w-4 text-accent shrink-0 mt-0.5" />
-              <p>
-                <strong>Admin Access:</strong> To login as admin, your account UID must exist in the <code>roles_admin</code> Firestore collection.
-              </p>
+            <div className="grid grid-cols-2 gap-3">
+               <Button variant="outline" className="w-full" asChild>
+                  <Link href="/register">Create New Profile</Link>
+               </Button>
+               <Button variant="destructive" className="w-full" onClick={handleSignOut} disabled={isLoading}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+               </Button>
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button className="w-full h-11 text-lg" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In
-            </Button>
-            <p className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{' '}
-              <Link href="/register" className="text-primary font-semibold hover:underline">Register now</Link>
-            </p>
-          </CardFooter>
-        </form>
+        ) : (
+          <form onSubmit={handleLogin}>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" placeholder="name@example.com" value={formData.email} onChange={handleInputChange} required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input id="password" type="password" value={formData.password} onChange={handleInputChange} required />
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-4">
+              <Button className="w-full h-11 text-lg" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Sign In
+              </Button>
+              <p className="text-center text-sm text-muted-foreground">
+                Don&apos;t have an account?{' '}
+                <Link href="/register" className="text-primary font-semibold hover:underline">Register</Link>
+              </p>
+            </CardFooter>
+          </form>
+        )}
       </Card>
     </div>
   );
