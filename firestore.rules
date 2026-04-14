@@ -26,28 +26,26 @@ service cloud.firestore {
       allow delete: if isAdmin();
 
       match /studentProfile/{profileId} {
-        allow get, list: if isOwner(userId) || isAdmin();
+        allow read: if isOwner(userId) || isAdmin();
         allow create, update, delete: if isOwner(userId);
       }
 
       match /teacherProfile/{profileId} {
-        allow get, list: if isOwner(userId) || isAdmin();
+        allow read: if isOwner(userId) || isAdmin();
         allow create, update, delete: if isOwner(userId);
       }
     }
 
     match /studentInterests/{studentInterestId} {
-      // Explicitly allow 'list' for the owner so filtered queries pass.
-      allow list: if isSignedIn() && (resource.data.studentId == request.auth.uid || isAdmin());
-      allow get: if isSignedIn() && (resource.data.studentId == request.auth.uid || isAdmin());
+      // Use 'read' to cover both 'get' and 'list' robustly
+      allow read: if isSignedIn() && (resource.data.studentId == request.auth.uid || isAdmin());
       allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.studentId == request.auth.uid);
     }
 
     match /teacherInterests/{teacherInterestId} {
-      // Explicitly allow 'list' for the owner so filtered queries pass.
-      allow list: if isSignedIn() && (resource.data.teacherId == request.auth.uid || isAdmin());
-      allow get: if isSignedIn() && (resource.data.teacherId == request.auth.uid || isAdmin());
+      // Use 'read' to cover both 'get' and 'list' robustly
+      allow read: if isSignedIn() && (resource.data.teacherId == request.auth.uid || isAdmin());
       allow create: if isSignedIn() && request.resource.data.teacherId == request.auth.uid;
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.teacherId == request.auth.uid);
     }
@@ -63,7 +61,7 @@ service cloud.firestore {
     }
 
     match /matchProposals/{matchProposalId} {
-      allow get, list: if isAdmin() || (isSignedIn() && (resource.data.studentId == request.auth.uid || resource.data.teacherId == request.auth.uid));
+      allow read: if isAdmin() || (isSignedIn() && (resource.data.studentId == request.auth.uid || resource.data.teacherId == request.auth.uid));
       allow create, update, delete: if isAdmin();
     }
 
