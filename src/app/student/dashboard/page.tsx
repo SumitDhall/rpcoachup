@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -30,7 +31,10 @@ import {
   Phone,
   Mail,
   Calendar,
-  IndianRupee
+  IndianRupee,
+  School,
+  MapPin,
+  GraduationCap
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
@@ -66,6 +70,9 @@ export default function StudentDashboard() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
+  const [school, setSchool] = useState('');
+  const [gradeLevel, setGradeLevel] = useState('');
+  const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
   const [affordableRange, setAffordableRange] = useState('');
   const [intendedStartDate, setIntendedStartDate] = useState('');
@@ -88,11 +95,11 @@ export default function StudentDashboard() {
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!subject || !studentName || !phone || !email) {
+    if (!subject || !studentName || !phone || !email || !school || !gradeLevel) {
       toast({
         variant: "destructive",
         title: "Required Fields Missing",
-        description: "Please provide Name, Phone, Email, and Subject to proceed."
+        description: "Please provide Name, Phone, Email, Subject, School, and Class to proceed."
       });
       return; 
     }
@@ -106,6 +113,9 @@ export default function StudentDashboard() {
         phone,
         email,
         subject,
+        school,
+        gradeOrClass: gradeLevel,
+        address,
         affordableRange: affordableRange || 'Flexible',
         intendedStartDate: intendedStartDate || 'TBD',
         submissionDate: serverTimestamp(),
@@ -118,7 +128,7 @@ export default function StudentDashboard() {
       await addDoc(collection(db, 'notifications'), {
         type: 'interest',
         subject: `Student Tuition Inquiry: ${subject}`,
-        body: `Student ${studentName} requested tuition for ${subject}. Contact: ${phone}`,
+        body: `Student ${studentName} (${gradeLevel}) requested tuition for ${subject} at ${school}. Contact: ${phone}`,
         userEmail: email,
         userName: studentName,
         timestamp: serverTimestamp(),
@@ -130,7 +140,7 @@ export default function StudentDashboard() {
         userType: 'Student',
         userName: studentName,
         userEmail: email,
-        details: `Subject: ${subject}, Budget: ${affordableRange}`
+        details: `Subject: ${subject}, Grade: ${gradeLevel}, School: ${school}, Budget: ${affordableRange}`
       });
       
       setIsSubmitted(true);
@@ -151,6 +161,7 @@ export default function StudentDashboard() {
   };
 
   const feeOptions = Array.from({ length: 15 }, (_, i) => 5000 + i * 1000);
+  const gradeOptions = Array.from({ length: 12 }, (_, i) => `Class ${i + 1}`);
 
   if (isUserLoading || isProfileLoading) {
     return (
@@ -227,8 +238,39 @@ export default function StudentDashboard() {
                           value={subject} 
                           onChange={e => setSubject(e.target.value)} 
                           required 
-                          placeholder="e.g., Mathematics (Class X)" 
+                          placeholder="e.g., Mathematics" 
                         />
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="school" className="flex items-center gap-1">
+                          <School className="h-3 w-3" /> Current School <span className="text-destructive">*</span>
+                        </Label>
+                        <Input 
+                          id="school"
+                          disabled={isSubmitted} 
+                          value={school} 
+                          onChange={e => setSchool(e.target.value)} 
+                          placeholder="Name of the school" 
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="gradeLevel" className="flex items-center gap-1">
+                          <GraduationCap className="h-3 w-3" /> Class / Grade <span className="text-destructive">*</span>
+                        </Label>
+                        <Select disabled={isSubmitted} value={gradeLevel} onValueChange={setGradeLevel} required>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Class" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {gradeOptions.map(grade => (
+                              <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
 
@@ -293,14 +335,27 @@ export default function StudentDashboard() {
                     </div>
 
                     <div className="space-y-2">
+                      <Label htmlFor="address" className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> Full Address
+                      </Label>
+                      <Input 
+                        id="address"
+                        disabled={isSubmitted} 
+                        value={address} 
+                        onChange={e => setAddress(e.target.value)} 
+                        placeholder="House number, street, locality..."
+                      />
+                    </div>
+
+                    <div className="space-y-2">
                       <Label htmlFor="notes">Additional Requirements</Label>
                       <Textarea 
                         id="notes"
                         disabled={isSubmitted} 
                         value={notes} 
                         onChange={e => setNotes(e.target.value)} 
-                        placeholder="Specific school name, preferred timings, home address, topics you're struggling with..." 
-                        className="min-h-[120px]"
+                        placeholder="Preferred timings, specific topics you're struggling with, or any other preferences..." 
+                        className="min-h-[100px]"
                       />
                     </div>
                   </CardContent>
@@ -341,9 +396,11 @@ export default function StudentDashboard() {
                           <div>
                             <p className="font-bold text-lg">{i.subject}</p>
                             <p className="text-xs text-muted-foreground">
+                              {i.gradeOrClass} | {i.school}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground mt-1">
                               Submitted: {i.submissionDate?.toDate?.()?.toLocaleString() || 'Syncing...'}
                             </p>
-                            {i.affordableRange && <p className="text-[10px] font-medium text-accent mt-1">Budget: {i.affordableRange}</p>}
                           </div>
                         </div>
                         <div className="text-right">
