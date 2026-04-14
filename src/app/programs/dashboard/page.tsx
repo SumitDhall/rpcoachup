@@ -7,17 +7,28 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
+  Sheet, 
+  SheetContent, 
+  SheetTrigger, 
+  SheetHeader, 
+  SheetTitle 
+} from "@/components/ui/sheet";
+import { 
   BookOpen, 
   Phone, 
   Mail, 
   MapPin, 
   CheckCircle2, 
   Users, 
-  Calendar
+  Calendar,
+  Menu,
+  Loader2
 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useUser } from '@/firebase';
 
 export default function ProgramsDashboard() {
+  const { user, isUserLoading } = useUser();
   const onlineCourseImg = PlaceHolderImages.find(img => img.id === 'online-course');
 
   return (
@@ -25,14 +36,86 @@ export default function ProgramsDashboard() {
       {/* Header */}
       <header className="border-b bg-card sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="bg-primary p-1.5 rounded-lg">
               <BookOpen className="text-primary-foreground h-5 w-5" />
             </div>
             <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
           </Link>
-          <div className="flex items-center gap-4">
-             <Badge variant="outline" className="hidden sm:flex border-primary text-primary">Official Program</Badge>
+
+          <nav className="hidden md:flex items-center gap-6">
+            <Link href="/programs/dashboard" className="text-sm font-bold text-primary">Programs</Link>
+            <Link href="/#features" className="text-sm font-medium hover:text-primary transition-colors">How it Works</Link>
+            <Link href="/about" className="text-sm font-medium hover:text-primary transition-colors">About Us</Link>
+          </nav>
+
+          <div className="flex items-center gap-3">
+             {/* Desktop Auth */}
+             <div className="hidden md:flex items-center gap-3">
+                {isUserLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                ) : user ? (
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href="/login">Dashboard</Link>
+                  </Button>
+                ) : (
+                  <Button size="sm" variant="outline" asChild>
+                    <Link href="/login">Log in</Link>
+                  </Button>
+                )}
+                <Badge variant="outline" className="hidden lg:flex border-primary text-primary">Official Program</Badge>
+             </div>
+
+             {/* Mobile Hamburger Menu */}
+            <div className="md:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[300px]">
+                  <SheetHeader className="text-left border-b pb-4">
+                    <SheetTitle className="flex items-center gap-2">
+                      <div className="bg-primary p-1 rounded-lg">
+                        <BookOpen className="text-primary-foreground h-5 w-5" />
+                      </div>
+                      <span className="font-headline font-bold text-primary">RP Coach-Up</span>
+                    </SheetTitle>
+                  </SheetHeader>
+                  <nav className="flex flex-col gap-1 mt-6">
+                    <Link href="/programs/dashboard" className="text-base font-bold py-3 px-3 rounded-lg bg-primary/5 text-primary">
+                      Programs
+                    </Link>
+                    <Link href="/#features" className="text-base font-semibold py-3 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                      How it Works
+                    </Link>
+                    <Link href="/about" className="text-base font-semibold py-3 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                      About Us
+                    </Link>
+                    
+                    <div className="pt-6 mt-4 border-t border-border/50 flex flex-col gap-3">
+                      {isUserLoading ? (
+                         <div className="flex justify-center py-2"><Loader2 className="h-5 w-5 animate-spin" /></div>
+                      ) : user ? (
+                        <Button className="w-full justify-start gap-2" asChild>
+                          <Link href="/login">Dashboard</Link>
+                        </Button>
+                      ) : (
+                        <>
+                          <Button variant="outline" className="w-full justify-start" asChild>
+                            <Link href="/login">Log in</Link>
+                          </Button>
+                          <Button className="w-full justify-start" asChild>
+                            <Link href="/register">Get Started</Link>
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </nav>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
       </header>
