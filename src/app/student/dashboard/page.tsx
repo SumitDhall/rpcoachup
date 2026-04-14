@@ -24,7 +24,6 @@ import {
   Loader2, 
   LogOut, 
   ClipboardList,
-  Edit2,
   AlertCircle,
   History,
   User,
@@ -57,7 +56,6 @@ export default function StudentDashboard() {
 
   const interestsQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
-    // Note: orderBy removed to avoid index requirement, sorted on client side
     return query(
       collection(db, 'studentInterests'),
       where('studentId', '==', user.uid),
@@ -66,7 +64,6 @@ export default function StudentDashboard() {
   }, [db, user?.uid]);
   const { data: rawInterests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
 
-  // Client-side sorting
   const interests = useMemo(() => {
     if (!rawInterests) return null;
     return [...rawInterests].sort((a, b) => {
@@ -88,7 +85,6 @@ export default function StudentDashboard() {
   const [intendedStartDate, setIntendedStartDate] = useState('');
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -153,11 +149,14 @@ export default function StudentDashboard() {
         details: `Subject: ${subject}, Grade: ${gradeLevel}, School: ${school}, Budget: ${affordableRange}`
       });
       
-      setIsSubmitted(true);
       toast({ 
         title: "Application Success", 
         description: "Your tuition requirements have been shared with our advisors." 
       });
+
+      // Clear fields specific to the request to allow another one
+      setSubject('');
+      setNotes('');
     } catch (error) {
       console.error(error);
       toast({ 
@@ -231,7 +230,6 @@ export default function StudentDashboard() {
                         </Label>
                         <Input 
                           id="studentName"
-                          disabled={isSubmitted} 
                           value={studentName} 
                           onChange={e => setStudentName(e.target.value)} 
                           required 
@@ -244,7 +242,6 @@ export default function StudentDashboard() {
                         </Label>
                         <Input 
                           id="subject"
-                          disabled={isSubmitted} 
                           value={subject} 
                           onChange={e => setSubject(e.target.value)} 
                           required 
@@ -260,7 +257,6 @@ export default function StudentDashboard() {
                         </Label>
                         <Input 
                           id="school"
-                          disabled={isSubmitted} 
                           value={school} 
                           onChange={e => setSchool(e.target.value)} 
                           placeholder="Name of the school" 
@@ -271,7 +267,7 @@ export default function StudentDashboard() {
                         <Label htmlFor="gradeLevel" className="flex items-center gap-1">
                           <GraduationCap className="h-3 w-3" /> Class / Grade <span className="text-destructive">*</span>
                         </Label>
-                        <Select disabled={isSubmitted} value={gradeLevel} onValueChange={setGradeLevel} required>
+                        <Select value={gradeLevel} onValueChange={setGradeLevel} required>
                           <SelectTrigger>
                             <SelectValue placeholder="Select Class" />
                           </SelectTrigger>
@@ -291,7 +287,6 @@ export default function StudentDashboard() {
                         </Label>
                         <Input 
                           id="phone"
-                          disabled={isSubmitted} 
                           value={phone} 
                           onChange={e => setPhone(e.target.value)} 
                           placeholder="Mobile or Whatsapp Number" 
@@ -305,7 +300,6 @@ export default function StudentDashboard() {
                         <Input 
                           id="email"
                           type="email"
-                          disabled={isSubmitted} 
                           value={email} 
                           onChange={e => setEmail(e.target.value)} 
                           placeholder="Your email address" 
@@ -319,7 +313,7 @@ export default function StudentDashboard() {
                         <Label className="flex items-center gap-1">
                           <IndianRupee className="h-3 w-3" /> Monthly Fee Budget (INR)
                         </Label>
-                        <Select disabled={isSubmitted} value={affordableRange} onValueChange={setAffordableRange}>
+                        <Select value={affordableRange} onValueChange={setAffordableRange}>
                           <SelectTrigger>
                             <SelectValue placeholder="Select budget range" />
                           </SelectTrigger>
@@ -337,7 +331,6 @@ export default function StudentDashboard() {
                         <Input 
                           id="startDate"
                           type="date" 
-                          disabled={isSubmitted} 
                           value={intendedStartDate} 
                           onChange={e => setIntendedStartDate(e.target.value)} 
                         />
@@ -350,7 +343,6 @@ export default function StudentDashboard() {
                       </Label>
                       <Input 
                         id="address"
-                        disabled={isSubmitted} 
                         value={address} 
                         onChange={e => setAddress(e.target.value)} 
                         placeholder="House number, street, locality..."
@@ -361,7 +353,6 @@ export default function StudentDashboard() {
                       <Label htmlFor="notes">Additional Requirements</Label>
                       <Textarea 
                         id="notes"
-                        disabled={isSubmitted} 
                         value={notes} 
                         onChange={e => setNotes(e.target.value)} 
                         placeholder="Preferred timings, specific topics you're struggling with, or any other preferences..." 
@@ -369,16 +360,11 @@ export default function StudentDashboard() {
                       />
                     </div>
                   </CardContent>
-                  <CardFooter className="flex flex-col sm:flex-row gap-4 border-t pt-6">
-                    <Button type="submit" disabled={isSubmitting || isSubmitted} className="flex-1 font-bold h-12 text-lg shadow-lg shadow-primary/20">
+                  <CardFooter className="border-t pt-6">
+                    <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-12 text-lg shadow-lg shadow-primary/20">
                       {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                       Submit Request
                     </Button>
-                    {isSubmitted && (
-                      <Button type="button" variant="outline" className="flex-1 h-12" onClick={() => setIsSubmitted(false)}>
-                        <Edit2 className="h-4 w-4 mr-2" /> Edit/New Submission
-                      </Button>
-                    )}
                   </CardFooter>
                 </form>
               </Card>
