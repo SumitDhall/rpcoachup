@@ -1,12 +1,68 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // TOTAL ACCESS POLICY
-    // This rule allows any user (authenticated or not) to read and write any document.
-    // This is the definitive fix for "Missing or insufficient permissions" errors
-    // while you are building and testing your application's logic.
-    match /{document=**} {
-      allow read, write: if true;
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // User Profiles
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) || isAdmin();
+      
+      // Nested profile documents
+      match /studentProfile/studentProfile {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+      match /teacherProfile/teacherProfile {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // Student Interests
+    match /studentInterests/{id} {
+      allow create: if isSignedIn();
+      // Allow read if admin or if the user is the student associated with the record
+      allow read: if isAdmin() || (isSignedIn() && (resource == null || resource.data.studentId == request.auth.uid));
+      allow update, delete: if isAdmin();
+    }
+
+    // Teacher Interests
+    match /teacherInterests/{id} {
+      allow create: if isSignedIn();
+      // Allow read if admin or if the user is the teacher associated with the record
+      allow read: if isAdmin() || (isSignedIn() && (resource == null || resource.data.teacherId == request.auth.uid));
+      allow update, delete: if isAdmin();
+    }
+
+    // Notifications (Admin only for read/manage)
+    match /notifications/{id} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Admin Role Registry
+    match /roles_admin/{id} {
+      allow read: if isSignedIn();
+      allow write: if false; // Managed via Firebase Console for security
+    }
+
+    // Match Proposals
+    match /matchProposals/{id} {
+      allow read: if isAdmin() || (isSignedIn() && (resource.data.studentId == request.auth.uid || resource.data.teacherId == request.auth.uid));
+      allow write: if isAdmin();
+    }
+
+    // System Activity Logs
+    match /systemLogs/{id} {
+      allow read, write: if isAdmin();
     }
   }
 }
