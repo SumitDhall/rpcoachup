@@ -159,7 +159,7 @@ export default function AboutPage() {
                 <CardContent className="pt-8">
                   <Target className="h-10 w-10 mx-auto mb-4 text-accent" />
                   <h3 className="text-2xl font-bold mb-2">3x</h3>
-                  <p className="text-sm text-primary-foreground/70">Faster Placement Time</p>
+                  <p className="text-sm text-primary-foreground/70">better learning</p>
                 </CardContent>
               </Card>
             </div>
