@@ -4,12 +4,19 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem, 
+  CarouselNext, 
+  CarouselPrevious 
+} from "@/components/ui/carousel";
 import { BookOpen, ArrowLeft, Target, Lightbulb, ShieldCheck, Users, Loader2, Star, Quote } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, limit, orderBy, where } from 'firebase/firestore';
+import { collection, query, limit, where } from 'firebase/firestore';
 
 export default function AboutPage() {
   const { user, isUserLoading } = useUser();
@@ -22,7 +29,6 @@ export default function AboutPage() {
   }, []);
 
   // Fetch Feedback without complex orderBy in the query to avoid composite index requirement
-  // We will sort on the client side.
   const studentFeedbackBaseQuery = useMemoFirebase(() => {
     if (!db) return null;
     return query(collection(db, 'feedback'), where('userType', '==', 'Student'), limit(20));
@@ -44,8 +50,7 @@ export default function AboutPage() {
         const dateA = a.createdAt?.toMillis?.() || 0;
         const dateB = b.createdAt?.toMillis?.() || 0;
         return dateB - dateA;
-      })
-      .slice(0, 4);
+      });
   }, [rawStudentFeedback]);
 
   const teacherFeedback = useMemo(() => {
@@ -55,8 +60,7 @@ export default function AboutPage() {
         const dateA = a.createdAt?.toMillis?.() || 0;
         const dateB = b.createdAt?.toMillis?.() || 0;
         return dateB - dateA;
-      })
-      .slice(0, 4);
+      });
   }, [rawTeacherFeedback]);
 
   return (
@@ -170,24 +174,38 @@ export default function AboutPage() {
                 <h3 className="text-2xl font-headline font-bold flex items-center gap-2 text-primary">
                   <Users className="h-6 w-6" /> Student Success Stories
                 </h3>
-                <div className="grid gap-4">
+                <div className="px-10 relative">
                   {isLoadingStudentFB ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
-                  ) : (studentFeedback && studentFeedback.length > 0 ? studentFeedback.map(fb => (
-                    <Card key={fb.id} className="border-none shadow-md">
-                      <CardContent className="pt-6">
-                        <div className="flex gap-1 mb-2">
-                          {[...Array(fb.rating)].map((_, i) => <Star key={i} className="h-3 w-3 fill-accent text-accent" />)}
-                        </div>
-                        <Quote className="h-8 w-8 text-primary/10 mb-2" />
-                        <p className="text-sm italic text-muted-foreground mb-4">"{fb.comment}"</p>
-                        <div className="flex items-center justify-between border-t pt-3">
-                          <span className="text-xs font-bold text-primary">{fb.userName}</span>
-                          <Badge variant="outline" className="text-[10px]">{fb.teacherName}</Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )) : <p className="text-sm italic text-muted-foreground">No student feedback yet.</p>)}
+                  ) : studentFeedback.length > 0 ? (
+                    <Carousel className="w-full">
+                      <CarouselContent>
+                        {studentFeedback.map(fb => (
+                          <CarouselItem key={fb.id}>
+                            <Card className="border-none shadow-md h-full">
+                              <CardContent className="pt-6">
+                                <div className="flex gap-1 mb-2">
+                                  {[...Array(fb.rating)].map((_, i) => <Star key={i} className="h-3 w-3 fill-accent text-accent" />)}
+                                </div>
+                                <Quote className="h-8 w-8 text-primary/10 mb-2" />
+                                <p className="text-sm italic text-muted-foreground mb-4">"{fb.comment}"</p>
+                                <div className="flex items-center justify-between border-t pt-3 mt-auto">
+                                  <span className="text-xs font-bold text-primary">{fb.userName}</span>
+                                  {fb.teacherName && (
+                                    <Badge variant="outline" className="text-[10px]">{fb.teacherName}</Badge>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious className="-left-10" />
+                      <CarouselNext className="-right-10" />
+                    </Carousel>
+                  ) : (
+                    <p className="text-sm italic text-muted-foreground text-center py-8">No student feedback yet.</p>
+                  )}
                 </div>
               </div>
 
@@ -196,23 +214,35 @@ export default function AboutPage() {
                 <h3 className="text-2xl font-headline font-bold flex items-center gap-2 text-accent">
                   <Users className="h-6 w-6" /> Educator Experiences
                 </h3>
-                <div className="grid gap-4">
+                <div className="px-10 relative">
                   {isLoadingTeacherFB ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin text-accent" /></div>
-                  ) : (teacherFeedback && teacherFeedback.length > 0 ? teacherFeedback.map(fb => (
-                    <Card key={fb.id} className="border-none shadow-md">
-                      <CardContent className="pt-6">
-                        <div className="flex gap-1 mb-2">
-                          {[...Array(fb.rating)].map((_, i) => <Star key={i} className="h-3 w-3 fill-accent text-accent" />)}
-                        </div>
-                        <Quote className="h-8 w-8 text-accent/10 mb-2" />
-                        <p className="text-sm italic text-muted-foreground mb-4">"{fb.comment}"</p>
-                        <div className="flex items-center border-t pt-3">
-                          <span className="text-xs font-bold text-accent">{fb.userName}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )) : <p className="text-sm italic text-muted-foreground">No teacher feedback yet.</p>)}
+                  ) : teacherFeedback.length > 0 ? (
+                    <Carousel className="w-full">
+                      <CarouselContent>
+                        {teacherFeedback.map(fb => (
+                          <CarouselItem key={fb.id}>
+                            <Card className="border-none shadow-md h-full">
+                              <CardContent className="pt-6">
+                                <div className="flex gap-1 mb-2">
+                                  {[...Array(fb.rating)].map((_, i) => <Star key={i} className="h-3 w-3 fill-accent text-accent" />)}
+                                </div>
+                                <Quote className="h-8 w-8 text-accent/10 mb-2" />
+                                <p className="text-sm italic text-muted-foreground mb-4">"{fb.comment}"</p>
+                                <div className="flex items-center border-t pt-3 mt-auto">
+                                  <span className="text-xs font-bold text-accent">{fb.userName}</span>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious className="-left-10" />
+                      <CarouselNext className="-right-10" />
+                    </Carousel>
+                  ) : (
+                    <p className="text-sm italic text-muted-foreground text-center py-8">No teacher feedback yet.</p>
+                  )}
                 </div>
               </div>
             </div>
