@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -414,8 +415,11 @@ export default function StudentDashboard() {
                         </div>
                         <div className="text-right">
                           <Badge 
-                            variant={i.status === 'Completed' ? 'default' : 'outline'} 
-                            className={`px-3 py-1 font-bold ${i.status === 'Completed' ? 'bg-green-600' : ''}`}
+                            variant={i.status === 'Pending' ? 'outline' : 'default'} 
+                            className={`px-3 py-1 font-bold ${
+                              i.status === 'Completed' ? 'bg-green-600' : 
+                              i.status === 'In-Progress' ? 'bg-blue-500 hover:bg-blue-600' : ''
+                            }`}
                           >
                             {i.status}
                           </Badge>

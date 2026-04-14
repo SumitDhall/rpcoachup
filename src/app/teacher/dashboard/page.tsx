@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -379,7 +380,13 @@ export default function TeacherDashboard() {
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-2">
-                            <Badge variant={i.status === 'Completed' ? 'default' : 'outline'} className={i.status === 'Completed' ? 'bg-green-600' : ''}>
+                            <Badge 
+                              variant={i.status === 'Pending' ? 'outline' : 'default'} 
+                              className={`font-bold ${
+                                i.status === 'Completed' ? 'bg-green-600' : 
+                                i.status === 'In-Progress' ? 'bg-blue-500 hover:bg-blue-600' : ''
+                              }`}
+                            >
                               {i.status}
                             </Badge>
                             <span className="text-[10px] text-muted-foreground">{i.submissionDate?.toDate?.()?.toLocaleDateString()}</span>

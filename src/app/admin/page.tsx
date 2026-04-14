@@ -372,10 +372,16 @@ function UserDetailsContent({ user }: { user: any }) {
 
   const { data: interests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
 
+  const getNextStatus = (current: string) => {
+    if (current === 'Pending') return 'In-Progress';
+    if (current === 'In-Progress') return 'Completed';
+    return 'Pending';
+  };
+
   const handleStatusToggle = () => {
     if (!statusChangeTarget) return;
     
-    const newStatus = statusChangeTarget.currentStatus === 'Pending' ? 'Completed' : 'Pending';
+    const newStatus = getNextStatus(statusChangeTarget.currentStatus);
     const interestRef = doc(db, statusChangeTarget.collection, statusChangeTarget.id);
     
     updateDocumentNonBlocking(interestRef, { status: newStatus });
@@ -437,7 +443,10 @@ function UserDetailsContent({ user }: { user: any }) {
                   >
                     <Badge 
                       variant={int.status === 'Pending' ? 'outline' : 'default'} 
-                      className={`text-[10px] cursor-pointer ${int.status === 'Completed' ? 'bg-green-600' : ''}`}
+                      className={`text-[10px] cursor-pointer ${
+                        int.status === 'Completed' ? 'bg-green-600' : 
+                        int.status === 'In-Progress' ? 'bg-blue-500 hover:bg-blue-600' : ''
+                      }`}
                     >
                       {int.status}
                     </Badge>
@@ -534,7 +543,7 @@ function UserDetailsContent({ user }: { user: any }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Update Status?</AlertDialogTitle>
             <AlertDialogDescription>
-              Mark this submission as <strong>{statusChangeTarget?.currentStatus === 'Pending' ? 'Completed' : 'Pending'}</strong>?
+              Mark this submission as <strong>{statusChangeTarget ? getNextStatus(statusChangeTarget.currentStatus) : ''}</strong>?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
