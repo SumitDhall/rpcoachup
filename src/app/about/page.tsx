@@ -84,7 +84,7 @@ export default function AboutPage() {
   }, [rawTeacherFeedback]);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen overflow-x-hidden">
       {/* Navbar */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -191,16 +191,16 @@ export default function AboutPage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="py-16 lg:py-24 bg-gradient-to-b from-secondary/20 to-background">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 text-center lg:text-left">
             <div className="max-w-3xl">
               <Link href="/" className="inline-flex items-center gap-2 text-primary text-sm font-medium mb-8 hover:underline group">
                 <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                 Back to Home
               </Link>
-              <h1 className="text-4xl lg:text-6xl font-headline font-bold mb-6 text-primary">
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-headline font-bold mb-6 text-primary">
                 Our Mission: Bridging the <span className="text-accent">Knowledge Gap</span>
               </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed">
+              <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
                 At RP Coach-Up, we believe that the right connection can change a student's life. 
                 We're committed to ensuring that every student finds the perfect mentor, 
                 and every teacher finds a student they are passionate about helping.
@@ -212,23 +212,22 @@ export default function AboutPage() {
         {/* Features Section */}
         <section className="py-20">
           <div className="container mx-auto px-4">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <div className="relative">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              <div className="relative order-2 lg:order-1">
                 <div className="absolute -inset-4 bg-primary/10 rounded-3xl blur-2xl" />
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl border">
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl border aspect-[16/10]">
                   <Image 
                     src={mentorImg?.imageUrl || "https://picsum.photos/seed/edu2/600/400"} 
                     alt={mentorImg?.description || "Teacher mentoring a student"}
-                    width={600}
-                    height={400}
-                    className="object-cover w-full h-full"
+                    fill
+                    className="object-cover"
                     data-ai-hint="teacher mentoring"
                   />
                 </div>
               </div>
-              <div className="space-y-8">
+              <div className="space-y-8 order-1 lg:order-2">
                 <div className="space-y-4">
-                  <h2 className="text-3xl font-headline font-bold">Why RP Coach-Up?</h2>
+                  <h2 className="text-2xl sm:text-3xl font-headline font-bold">Why RP Coach-Up?</h2>
                   <p className="text-muted-foreground leading-relaxed">
                     Traditional tutoring platforms often lack the personal touch. We focus on interests, teaching styles, and availability to create meaningful matches.
                   </p>
@@ -236,11 +235,11 @@ export default function AboutPage() {
                 <div className="grid gap-6">
                   {[
                     { icon: Target, title: "Targeted Matching", desc: "We analyze student interests and teacher expertise to find the perfect educational overlap." },
-                    { icon: ShieldCheck, title: "Verified Excellence", desc: "Every teacher on our platform undergoes a regex verification process." },
+                    { icon: ShieldCheck, title: "Verified Excellence", desc: "Every teacher on our platform undergoes a rigorous verification process." },
                     { icon: Lightbulb, title: "Personalized Growth", desc: "We focus on individual learning paths rather than one-size-fits-all curricula." }
                   ].map((value, i) => (
                     <div key={i} className="flex gap-4">
-                      <div className="mt-1 bg-accent/10 p-2 rounded-lg h-fit"><value.icon className="h-5 w-5 text-accent" /></div>
+                      <div className="mt-1 bg-accent/10 p-2 rounded-lg h-fit shrink-0"><value.icon className="h-5 w-5 text-accent" /></div>
                       <div>
                         <h4 className="font-bold text-lg">{value.title}</h4>
                         <p className="text-sm text-muted-foreground">{value.desc}</p>
@@ -255,19 +254,19 @@ export default function AboutPage() {
 
         {/* Feedback Section */}
         <section className="py-24 bg-secondary/10">
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 overflow-x-hidden">
             <div className="text-center max-w-2xl mx-auto mb-16">
-              <h2 className="text-4xl font-headline font-bold text-primary mb-4">The Community Voice</h2>
+              <h2 className="text-3xl sm:text-4xl font-headline font-bold text-primary mb-4">The Community Voice</h2>
               <p className="text-muted-foreground">Hear directly from our students and educators about their learning journeys.</p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-12">
+            <div className="grid lg:grid-cols-2 gap-16 lg:gap-12">
               {/* Student Feedback */}
               <div className="space-y-6">
                 <h3 className="text-2xl font-headline font-bold flex items-center gap-2 text-primary">
-                  <Users className="h-6 w-6" /> Student Success Stories
+                  <Users className="h-6 w-6 shrink-0" /> Student Success
                 </h3>
-                <div className="px-10 relative">
+                <div className="px-4 sm:px-10 relative">
                   {isLoadingStudentFB ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
                   ) : studentFeedback.length > 0 ? (
@@ -281,10 +280,10 @@ export default function AboutPage() {
                                   {[...Array(fb.rating)].map((_, i) => <Star key={i} className="h-3 w-3 fill-accent text-accent" />)}
                                 </div>
                                 <Quote className="h-8 w-8 text-primary/10 mb-2" />
-                                <p className="text-sm italic text-muted-foreground mb-4">"{fb.comment}"</p>
+                                <p className="text-sm italic text-muted-foreground mb-4 leading-relaxed">"{fb.comment}"</p>
                                 <div className="flex items-center justify-between border-t pt-3 mt-auto">
                                   <span className="text-xs font-bold text-primary">{fb.userName}</span>
-                                  {fb.teacherName && (
+                                  {fb.teacherName && fb.teacherName !== 'General Platform Feedback' && (
                                     <Badge variant="outline" className="text-[10px]">{fb.teacherName}</Badge>
                                   )}
                                 </div>
@@ -293,8 +292,11 @@ export default function AboutPage() {
                           </CarouselItem>
                         ))}
                       </CarouselContent>
-                      <CarouselPrevious className="-left-10" />
-                      <CarouselNext className="-right-10" />
+                      <CarouselPrevious className="hidden sm:flex -left-10" />
+                      <CarouselNext className="hidden sm:flex -right-10" />
+                      {/* Mobile Arrows inside the padding area to prevent overflow */}
+                      <CarouselPrevious className="flex sm:hidden left-0 h-8 w-8" />
+                      <CarouselNext className="flex sm:hidden right-0 h-8 w-8" />
                     </Carousel>
                   ) : (
                     <p className="text-sm italic text-muted-foreground text-center py-8">No student feedback yet.</p>
@@ -305,9 +307,9 @@ export default function AboutPage() {
               {/* Teacher Feedback */}
               <div className="space-y-6">
                 <h3 className="text-2xl font-headline font-bold flex items-center gap-2 text-accent">
-                  <Users className="h-6 w-6" /> Educator Experiences
+                  <Users className="h-6 w-6 shrink-0" /> Educator Experiences
                 </h3>
-                <div className="px-10 relative">
+                <div className="px-4 sm:px-10 relative">
                   {isLoadingTeacherFB ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin text-accent" /></div>
                   ) : teacherFeedback.length > 0 ? (
@@ -321,7 +323,7 @@ export default function AboutPage() {
                                   {[...Array(fb.rating)].map((_, i) => <Star key={i} className="h-3 w-3 fill-accent text-accent" />)}
                                 </div>
                                 <Quote className="h-8 w-8 text-accent/10 mb-2" />
-                                <p className="text-sm italic text-muted-foreground mb-4">"{fb.comment}"</p>
+                                <p className="text-sm italic text-muted-foreground mb-4 leading-relaxed">"{fb.comment}"</p>
                                 <div className="flex items-center border-t pt-3 mt-auto">
                                   <span className="text-xs font-bold text-accent">{fb.userName}</span>
                                 </div>
@@ -330,8 +332,11 @@ export default function AboutPage() {
                           </CarouselItem>
                         ))}
                       </CarouselContent>
-                      <CarouselPrevious className="-left-10" />
-                      <CarouselNext className="-right-10" />
+                      <CarouselPrevious className="hidden sm:flex -left-10" />
+                      <CarouselNext className="hidden sm:flex -right-10" />
+                      {/* Mobile Arrows inside the padding area to prevent overflow */}
+                      <CarouselPrevious className="flex sm:hidden left-0 h-8 w-8" />
+                      <CarouselNext className="flex sm:hidden right-0 h-8 w-8" />
                     </Carousel>
                   ) : (
                     <p className="text-sm italic text-muted-foreground text-center py-8">No teacher feedback yet.</p>
@@ -345,10 +350,10 @@ export default function AboutPage() {
         {/* Final CTA */}
         <section className="py-24 text-center">
           <div className="container mx-auto px-4">
-            <h2 className="text-4xl font-headline font-bold mb-8">Ready to find your match?</h2>
+            <h2 className="text-3xl sm:text-4xl font-headline font-bold mb-8">Ready to find your match?</h2>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="rounded-xl px-12" asChild><Link href="/register">Join Us Today</Link></Button>
-              <Button variant="outline" size="lg" className="rounded-xl px-12" asChild><Link href="/login">Sign In</Link></Button>
+              <Button size="lg" className="rounded-xl px-12 h-14 text-lg" asChild><Link href="/register">Join Us Today</Link></Button>
+              <Button variant="outline" size="lg" className="rounded-xl px-12 h-14 text-lg border-2" asChild><Link href="/login">Sign In</Link></Button>
             </div>
           </div>
         </section>
