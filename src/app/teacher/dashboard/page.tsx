@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -18,7 +19,11 @@ import {
   History, 
   Edit2,
   GraduationCap,
-  ClipboardList
+  ClipboardList,
+  FileText,
+  Clock,
+  IndianRupee,
+  Briefcase
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
@@ -54,7 +59,14 @@ export default function TeacherDashboard() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [qualifications, setQualifications] = useState('');
+  const [experienceYears, setExperienceYears] = useState('');
+  const [hoursPerWeek, setHoursPerWeek] = useState('');
+  const [expectedSalary, setExpectedSalary] = useState('');
   const [subjects, setSubjects] = useState('');
+  const [notes, setNotes] = useState('');
+  const [resumeName, setResumeName] = useState('');
+  const [resumeData, setResumeData] = useState('');
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -65,6 +77,18 @@ export default function TeacherDashboard() {
     }
   }, [profile]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setResumeName(file.name);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setResumeData(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut(auth);
     router.push('/');
@@ -72,26 +96,41 @@ export default function TeacherDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!teacherName || !subjects) return;
+    if (!teacherName || !subjects || !phone || !email) {
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please fill in all mandatory fields (Name, Phone, Email, Subjects)."
+      });
+      return;
+    }
     setIsSubmitting(true);
 
     try {
-      await addDoc(collection(db, 'teacherInterests'), {
+      const submissionData = {
         teacherId: user?.uid,
         teacherName,
-        phone: phone || 'Not Provided',
-        email: email || profile?.email || 'Not Provided',
+        phone,
+        email,
         qualifications: qualifications || 'N/A',
+        experienceYears: experienceYears || '0',
+        hoursPerWeek: hoursPerWeek || '0',
+        expectedSalary: expectedSalary || 'N/A',
         subjects,
+        resumeName: resumeName || '',
+        resumeData: resumeData || '',
         submissionDate: serverTimestamp(),
-        status: 'Pending'
-      });
+        status: 'Pending',
+        notes: notes || ''
+      };
+
+      await addDoc(collection(db, 'teacherInterests'), submissionData);
 
       await addDoc(collection(db, 'notifications'), {
         type: 'interest',
-        subject: `Teacher Application: ${teacherName}`,
-        body: `New teacher profile submitted for subjects: ${subjects}`,
-        userEmail: profile?.email,
+        subject: `Professional Teacher Profile: ${teacherName}`,
+        body: `New teacher profile submitted for subjects: ${subjects}. Contact: ${phone}`,
+        userEmail: email,
         userName: teacherName,
         timestamp: serverTimestamp(),
         read: false
@@ -101,8 +140,8 @@ export default function TeacherDashboard() {
         type: 'interest',
         userType: 'Teacher',
         userName: teacherName,
-        userEmail: profile?.email || '',
-        details: `Subjects: ${subjects}`
+        userEmail: email,
+        details: `Subjects: ${subjects}, Exp: ${experienceYears} yrs, Salary: ${expectedSalary}`
       });
       
       setIsSubmitted(true);
@@ -157,14 +196,14 @@ export default function TeacherDashboard() {
             <TabsContent value="profile">
               <Card className="shadow-lg border-primary/10">
                 <CardHeader>
-                  <CardTitle>Specialization Profile</CardTitle>
-                  <CardDescription>Update your professional details and subjects you'd like to teach. Contact fields are optional.</CardDescription>
+                  <CardTitle>Professional Specialty Profile</CardTitle>
+                  <CardDescription>Update your professional details and subjects you'd like to teach. All contact details are mandatory.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmitInterest}>
                   <CardContent className="space-y-6">
                     <div className="grid sm:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="teacherName">Full Legal Name</Label>
+                        <Label htmlFor="teacherName">Full Legal Name <span className="text-destructive">*</span></Label>
                         <Input 
                           id="teacherName"
                           disabled={isSubmitted} 
@@ -174,41 +213,83 @@ export default function TeacherDashboard() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Phone (Optional)</Label>
+                        <Label htmlFor="phone">Phone / WhatsApp <span className="text-destructive">*</span></Label>
                         <Input 
                           id="phone"
                           disabled={isSubmitted} 
                           value={phone} 
                           onChange={e => setPhone(e.target.value)} 
                           placeholder="Contact number" 
+                          required
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="email">Professional Email (Optional)</Label>
+                      <Label htmlFor="email">Professional Email <span className="text-destructive">*</span></Label>
                       <Input 
                         id="email"
+                        type="email"
                         disabled={isSubmitted} 
                         value={email} 
                         onChange={e => setEmail(e.target.value)} 
                         placeholder="Your email address" 
+                        required
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="qualifications">Qualifications & Degrees</Label>
-                      <Input 
-                        id="qualifications"
-                        disabled={isSubmitted} 
-                        value={qualifications} 
-                        onChange={e => setQualifications(e.target.value)} 
-                        placeholder="e.g., M.Sc Mathematics, B.Ed" 
-                      />
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="qualifications">Highest Qualification <span className="text-destructive">*</span></Label>
+                        <Input 
+                          id="qualifications"
+                          disabled={isSubmitted} 
+                          value={qualifications} 
+                          onChange={e => setQualifications(e.target.value)} 
+                          placeholder="e.g., M.Sc Mathematics, B.Ed" 
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="experience">Years of Experience <span className="text-destructive">*</span></Label>
+                        <Input 
+                          id="experience"
+                          type="number"
+                          disabled={isSubmitted} 
+                          value={experienceYears} 
+                          onChange={e => setExperienceYears(e.target.value)} 
+                          placeholder="Years" 
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="hours">Availability (Hours/Week)</Label>
+                        <Input 
+                          id="hours"
+                          type="number"
+                          disabled={isSubmitted} 
+                          value={hoursPerWeek} 
+                          onChange={e => setHoursPerWeek(e.target.value)} 
+                          placeholder="e.g., 10" 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="salary">Expected Monthly Salary</Label>
+                        <Input 
+                          id="salary"
+                          disabled={isSubmitted} 
+                          value={expectedSalary} 
+                          onChange={e => setExpectedSalary(e.target.value)} 
+                          placeholder="e.g., 15000 INR" 
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="subjects">Subjects for Tuition</Label>
+                      <Label htmlFor="subjects">Subjects for Tuition <span className="text-destructive">*</span></Label>
                       <Textarea 
                         id="subjects"
                         disabled={isSubmitted} 
@@ -218,15 +299,41 @@ export default function TeacherDashboard() {
                         placeholder="e.g., Physics (Class 11-12), Chemistry, Calculus" 
                       />
                     </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="resume">Resume / CV (PDF/Image)</Label>
+                      <div className="flex items-center gap-4">
+                         <Input 
+                          id="resume"
+                          type="file"
+                          accept=".pdf,image/*"
+                          disabled={isSubmitted} 
+                          onChange={handleFileChange}
+                          className="flex-1 cursor-pointer"
+                        />
+                        {resumeName && <Badge variant="secondary" className="h-10 px-3 flex gap-2 items-center"><FileText className="h-3 w-3" /> {resumeName.slice(0, 10)}...</Badge>}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="notes">Additional Notes</Label>
+                      <Textarea 
+                        id="notes"
+                        disabled={isSubmitted} 
+                        value={notes} 
+                        onChange={e => setNotes(e.target.value)} 
+                        placeholder="Preferred timings, specific areas of expertise, teaching methodology..." 
+                      />
+                    </div>
                   </CardContent>
                   <CardFooter className="flex flex-col sm:flex-row gap-4">
                     <Button type="submit" disabled={isSubmitting || isSubmitted} className="flex-1 font-bold h-12">
                       {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Submit Specialty Profile
+                      Submit Professional Profile
                     </Button>
                     {isSubmitted && (
                       <Button type="button" variant="outline" className="flex-1 h-12" onClick={() => setIsSubmitted(false)}>
-                        <Edit2 className="h-4 w-4 mr-2" /> New Submission
+                        <Edit2 className="h-4 w-4 mr-2" /> Update Submission
                       </Button>
                     )}
                   </CardFooter>
@@ -239,7 +346,7 @@ export default function TeacherDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <History className="h-5 w-5 text-primary" />
-                    My Submissions
+                    My Professional Records
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -249,18 +356,25 @@ export default function TeacherDashboard() {
                     interests.map(i => (
                       <Card key={i.id} className="border-l-4 border-l-primary hover:bg-secondary/5 transition-colors">
                         <CardContent className="p-4 flex justify-between items-center">
-                          <div className="flex items-center gap-3">
-                            <div className="bg-primary/10 p-2 rounded-lg">
-                              <GraduationCap className="h-4 w-4 text-primary" />
-                            </div>
-                            <div>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-3">
+                              <div className="bg-primary/10 p-2 rounded-lg">
+                                <GraduationCap className="h-4 w-4 text-primary" />
+                              </div>
                               <p className="font-bold text-sm">{i.subjects}</p>
-                              <p className="text-[10px] text-muted-foreground">Applied: {i.submissionDate?.toDate?.()?.toLocaleDateString()}</p>
+                            </div>
+                            <div className="flex gap-4 mt-2 text-[10px] text-muted-foreground">
+                              <span className="flex items-center gap-1"><Briefcase className="h-3 w-3" /> {i.experienceYears} yrs</span>
+                              <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {i.hoursPerWeek}h/wk</span>
+                              <span className="flex items-center gap-1"><IndianRupee className="h-3 w-3" /> {i.expectedSalary}</span>
                             </div>
                           </div>
-                          <Badge variant={i.status === 'Completed' ? 'default' : 'outline'} className={i.status === 'Completed' ? 'bg-green-600' : ''}>
-                            {i.status}
-                          </Badge>
+                          <div className="flex flex-col items-end gap-2">
+                            <Badge variant={i.status === 'Completed' ? 'default' : 'outline'} className={i.status === 'Completed' ? 'bg-green-600' : ''}>
+                              {i.status}
+                            </Badge>
+                            <span className="text-[10px] text-muted-foreground">{i.submissionDate?.toDate?.()?.toLocaleDateString()}</span>
+                          </div>
                         </CardContent>
                       </Card>
                     ))
