@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -175,10 +176,10 @@ export default function TeacherDashboard() {
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-      <div className="p-6 flex items-center gap-2">
+      <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
         <BookOpen className="text-primary h-6 w-6" />
         <span className="font-headline font-bold text-lg">RP Coach-Up</span>
-      </div>
+      </Link>
       <nav className="flex-1 px-4 space-y-1">
         <Button variant="secondary" className="w-full justify-start gap-3">
           <LayoutDashboard className="h-4 w-4" /> Dashboard
@@ -196,10 +197,10 @@ export default function TeacherDashboard() {
     <div className="flex min-h-screen bg-background flex-col lg:flex-row">
       {/* Mobile Top Bar */}
       <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card sticky top-0 z-40">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <BookOpen className="text-primary h-6 w-6" />
           <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
-        </div>
+        </Link>
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon">
