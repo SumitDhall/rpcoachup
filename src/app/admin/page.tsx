@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -796,6 +795,7 @@ export default function AdminPortal() {
 
   // Defensive Redirection for non-admins
   useEffect(() => {
+    // Only fire the toast if loading has finished and we've confirmed the user is NOT an admin
     if (!isUserLoading && !isAdminLoading && !isAdmin && user) {
       toast({
         variant: "destructive",
