@@ -162,7 +162,7 @@ export default function StudentDashboard() {
       
       setShowSuccessDialog(true);
 
-      // Clear non-profile fields
+      // Reset form fields except profile defaults
       setSubject('');
       setSchool('');
       setGradeLevel('');
@@ -453,7 +453,7 @@ export default function StudentDashboard() {
             <div className="text-center">
               <AlertDialogTitle className="text-2xl font-headline font-bold text-primary">Request Submitted!</AlertDialogTitle>
               <AlertDialogDescription className="text-base mt-2">
-                Your tuition requirements have been successfully shared with our advisors. We will contact you shortly.
+                Please go and check the Inquiry History tab, you can see any status updates there. Our management will contact you within 7 working days, thanks!
               </AlertDialogDescription>
             </div>
           </AlertDialogHeader>
