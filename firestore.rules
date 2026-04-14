@@ -37,15 +37,17 @@ service cloud.firestore {
     }
 
     match /studentInterests/{studentInterestId} {
-      // Use 'read' to cover both 'get' and 'list' operations securely.
-      allow read: if isAdmin() || (isSignedIn() && resource.data.studentId == request.auth.uid);
+      // Explicitly allow 'list' for the owner so filtered queries pass.
+      allow list: if isSignedIn() && (resource.data.studentId == request.auth.uid || isAdmin());
+      allow get: if isSignedIn() && (resource.data.studentId == request.auth.uid || isAdmin());
       allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.studentId == request.auth.uid);
     }
 
     match /teacherInterests/{teacherInterestId} {
-      // Use 'read' to cover both 'get' and 'list' operations securely.
-      allow read: if isAdmin() || (isSignedIn() && resource.data.teacherId == request.auth.uid);
+      // Explicitly allow 'list' for the owner so filtered queries pass.
+      allow list: if isSignedIn() && (resource.data.teacherId == request.auth.uid || isAdmin());
+      allow get: if isSignedIn() && (resource.data.teacherId == request.auth.uid || isAdmin());
       allow create: if isSignedIn() && request.resource.data.teacherId == request.auth.uid;
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.teacherId == request.auth.uid);
     }
