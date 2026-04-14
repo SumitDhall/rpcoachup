@@ -57,6 +57,11 @@ export default function LoginPage() {
     } catch (e) {
       console.error("Redirection check failed:", e);
       setIsRedirecting(false);
+      toast({
+        variant: "destructive",
+        title: "Access Error",
+        description: "Failed to verify user permissions. Please try again.",
+      });
     }
   };
 
@@ -92,9 +97,18 @@ export default function LoginPage() {
       });
     } catch (error: any) {
       console.error("Login error:", error);
-      let errorMessage = "Invalid credentials.";
-      if (error.code === 'auth/wrong-password') errorMessage = "Incorrect password.";
-      if (error.code === 'auth/user-not-found') errorMessage = "Account not found.";
+      let errorMessage = "Invalid email or password.";
+      
+      // Handle Firebase Auth specific error codes
+      if (error.code === 'auth/invalid-credential') {
+        errorMessage = "Invalid login credentials. Please check your email and password.";
+      } else if (error.code === 'auth/user-not-found') {
+        errorMessage = "Account not found.";
+      } else if (error.code === 'auth/wrong-password') {
+        errorMessage = "Incorrect password.";
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = "Too many failed attempts. Please try again later.";
+      }
 
       toast({
         variant: "destructive",
@@ -143,7 +157,7 @@ export default function LoginPage() {
               <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
               <div>
                 <p className="font-bold mb-1">Session Detected</p>
-                <p>You are currently signed in, but we couldn't automatically redirect you. This might be due to a missing profile document.</p>
+                <p>You are currently signed in, but we couldn't automatically redirect you. This might be due to a missing profile document or permission error.</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">

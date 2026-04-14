@@ -17,14 +17,13 @@ service cloud.firestore {
     }
 
     // --- GLOBAL READ ACCESS ---
-    // Merged Policy: We allow any signed-in user to read data across the platform.
-    // This is critical for dashboard listing queries and the login/redirection process.
+    // Broad read access for authenticated users to ensure redirection and dashboard listing queries work.
     match /{path=**} {
       allow read: if isSignedIn();
     }
 
     // --- SPECIFIC WRITE RULES ---
-    // We maintain strict write security to ensure data integrity and privacy.
+    // Maintain strict write security to ensure data integrity and privacy.
 
     match /users/{userId} {
       // Users can manage their own base profile. Admins have full control.
@@ -43,8 +42,6 @@ service cloud.firestore {
 
     match /studentInterests/{studentInterestId} {
       // Any signed-in user can submit an interest.
-      // Broad read is allowed globally, but explicit permission is maintained here for clarity.
-      allow read: if isSignedIn();
       allow create: if isSignedIn();
       allow update: if isAdmin() || (isSignedIn() && resource.data.studentId == request.auth.uid);
       allow delete: if isAdmin();
@@ -52,7 +49,6 @@ service cloud.firestore {
 
     match /teacherInterests/{teacherInterestId} {
       // Any signed-in teacher can submit their profile/interests.
-      allow read: if isSignedIn();
       allow create: if isSignedIn();
       allow update: if isAdmin() || (isSignedIn() && resource.data.teacherId == request.auth.uid);
       allow delete: if isAdmin();
@@ -67,13 +63,11 @@ service cloud.firestore {
 
     match /matchProposals/{matchProposalId} {
       // Only admins can create and manage matches between students and teachers.
-      allow read: if isSignedIn();
       allow create, update, delete: if isAdmin();
     }
 
     match /roles_admin/{adminId} {
       // Security sensitive: only existing admins can designate new admins.
-      allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
