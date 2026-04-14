@@ -84,7 +84,7 @@ export default function AboutPage() {
   }, [rawTeacherFeedback]);
 
   return (
-    <div className="flex flex-col min-h-screen overflow-x-hidden">
+    <div className="flex flex-col min-h-screen max-w-full overflow-x-hidden">
       {/* Navbar */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -188,16 +188,16 @@ export default function AboutPage() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-x-hidden">
+      <main className="flex-1 max-w-full overflow-x-hidden">
         {/* Hero Section */}
-        <section className="py-16 lg:py-24 bg-gradient-to-b from-secondary/20 to-background">
+        <section className="py-16 lg:py-24 bg-gradient-to-b from-secondary/20 to-background overflow-hidden">
           <div className="container mx-auto px-4 text-center lg:text-left">
             <div className="max-w-3xl">
               <Link href="/" className="inline-flex items-center gap-2 text-primary text-sm font-medium mb-8 hover:underline group">
                 <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                 Back to Home
               </Link>
-              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-headline font-bold mb-6 text-primary">
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-headline font-bold mb-6 text-primary leading-tight">
                 Our Mission: Bridging the <span className="text-accent">Knowledge Gap</span>
               </h1>
               <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed">
@@ -210,7 +210,7 @@ export default function AboutPage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-20">
+        <section className="py-20 overflow-hidden">
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               <div className="relative order-2 lg:order-1">
@@ -253,24 +253,24 @@ export default function AboutPage() {
         </section>
 
         {/* Feedback Section */}
-        <section className="py-24 bg-secondary/10 overflow-hidden">
-          <div className="container mx-auto px-4">
+        <section className="py-24 bg-secondary/10 overflow-hidden max-w-full">
+          <div className="container mx-auto px-4 max-w-full overflow-hidden">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <h2 className="text-3xl sm:text-4xl font-headline font-bold text-primary mb-4">The Community Voice</h2>
               <p className="text-muted-foreground">Hear directly from our students and educators about their learning journeys.</p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-16 lg:gap-12">
+            <div className="grid lg:grid-cols-2 gap-16 lg:gap-12 max-w-full overflow-hidden">
               {/* Student Feedback */}
-              <div className="space-y-6 w-full max-w-full">
+              <div className="space-y-6 w-full max-w-full overflow-hidden">
                 <h3 className="text-2xl font-headline font-bold flex items-center gap-2 text-primary px-2">
                   <Users className="h-6 w-6 shrink-0" /> Student Success
                 </h3>
-                <div className="px-10 relative">
+                <div className="px-8 sm:px-12 relative w-full overflow-hidden">
                   {isLoadingStudentFB ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
                   ) : studentFeedback.length > 0 ? (
-                    <Carousel className="w-full">
+                    <Carousel className="w-full max-w-full">
                       <CarouselContent>
                         {studentFeedback.map(fb => (
                           <CarouselItem key={fb.id}>
@@ -284,7 +284,7 @@ export default function AboutPage() {
                                 <div className="flex items-center justify-between border-t pt-3 mt-auto">
                                   <span className="text-xs font-bold text-primary">{fb.userName}</span>
                                   {fb.teacherName && fb.teacherName !== 'General Platform Feedback' && (
-                                    <Badge variant="outline" className="text-[10px]">{fb.teacherName}</Badge>
+                                    <Badge variant="outline" className="text-[10px] truncate max-w-[120px]">{fb.teacherName}</Badge>
                                   )}
                                 </div>
                               </CardContent>
@@ -292,8 +292,8 @@ export default function AboutPage() {
                           </CarouselItem>
                         ))}
                       </CarouselContent>
-                      <CarouselPrevious className="flex -left-8 sm:-left-12 h-8 w-8" />
-                      <CarouselNext className="flex -right-8 sm:-right-12 h-8 w-8" />
+                      <CarouselPrevious className="flex -left-4 sm:-left-12 h-8 w-8 z-10" />
+                      <CarouselNext className="flex -right-4 sm:-right-12 h-8 w-8 z-10" />
                     </Carousel>
                   ) : (
                     <p className="text-sm italic text-muted-foreground text-center py-8">No student feedback yet.</p>
@@ -302,15 +302,15 @@ export default function AboutPage() {
               </div>
 
               {/* Teacher Feedback */}
-              <div className="space-y-6 w-full max-w-full">
+              <div className="space-y-6 w-full max-w-full overflow-hidden">
                 <h3 className="text-2xl font-headline font-bold flex items-center gap-2 text-accent px-2">
                   <Users className="h-6 w-6 shrink-0" /> Educator Experiences
                 </h3>
-                <div className="px-10 relative">
+                <div className="px-8 sm:px-12 relative w-full overflow-hidden">
                   {isLoadingTeacherFB ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin text-accent" /></div>
                   ) : teacherFeedback.length > 0 ? (
-                    <Carousel className="w-full">
+                    <Carousel className="w-full max-w-full">
                       <CarouselContent>
                         {teacherFeedback.map(fb => (
                           <CarouselItem key={fb.id}>
@@ -329,8 +329,8 @@ export default function AboutPage() {
                           </CarouselItem>
                         ))}
                       </CarouselContent>
-                      <CarouselPrevious className="flex -left-8 sm:-left-12 h-8 w-8" />
-                      <CarouselNext className="flex -right-8 sm:-right-12 h-8 w-8" />
+                      <CarouselPrevious className="flex -left-4 sm:-left-12 h-8 w-8 z-10" />
+                      <CarouselNext className="flex -right-4 sm:-right-12 h-8 w-8 z-10" />
                     </Carousel>
                   ) : (
                     <p className="text-sm italic text-muted-foreground text-center py-8">No teacher feedback yet.</p>
@@ -342,7 +342,7 @@ export default function AboutPage() {
         </section>
 
         {/* Final CTA */}
-        <section className="py-24 text-center">
+        <section className="py-24 text-center overflow-hidden">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl sm:text-4xl font-headline font-bold mb-8">Ready to find your match?</h2>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -354,7 +354,7 @@ export default function AboutPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-secondary/30 border-t py-12">
+      <footer className="bg-secondary/30 border-t py-12 max-w-full">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
             <div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div>
