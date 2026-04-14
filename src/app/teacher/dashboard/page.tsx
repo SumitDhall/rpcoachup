@@ -11,6 +11,15 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Sheet,
   SheetContent,
   SheetTrigger,
@@ -23,14 +32,14 @@ import {
   Loader2, 
   LogOut, 
   History, 
-  Edit2,
   GraduationCap,
   ClipboardList,
   FileText,
   Clock,
   IndianRupee,
   Briefcase,
-  Menu
+  Menu,
+  CheckCircle2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
@@ -84,7 +93,7 @@ export default function TeacherDashboard() {
   const [resumeData, setResumeData] = useState('');
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -160,8 +169,19 @@ export default function TeacherDashboard() {
         details: `Subjects: ${subjects}, Exp: ${experienceYears} yrs, Salary: ${expectedSalary}`
       });
       
-      setIsSubmitted(true);
-      toast({ title: "Profile Submitted", description: "The administration will review your credentials shortly." });
+      setShowSuccessDialog(true);
+      
+      // Clear specialization fields
+      setQualifications('');
+      setExperienceYears('');
+      setHoursPerWeek('');
+      setExpectedSalary('');
+      setSubjects('');
+      setNotes('');
+      setResumeName('');
+      setResumeData('');
+      setPhone('');
+
     } catch (error) {
       console.error(error);
       toast({ variant: "destructive", title: "Error", description: "Failed to submit profile. Please check your permissions." });
@@ -186,7 +206,7 @@ export default function TeacherDashboard() {
         </Button>
       </nav>
       <div className="p-4 border-t">
-        <Button variant="outline" className="w-full text-destructive" onClick={handleSignOut}>
+        <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
           <LogOut className="h-4 w-4 mr-2" /> Sign Out
         </Button>
       </div>
@@ -248,7 +268,6 @@ export default function TeacherDashboard() {
                         <Label htmlFor="teacherName">Full Legal Name <span className="text-destructive">*</span></Label>
                         <Input 
                           id="teacherName"
-                          disabled={isSubmitted} 
                           value={teacherName} 
                           onChange={e => setTeacherName(e.target.value)} 
                           required 
@@ -258,7 +277,6 @@ export default function TeacherDashboard() {
                         <Label htmlFor="phone">Phone / WhatsApp <span className="text-destructive">*</span></Label>
                         <Input 
                           id="phone"
-                          disabled={isSubmitted} 
                           value={phone} 
                           onChange={e => setPhone(e.target.value)} 
                           placeholder="Contact number" 
@@ -272,7 +290,6 @@ export default function TeacherDashboard() {
                       <Input 
                         id="email"
                         type="email"
-                        disabled={isSubmitted} 
                         value={email} 
                         onChange={e => setEmail(e.target.value)} 
                         placeholder="Your email address" 
@@ -285,7 +302,6 @@ export default function TeacherDashboard() {
                         <Label htmlFor="qualifications">Highest Qualification <span className="text-destructive">*</span></Label>
                         <Input 
                           id="qualifications"
-                          disabled={isSubmitted} 
                           value={qualifications} 
                           onChange={e => setQualifications(e.target.value)} 
                           placeholder="e.g., M.Sc Mathematics, B.Ed" 
@@ -297,7 +313,6 @@ export default function TeacherDashboard() {
                         <Input 
                           id="experience"
                           type="number"
-                          disabled={isSubmitted} 
                           value={experienceYears} 
                           onChange={e => setExperienceYears(e.target.value)} 
                           placeholder="Years" 
@@ -312,7 +327,6 @@ export default function TeacherDashboard() {
                         <Input 
                           id="hours"
                           type="number"
-                          disabled={isSubmitted} 
                           value={hoursPerWeek} 
                           onChange={e => setHoursPerWeek(e.target.value)} 
                           placeholder="e.g., 10" 
@@ -322,7 +336,6 @@ export default function TeacherDashboard() {
                         <Label htmlFor="salary">Expected Monthly Salary</Label>
                         <Input 
                           id="salary"
-                          disabled={isSubmitted} 
                           value={expectedSalary} 
                           onChange={e => setExpectedSalary(e.target.value)} 
                           placeholder="e.g., 15000 INR" 
@@ -334,7 +347,6 @@ export default function TeacherDashboard() {
                       <Label htmlFor="subjects">Subjects for Tuition <span className="text-destructive">*</span></Label>
                       <Textarea 
                         id="subjects"
-                        disabled={isSubmitted} 
                         value={subjects} 
                         onChange={e => setSubjects(e.target.value)} 
                         required
@@ -349,9 +361,9 @@ export default function TeacherDashboard() {
                           id="resume"
                           type="file"
                           accept=".doc,.docx,.pdf,image/*"
-                          disabled={isSubmitted} 
                           onChange={handleFileChange}
                           className="flex-1 cursor-pointer"
+                          required
                         />
                         {resumeName && <Badge variant="secondary" className="h-10 px-3 flex gap-2 items-center"><FileText className="h-3 w-3" /> {resumeName.slice(0, 10)}...</Badge>}
                       </div>
@@ -361,23 +373,17 @@ export default function TeacherDashboard() {
                       <Label htmlFor="notes">Additional Notes</Label>
                       <Textarea 
                         id="notes"
-                        disabled={isSubmitted} 
                         value={notes} 
                         onChange={e => setNotes(e.target.value)} 
                         placeholder="Preferred timings, specific areas of expertise, teaching methodology..." 
                       />
                     </div>
                   </CardContent>
-                  <CardFooter className="flex flex-col sm:flex-row gap-4">
-                    <Button type="submit" disabled={isSubmitting || isSubmitted} className="flex-1 font-bold h-12">
-                      {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  <CardFooter className="flex flex-col sm:flex-row gap-4 border-t pt-6">
+                    <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-12 text-lg shadow-lg shadow-primary/20">
+                      {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                       Submit Professional Profile
                     </Button>
-                    {isSubmitted && (
-                      <Button type="button" variant="outline" className="flex-1 h-12" onClick={() => setIsSubmitted(false)}>
-                        <Edit2 className="h-4 w-4 mr-2" /> Update Submission
-                      </Button>
-                    )}
                   </CardFooter>
                 </form>
               </Card>
@@ -430,7 +436,7 @@ export default function TeacherDashboard() {
                     <div className="text-center py-12 border rounded-xl border-dashed">
                       <ClipboardList className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                       <p className="text-sm text-muted-foreground font-medium">No teaching records found.</p>
-                      <Button variant="link" onClick={() => setActiveTab('profile')}>
+                      <Button variant="link" onClick={() => setActiveTab('profile')} className="font-bold text-primary">
                         Submit your specialties
                       </Button>
                     </div>
@@ -441,6 +447,30 @@ export default function TeacherDashboard() {
           </Tabs>
         </div>
       </main>
+
+      <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <AlertDialogContent className="sm:max-w-[425px]">
+          <AlertDialogHeader className="flex flex-col items-center gap-4 py-4">
+            <div className="bg-green-100 p-3 rounded-full">
+              <CheckCircle2 className="h-12 w-12 text-green-600" />
+            </div>
+            <div className="text-center">
+              <AlertDialogTitle className="text-2xl font-headline font-bold text-primary">Request Received!</AlertDialogTitle>
+              <AlertDialogDescription className="text-base mt-2">
+                Your request has been received and our management team will contact you within 7 working days. And you can check the status of request in History tab.
+              </AlertDialogDescription>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => setShowSuccessDialog(false)}
+              className="w-full h-12 text-lg font-bold"
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
