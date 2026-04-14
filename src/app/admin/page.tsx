@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -149,7 +149,7 @@ function StudentAssignmentManager({ teacherId, teacherName, isAdmin }: { teacher
 
     sendNotificationEmail({
       recipientType: 'user',
-      type: 'assignment',
+      type: 'status_update',
       userType: 'Student',
       userName: studentFullName,
       userEmail: student.email,
@@ -303,7 +303,7 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
 
     sendNotificationEmail({
       recipientType: 'user',
-      type: 'assignment',
+      type: 'status_update',
       userType: 'Teacher',
       userName: teacherFullName,
       userEmail: teacher.email,
@@ -756,9 +756,6 @@ function SystemSettingsLogs({ isAdmin }: { isAdmin: boolean }) {
                     <TableCell>
                       <Badge variant="outline" className="text-[10px] uppercase">{log.type}</Badge>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-[10px] uppercase">{log.type}</Badge>
-                    </TableCell>
                     <TableCell className="text-xs">{log.description}</TableCell>
                     <TableCell className="text-right text-[10px]">{log.adminEmail}</TableCell>
                   </TableRow>
@@ -883,14 +880,14 @@ export default function AdminPortal() {
 
   // Defensive Redirection for non-admins
   useEffect(() => {
-    if (!isUserLoading && !isAdminLoading && !isAdmin) {
+    if (!isUserLoading && !isAdminLoading && !isAdmin && user) {
       toast({
         variant: "destructive",
         title: "Access Restricted",
         description: "You do not have permission to view the Admin Portal.",
       });
     }
-  }, [isUserLoading, isAdminLoading, isAdmin, router, toast]);
+  }, [isUserLoading, isAdminLoading, isAdmin, user, toast]);
 
   const usersQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
