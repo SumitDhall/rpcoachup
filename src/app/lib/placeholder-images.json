@@ -18,12 +18,6 @@
       "description": "A teacher conducting a digital class on a professional learning platform",
       "imageUrl": "https://picsum.photos/seed/classroom3/600/400",
       "imageHint": "online classroom"
-    },
-    {
-      "id": "home-tuition-ad",
-      "description": "Official RP Coach-Up Home Tuition program flyer for Classes I to XII",
-      "imageUrl": "https://picsum.photos/seed/rp-flyer-v2/800/1000",
-      "imageHint": "tuition advertisement"
     }
   ]
 }

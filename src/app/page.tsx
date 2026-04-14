@@ -13,7 +13,6 @@ import { useUser } from '@/firebase';
 export default function Home() {
   const { user, isUserLoading } = useUser();
   const heroImg = PlaceHolderImages.find(img => img.id === 'hero-education');
-  const flyerImg = PlaceHolderImages.find(img => img.id === 'home-tuition-ad');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -137,13 +136,13 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-              <div className="relative rounded-2xl overflow-hidden border shadow-xl bg-muted">
+              <div className="relative rounded-2xl overflow-hidden border shadow-xl bg-muted aspect-[4/5]">
                  <Image 
-                    src={flyerImg?.imageUrl || "https://picsum.photos/seed/tutorad/800/1000"} 
+                    src="https://picsum.photos/seed/tutorad/800/1000" 
                     alt="RP Coach-Up Home Tuition Flyer"
                     width={800}
                     height={1000}
-                    className="object-cover w-full h-auto"
+                    className="object-cover w-full h-full"
                     data-ai-hint="tuition flyer"
                   />
               </div>

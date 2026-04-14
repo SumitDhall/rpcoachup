@@ -18,7 +18,7 @@ import {
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function ProgramsDashboard() {
-  const adImg = PlaceHolderImages.find(img => img.id === 'home-tuition-ad');
+  const classroomImg = PlaceHolderImages.find(img => img.id === 'teacher-mentoring');
 
   return (
     <div className="min-h-screen bg-background">
@@ -40,7 +40,7 @@ export default function ProgramsDashboard() {
       <main className="container mx-auto px-4 py-8 lg:py-12">
         <div className="max-w-6xl mx-auto space-y-12">
           
-          {/* Featured Flyer Section */}
+          {/* Featured Program Section */}
           <section className="grid lg:grid-cols-2 gap-8 items-center bg-primary/5 rounded-3xl p-8 lg:p-12 border border-primary/10 overflow-hidden relative">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             
@@ -93,8 +93,8 @@ export default function ProgramsDashboard() {
               <div className="absolute -inset-4 bg-primary/20 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative rounded-3xl overflow-hidden border-4 border-white shadow-2xl max-w-[450px]">
                 <Image 
-                  src={adImg?.imageUrl || "https://picsum.photos/seed/tutorad/800/1000"} 
-                  alt="Home Tuition Advertisement"
+                  src="https://picsum.photos/seed/tutorad/800/1000" 
+                  alt="Home Tuition Program"
                   width={800}
                   height={1000}
                   className="w-full h-auto object-cover transform transition-transform duration-500 group-hover:scale-105"
