@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -994,15 +995,20 @@ export default function AdminPortal() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
+                        <TableHead className="hidden sm:table-cell">Email</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedUsers.length > 0 ? paginatedUsers.map(u => (
                         <TableRow key={u.id} className="hover:bg-secondary/5">
-                          <TableCell className="font-medium">{u.firstName} {u.lastName}</TableCell>
-                          <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                          <TableCell className="font-medium">
+                            <div className="flex flex-col">
+                              <span>{u.firstName} {u.lastName}</span>
+                              <span className="sm:hidden text-[10px] text-muted-foreground">{u.email}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell text-muted-foreground">{u.email}</TableCell>
                           <TableCell className="text-right">
                             <Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View Details</Button>
                           </TableCell>
