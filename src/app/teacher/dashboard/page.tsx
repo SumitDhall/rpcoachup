@@ -11,6 +11,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { 
   BookOpen, 
   LayoutDashboard, 
@@ -23,7 +28,8 @@ import {
   FileText,
   Clock,
   IndianRupee,
-  Briefcase
+  Briefcase,
+  Menu
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
@@ -46,7 +52,6 @@ export default function TeacherDashboard() {
 
   const teacherInterestsQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
-    // Note: orderBy removed to avoid index requirement, sorted on client side
     return query(
       collection(db, 'teacherInterests'),
       where('teacherId', '==', user.uid),
@@ -55,7 +60,6 @@ export default function TeacherDashboard() {
   }, [db, user?.uid]);
   const { data: rawInterests, isLoading: isLoadingInterests } = useCollection(teacherInterestsQuery);
 
-  // Client-side sorting
   const interests = useMemo(() => {
     if (!rawInterests) return null;
     return [...rawInterests].sort((a, b) => {
@@ -168,26 +172,51 @@ export default function TeacherDashboard() {
     return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
+      <div className="p-6 flex items-center gap-2">
+        <BookOpen className="text-primary h-6 w-6" />
+        <span className="font-headline font-bold text-lg">RP Coach-Up</span>
+      </div>
+      <nav className="flex-1 px-4 space-y-1">
+        <Button variant="secondary" className="w-full justify-start gap-3">
+          <LayoutDashboard className="h-4 w-4" /> Dashboard
+        </Button>
+      </nav>
+      <div className="p-4 border-t">
+        <Button variant="outline" className="w-full text-destructive" onClick={handleSignOut}>
+          <LogOut className="h-4 w-4 mr-2" /> Sign Out
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="flex min-h-screen bg-background">
-      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
-        <div className="p-6 flex items-center gap-2">
+    <div className="flex min-h-screen bg-background flex-col lg:flex-row">
+      {/* Mobile Top Bar */}
+      <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card sticky top-0 z-40">
+        <div className="flex items-center gap-2">
           <BookOpen className="text-primary h-6 w-6" />
-          <span className="font-headline font-bold text-lg">RP Coach-Up</span>
+          <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
         </div>
-        <nav className="flex-1 px-4 space-y-1">
-          <Button variant="secondary" className="w-full justify-start gap-3">
-            <LayoutDashboard className="h-4 w-4" /> Dashboard
-          </Button>
-        </nav>
-        <div className="p-4 border-t">
-          <Button variant="outline" className="w-full text-destructive" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4 mr-2" /> Sign Out
-          </Button>
-        </div>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Menu className="h-6 w-6 text-primary" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-64">
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+      </header>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
+        <SidebarContent />
       </aside>
 
-      <main className="flex-1 lg:ml-64 p-8">
+      <main className="flex-1 lg:ml-64 p-4 lg:p-8">
         <div className="max-w-4xl mx-auto space-y-8">
           <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -365,7 +394,7 @@ export default function TeacherDashboard() {
                   ) : interests && interests.length > 0 ? (
                     interests.map(i => (
                       <Card key={i.id} className="border-l-4 border-l-primary hover:bg-secondary/5 transition-colors">
-                        <CardContent className="p-4 flex justify-between items-center">
+                        <CardContent className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-3">
                               <div className="bg-primary/10 p-2 rounded-lg">
@@ -379,7 +408,7 @@ export default function TeacherDashboard() {
                               <span className="flex items-center gap-1"><IndianRupee className="h-3 w-3" /> {i.expectedSalary}</span>
                             </div>
                           </div>
-                          <div className="flex flex-col items-end gap-2">
+                          <div className="flex flex-col items-end gap-2 w-full sm:w-auto">
                             <Badge 
                               variant={i.status === 'Pending' ? 'outline' : 'default'} 
                               className={`font-bold ${

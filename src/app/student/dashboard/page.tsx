@@ -27,6 +27,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { 
   BookOpen, 
   LayoutDashboard, 
@@ -43,7 +48,8 @@ import {
   School,
   MapPin,
   GraduationCap,
-  CheckCircle2
+  CheckCircle2,
+  Menu
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
@@ -195,26 +201,51 @@ export default function StudentDashboard() {
     );
   }
 
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
+      <div className="p-6 flex items-center gap-2">
+        <BookOpen className="text-primary h-6 w-6" />
+        <span className="font-headline font-bold text-lg">RP Coach-Up</span>
+      </div>
+      <nav className="flex-1 px-4 space-y-1">
+        <Button variant="secondary" className="w-full justify-start gap-3">
+          <LayoutDashboard className="h-4 w-4" /> Dashboard
+        </Button>
+      </nav>
+      <div className="p-4 border-t">
+        <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
+          <LogOut className="h-4 w-4 mr-2" /> Sign Out
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="flex min-h-screen bg-background">
-      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
-        <div className="p-6 flex items-center gap-2">
+    <div className="flex min-h-screen bg-background flex-col lg:flex-row">
+      {/* Mobile Top Bar */}
+      <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card sticky top-0 z-40">
+        <div className="flex items-center gap-2">
           <BookOpen className="text-primary h-6 w-6" />
-          <span className="font-headline font-bold text-lg">RP Coach-Up</span>
+          <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
         </div>
-        <nav className="flex-1 px-4 space-y-1">
-          <Button variant="secondary" className="w-full justify-start gap-3">
-            <LayoutDashboard className="h-4 w-4" /> Dashboard
-          </Button>
-        </nav>
-        <div className="p-4 border-t">
-          <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4 mr-2" /> Sign Out
-          </Button>
-        </div>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Menu className="h-6 w-6 text-primary" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-64">
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+      </header>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
+        <SidebarContent />
       </aside>
 
-      <main className="flex-1 lg:ml-64 p-8">
+      <main className="flex-1 lg:ml-64 p-4 lg:p-8">
         <div className="max-w-4xl mx-auto space-y-8">
           <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -399,7 +430,7 @@ export default function StudentDashboard() {
                     <div className="flex justify-center py-12"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
                   ) : interests && interests.length > 0 ? (
                     interests.map(i => (
-                      <div key={i.id} className="p-5 border rounded-2xl flex items-center justify-between bg-card hover:bg-secondary/5 transition-all shadow-sm border-l-4 border-l-primary">
+                      <div key={i.id} className="p-5 border rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card hover:bg-secondary/5 transition-all shadow-sm border-l-4 border-l-primary">
                         <div className="flex items-start gap-4">
                           <div className="bg-primary/10 p-2.5 rounded-xl">
                             <ClipboardList className="h-5 w-5 text-primary" />
@@ -414,7 +445,7 @@ export default function StudentDashboard() {
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
+                        <div className="w-full sm:w-auto text-right">
                           <Badge 
                             variant={i.status === 'Pending' ? 'outline' : 'default'} 
                             className={`px-3 py-1 font-bold ${
