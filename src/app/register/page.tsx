@@ -10,9 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { BookOpen, ArrowLeft, Loader2, User, GraduationCap } from 'lucide-react';
-import { useAuth, useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, addDoc, collection, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { doc, collection, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { sendNotificationEmail } from '@/app/actions/notifications';
 
@@ -90,22 +90,14 @@ export default function RegisterPage() {
       // Commit all Firestore operations
       await batch.commit();
 
-      // 4. Trigger simulated emails and record in messages (Authenticated on Client)
-      const adminEmailResult = await sendNotificationEmail({
+      // 4. Trigger simulated emails (Console Log)
+      sendNotificationEmail({
         recipientType: 'admin',
         type: 'registration',
         userType: role,
         userName: `${formData.firstName} ${formData.lastName}`,
         userEmail: formData.email
       });
-
-      if (adminEmailResult.success && adminEmailResult.email) {
-        addDocumentNonBlocking(collection(db, 'messages'), {
-          ...adminEmailResult.email,
-          timestamp: serverTimestamp(),
-          read: false
-        });
-      }
 
       toast({
         title: "Registration Successful",

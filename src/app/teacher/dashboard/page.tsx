@@ -21,12 +21,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
   Sheet,
   SheetContent,
   SheetTrigger,
@@ -39,20 +33,12 @@ import {
   Loader2, 
   LogOut, 
   History, 
-  GraduationCap,
-  ClipboardList,
-  FileText,
-  Clock,
-  IndianRupee,
-  Briefcase,
   Menu,
-  CheckCircle2,
-  MessageSquare,
-  X
+  CheckCircle2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp, query, where, limit, orderBy } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
+import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { sendNotificationEmail } from '@/app/actions/notifications';
 
@@ -79,17 +65,6 @@ export default function TeacherDashboard() {
   }, [db, user?.uid]);
   const { data: rawInterests, isLoading: isLoadingInterests } = useCollection(teacherInterestsQuery);
 
-  const messagesQuery = useMemoFirebase(() => {
-    if (!db || !user?.email) return null;
-    // Removed orderBy to avoid requiring a composite index during prototyping
-    return query(
-      collection(db, 'messages'),
-      where('recipientEmail', '==', user.email),
-      limit(100)
-    );
-  }, [db, user?.email]);
-  const { data: rawMessages, isLoading: isLoadingMessages } = useCollection(messagesQuery);
-
   const interests = useMemo(() => {
     if (!rawInterests) return null;
     return [...rawInterests].sort((a, b) => {
@@ -98,15 +73,6 @@ export default function TeacherDashboard() {
       return timeB - timeA;
     });
   }, [rawInterests]);
-
-  const messages = useMemo(() => {
-    if (!rawMessages) return null;
-    return [...rawMessages].sort((a, b) => {
-      const timeA = a.timestamp?.toMillis?.() || 0;
-      const timeB = b.timestamp?.toMillis?.() || 0;
-      return timeB - timeA;
-    });
-  }, [rawMessages]);
 
   const [activeTab, setActiveTab] = useState('profile');
   const [teacherName, setTeacherName] = useState('');
@@ -123,7 +89,6 @@ export default function TeacherDashboard() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
-  const [selectedMessage, setSelectedMessage] = useState<any>(null);
 
   useEffect(() => {
     if (profile) {
@@ -181,7 +146,7 @@ export default function TeacherDashboard() {
 
       await addDoc(collection(db, 'teacherInterests'), submissionData);
 
-      await addDoc(collection(db, 'notifications'), {
+      addDocumentNonBlocking(collection(db, 'notifications'), {
         type: 'interest',
         subject: `Professional Teacher Profile: ${teacherName}`,
         body: `New teacher profile submitted for subjects: ${subjects}.`,
@@ -191,6 +156,7 @@ export default function TeacherDashboard() {
         read: false
       });
 
+      // Simulated Emails
       sendNotificationEmail({
         recipientType: 'admin',
         type: 'interest',
@@ -243,9 +209,6 @@ export default function TeacherDashboard() {
         <Button variant={activeTab === 'profile' || activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('profile')}>
           <LayoutDashboard className="h-4 w-4" /> Dashboard
         </Button>
-        <Button variant={activeTab === 'messages' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('messages')}>
-          <MessageSquare className="h-4 w-4" /> Messages
-        </Button>
       </nav>
       <div className="p-4 border-t">
         <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
@@ -293,14 +256,9 @@ export default function TeacherDashboard() {
           </header>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className={`bg-muted w-full max-w-md grid ${activeTab === 'messages' ? 'grid-cols-1' : 'grid-cols-2'}`}>
-              {(activeTab === 'profile' || activeTab === 'history') && (
-                <>
-                  <TabsTrigger value="profile">Update Specialization</TabsTrigger>
-                  <TabsTrigger value="history">History</TabsTrigger>
-                </>
-              )}
-              {activeTab === 'messages' && <TabsTrigger value="messages">Inbox</TabsTrigger>}
+            <TabsList className="bg-muted w-full max-w-md grid grid-cols-2">
+              <TabsTrigger value="profile">Update Specialization</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile">
@@ -381,39 +339,6 @@ export default function TeacherDashboard() {
                 </CardContent>
               </Card>
             </TabsContent>
-
-            <TabsContent value="messages">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5 text-primary" /> My Inbox</CardTitle>
-                  <CardDescription>Archive of simulated emails and updates sent to you.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {isLoadingMessages ? (
-                    <div className="flex justify-center py-12"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
-                  ) : messages && messages.length > 0 ? (
-                    messages.map(msg => (
-                      <div 
-                        key={msg.id} 
-                        className="p-4 border rounded-xl hover:bg-secondary/5 transition-colors cursor-pointer"
-                        onClick={() => setSelectedMessage(msg)}
-                      >
-                        <div className="flex justify-between items-start mb-1">
-                          <h4 className="font-bold text-sm">{msg.subject}</h4>
-                          <span className="text-[10px] text-muted-foreground">{msg.timestamp?.toDate?.()?.toLocaleDateString()}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate">{msg.body}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-16 border-2 border-dashed rounded-2xl">
-                      <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-muted-foreground">No messages yet.</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
           </Tabs>
         </div>
       </main>
@@ -432,20 +357,6 @@ export default function TeacherDashboard() {
           <AlertDialogFooter><AlertDialogAction onClick={() => setShowSuccessDialog(false)} className="w-full h-12 text-lg font-bold">OK</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <Dialog open={!!selectedMessage} onOpenChange={(open) => !open && setSelectedMessage(null)}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>{selectedMessage?.subject}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4 border-t">
-            <p className="text-[10px] text-muted-foreground text-right">{selectedMessage?.timestamp?.toDate?.()?.toLocaleString()}</p>
-            <div className="bg-secondary/20 p-4 rounded-xl text-sm whitespace-pre-wrap leading-relaxed">
-              {selectedMessage?.body}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

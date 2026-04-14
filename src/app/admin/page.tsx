@@ -40,7 +40,6 @@ import {
 } from "@/components/ui/sheet";
 import { 
   BookOpen, 
-  Settings, 
   Loader2,
   UserCheck,
   GraduationCap,
@@ -66,8 +65,7 @@ import {
   User,
   Mail,
   Menu,
-  Edit2,
-  MessageSquare
+  Edit2
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
@@ -773,89 +771,6 @@ function SystemSettingsLogs({ isAdmin }: { isAdmin: boolean }) {
   );
 }
 
-function AdminMessagesView({ isAdmin }: { isAdmin: boolean }) {
-  const db = useFirestore();
-  const messagesQuery = useMemoFirebase(() => {
-    if (!db || !isAdmin) return null;
-    return query(collection(db, 'messages'), limit(100));
-  }, [db, isAdmin]);
-  const { data: rawMessages, isLoading } = useCollection(messagesQuery);
-  const [selectedMessage, setSelectedMessage] = useState<any>(null);
-
-  const messages = useMemo(() => {
-    if (!rawMessages) return null;
-    return [...rawMessages].sort((a, b) => {
-      const timeA = a.timestamp?.toMillis?.() || 0;
-      const timeB = b.timestamp?.toMillis?.() || 0;
-      return timeB - timeA;
-    });
-  }, [rawMessages]);
-
-  if (!isAdmin) return null;
-  if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-primary" />
-          System Messages & Logs
-        </CardTitle>
-        <CardDescription>Archive of all simulated emails sent to users and admins.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {messages && messages.length > 0 ? (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Recipient</TableHead>
-                  <TableHead>Subject</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {messages.map((msg) => (
-                  <TableRow key={msg.id}>
-                    <TableCell className="text-[10px] text-muted-foreground">
-                      {msg.timestamp?.toDate?.()?.toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-xs font-medium">{msg.recipientEmail}</TableCell>
-                    <TableCell className="text-xs truncate max-w-[200px]">{msg.subject}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedMessage(msg)}>Read</Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        ) : (
-          <p className="text-center py-8 text-muted-foreground italic">No messages found.</p>
-        )}
-      </CardContent>
-
-      <Dialog open={!!selectedMessage} onOpenChange={(open) => !open && setSelectedMessage(null)}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{selectedMessage?.subject}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4 border-t">
-            <div className="flex justify-between text-[10px] text-muted-foreground">
-              <span>To: {selectedMessage?.recipientEmail}</span>
-              <span>{selectedMessage?.timestamp?.toDate?.()?.toLocaleString()}</span>
-            </div>
-            <div className="bg-secondary/20 p-4 rounded-xl text-sm whitespace-pre-wrap leading-relaxed">
-              {selectedMessage?.body}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </Card>
-  );
-}
-
 export default function AdminPortal() {
   const db = useFirestore();
   const auth = useAuth();
@@ -974,9 +889,6 @@ export default function AdminPortal() {
         <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('notifications')}>
           <Bell className="h-4 w-4" /> Notifications
         </Button>
-        <Button variant={activeTab === 'messages' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('messages')}>
-          <MessageSquare className="h-4 w-4" /> Messages
-        </Button>
         <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('students')}>
           <UserCheck className="h-4 w-4" /> Students
         </Button>
@@ -1065,8 +977,6 @@ export default function AdminPortal() {
               </CardContent>
             </Card>
           )}
-
-          {activeTab === 'messages' && <AdminMessagesView isAdmin={isAdmin} />}
 
           {(activeTab === 'students' || activeTab === 'teachers') && (
             <Card>
@@ -1159,12 +1069,6 @@ export default function AdminPortal() {
                     collectionName="notifications" 
                     label="Clear Notifications" 
                     onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all notifications')}
-                    isAdmin={isAdmin}
-                  />
-                  <PurgeCollectionButton 
-                    collectionName="messages" 
-                    label="Clear Message History" 
-                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all messages')}
                     isAdmin={isAdmin}
                   />
                 </div>
