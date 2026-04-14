@@ -29,7 +29,10 @@ import {
   GraduationCap, 
   Briefcase, 
   Edit2,
-  History
+  History,
+  Mail,
+  ClipboardList,
+  CheckCircle2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
@@ -63,6 +66,7 @@ export default function TeacherDashboard() {
 
   const [teacherName, setTeacherName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [qualifications, setQualifications] = useState('');
   const [subjects, setSubjects] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,7 +79,7 @@ export default function TeacherDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!teacherName) return; // name is required
+    if (!teacherName) return;
     setIsSubmitting(true);
 
     try {
@@ -83,6 +87,7 @@ export default function TeacherDashboard() {
         teacherId: user?.uid,
         teacherName,
         phone: phone || 'Not Provided',
+        email: email || profile?.email || 'Not Provided',
         qualifications,
         subjects,
         submissionDate: serverTimestamp(),
@@ -117,7 +122,7 @@ export default function TeacherDashboard() {
   };
 
   if (isUserLoading || isProfileLoading) {
-    return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin" /></div>;
+    return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
   return (
@@ -139,61 +144,89 @@ export default function TeacherDashboard() {
         <div className="max-w-4xl mx-auto space-y-8">
           <header>
             <h1 className="text-2xl font-bold">Hello, Educator {profile?.firstName}!</h1>
-            <Badge variant="outline" className="mt-1">Teacher Dashboard</Badge>
+            <Badge variant="outline" className="mt-1">Teacher Professional Portal</Badge>
           </header>
 
           <Tabs defaultValue="interests" className="space-y-6">
             <TabsList className="bg-muted w-fit grid grid-cols-2">
-              <TabsTrigger value="interests">Profile Info</TabsTrigger>
-              <TabsTrigger value="feedback">Feedback</TabsTrigger>
+              <TabsTrigger value="interests">My Specialty Profile</TabsTrigger>
+              <TabsTrigger value="feedback">Help & Feedback</TabsTrigger>
             </TabsList>
 
             <TabsContent value="interests">
-              <Card>
+              <Card className="shadow-sm">
                 <CardHeader>
-                  <CardTitle>Professional Profile</CardTitle>
-                  <CardDescription>Share your educational background and expertise.</CardDescription>
+                  <CardTitle>Professional Profile Details</CardTitle>
+                  <CardDescription>Share your educational background, qualifications, and the subjects you specialize in teaching.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmitInterest}>
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <Label>Full Name</Label>
-                        <Input disabled={isSubmitted} value={teacherName} onChange={e => setTeacherName(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} required />
+                        <Input disabled={isSubmitted} value={teacherName} onChange={e => setTeacherName(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} required placeholder="Your full legal name" />
                       </div>
                       <div className="space-y-1">
                         <Label>Phone (Optional)</Label>
-                        <Input disabled={isSubmitted} value={phone} onChange={e => setPhone(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
+                        <Input disabled={isSubmitted} value={phone} onChange={e => setPhone(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} placeholder="Primary contact number" />
                       </div>
                     </div>
                     <div className="space-y-1">
+                      <Label>Email (Optional)</Label>
+                      <Input disabled={isSubmitted} value={email} onChange={e => setEmail(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} placeholder="Primary professional email" />
+                    </div>
+                    <div className="space-y-1">
                       <Label>Qualifications</Label>
-                      <Input disabled={isSubmitted} value={qualifications} onChange={e => setQualifications(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} placeholder="e.g., M.Sc Mathematics, B.Ed" />
+                      <Input disabled={isSubmitted} value={qualifications} onChange={e => setQualifications(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} placeholder="e.g., M.Sc Mathematics, B.Ed, PhD in Physics" />
                     </div>
                     <div className="space-y-1">
                       <Label>Specialty Subjects</Label>
-                      <Input disabled={isSubmitted} value={subjects} onChange={e => setSubjects(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} placeholder="e.g., Physics, Chemistry, Calculus" />
+                      <Input disabled={isSubmitted} value={subjects} onChange={e => setSubjects(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} placeholder="e.g., Physics, Chemistry, Calculus, English Literature" />
                     </div>
                   </CardContent>
                   <CardFooter className="gap-4">
-                    <Button type="submit" disabled={isSubmitting || isSubmitted} className="flex-1">Submit Profile</Button>
-                    {isSubmitted && <Button type="button" variant="outline" onClick={() => setIsSubmitted(false)}><Edit2 className="h-4 w-4 mr-2" /> Edit</Button>}
+                    <Button type="submit" disabled={isSubmitting || isSubmitted} className="flex-1 font-bold">Submit Profile for Verification</Button>
+                    {isSubmitted && <Button type="button" variant="outline" onClick={() => setIsSubmitted(false)}><Edit2 className="h-4 w-4 mr-2" /> Update Profile</Button>}
                   </CardFooter>
                 </form>
               </Card>
+
+              {interests && interests.length > 0 && (
+                <div className="mt-8 space-y-4">
+                  <h3 className="font-bold text-lg flex items-center gap-2">
+                    <History className="h-5 w-5 text-primary" />
+                    Submission History
+                  </h3>
+                  <div className="grid gap-4">
+                    {interests.map(i => (
+                      <Card key={i.id} className="border-l-4 border-l-primary">
+                        <CardContent className="p-4 flex justify-between items-center">
+                          <div>
+                            <p className="font-bold text-sm">{i.subjects}</p>
+                            <p className="text-[10px] text-muted-foreground italic">Applied on: {i.submissionDate?.toDate?.()?.toLocaleDateString()}</p>
+                          </div>
+                          <Badge variant={i.status === 'Completed' ? 'default' : 'outline'} className={i.status === 'Completed' ? 'bg-green-600' : ''}>
+                            {i.status}
+                          </Badge>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="feedback">
               <Card>
                 <CardHeader>
-                  <CardTitle>Feedback</CardTitle>
-                  <CardDescription>Tell us about your experience as a teacher on the platform.</CardDescription>
+                  <CardTitle>How are we doing?</CardTitle>
+                  <CardDescription>Tell us about your experience as a teacher on the RP Coach-Up platform. Your feedback helps us build a better environment for educators.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Textarea placeholder="Share your experience..." />
+                  <Textarea placeholder="Share your experience or suggestions for new features..." className="min-h-[150px]" />
                 </CardContent>
                 <CardFooter>
-                  <Button variant="secondary">Submit Feedback</Button>
+                  <Button variant="secondary" className="w-full sm:w-auto">Submit Feedback</Button>
                 </CardFooter>
               </Card>
             </TabsContent>

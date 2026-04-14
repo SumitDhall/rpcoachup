@@ -37,7 +37,8 @@ import {
   Edit2,
   Bell,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Mail
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
@@ -71,6 +72,7 @@ export default function StudentDashboard() {
 
   const [studentName, setStudentName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [school, setSchool] = useState('');
   const [gradeOrClass, setGradeOrClass] = useState('');
   const [address, setAddress] = useState('');
@@ -89,7 +91,7 @@ export default function StudentDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject || !studentName) return; // subject and name are still required for the match
+    if (!subject || !studentName) return; 
     setIsSubmitting(true);
     
     try {
@@ -97,6 +99,7 @@ export default function StudentDashboard() {
         studentId: user?.uid,
         studentName,
         phone: phone || 'Not Provided',
+        email: email || profile?.email || 'Not Provided',
         school,
         gradeOrClass,
         address,
@@ -139,7 +142,7 @@ export default function StudentDashboard() {
   const feeOptions = Array.from({ length: 14 }, (_, i) => 7000 + i * 1000);
 
   if (isUserLoading || isProfileLoading) {
-    return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin" /></div>;
+    return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
   return (
@@ -173,9 +176,10 @@ export default function StudentDashboard() {
             </TabsList>
 
             <TabsContent value="interests">
-              <Card className="border-primary/10">
+              <Card className="border-primary/10 shadow-sm">
                 <CardHeader>
                   <CardTitle>Tuition Requirement Form</CardTitle>
+                  <CardDescription>Enter details about the student needing tuition.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmitInterest}>
                   <CardContent className="space-y-6">
@@ -186,34 +190,40 @@ export default function StudentDashboard() {
                       </div>
                       <div className="space-y-1">
                         <Label>Phone (Optional)</Label>
-                        <Input disabled={isSubmitted} value={phone} onChange={e => setPhone(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
+                        <Input disabled={isSubmitted} value={phone} onChange={e => setPhone(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} placeholder="Contact phone number" />
                       </div>
-                    </div>
-                    <div className="space-y-1">
-                      <Label>Subject</Label>
-                      <Input disabled={isSubmitted} value={subject} onChange={e => setSubject(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} required />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <Label>Monthly Fee</Label>
+                        <Label>Email (Optional)</Label>
+                        <Input disabled={isSubmitted} value={email} onChange={e => setEmail(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} placeholder="Contact email address" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Subject</Label>
+                        <Input disabled={isSubmitted} value={subject} onChange={e => setSubject(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} required placeholder="e.g., Mathematics, Physics" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <Label>Monthly Fee Budget</Label>
                         <Select disabled={isSubmitted} value={affordableRange} onValueChange={setAffordableRange}>
-                          <SelectTrigger className={isSubmitted ? "bg-secondary/50" : ""}><SelectValue /></SelectTrigger>
+                          <SelectTrigger className={isSubmitted ? "bg-secondary/50" : ""}><SelectValue placeholder="Select range" /></SelectTrigger>
                           <SelectContent>{feeOptions.map(f => <SelectItem key={f} value={`${f} INR`}>{f} INR</SelectItem>)}</SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-1">
-                        <Label>Start Date</Label>
+                        <Label>Intended Start Date</Label>
                         <Input type="date" disabled={isSubmitted} value={intendedStartDate} onChange={e => setIntendedStartDate(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} />
                       </div>
                     </div>
                     <div className="space-y-1">
                       <Label>Notes / Special Requirements</Label>
-                      <Textarea disabled={isSubmitted} value={notes} onChange={e => setNotes(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} placeholder="e.g., Preferred timings, school name, specific topics..." />
+                      <Textarea disabled={isSubmitted} value={notes} onChange={e => setNotes(e.target.value)} className={isSubmitted ? "bg-secondary/50" : ""} placeholder="e.g., Preferred timings, school name, specific topics, address details..." />
                     </div>
                   </CardContent>
                   <CardFooter className="gap-4">
-                    <Button type="submit" disabled={isSubmitting || isSubmitted} className="flex-1">Submit</Button>
-                    {isSubmitted && <Button type="button" variant="outline" onClick={() => setIsSubmitted(false)}><Edit2 className="h-4 w-4 mr-2" /> Edit</Button>}
+                    <Button type="submit" disabled={isSubmitting || isSubmitted} className="flex-1 font-bold">Submit Application</Button>
+                    {isSubmitted && <Button type="button" variant="outline" onClick={() => setIsSubmitted(false)}><Edit2 className="h-4 w-4 mr-2" /> Edit Last Submission</Button>}
                   </CardFooter>
                 </form>
               </Card>
@@ -227,17 +237,20 @@ export default function StudentDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {isLoadingInterests ? (
-                    <div className="flex justify-center py-8"><Loader2 className="animate-spin text-primary" /></div>
+                    <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
                   ) : interests && interests.length > 0 ? (
                     interests.map(i => (
-                      <div key={i.id} className="p-4 border rounded-xl flex items-center justify-between bg-card shadow-sm">
+                      <div key={i.id} className="p-4 border rounded-xl flex items-center justify-between bg-card shadow-sm hover:bg-secondary/5 transition-colors">
                         <div className="flex items-start gap-3">
                           <div className="mt-1 bg-primary/10 p-2 rounded-lg">
                             <ClipboardList className="h-4 w-4 text-primary" />
                           </div>
                           <div>
                             <p className="font-bold text-sm">{i.subject}</p>
-                            <p className="text-[10px] text-muted-foreground">Submitted: {i.submissionDate?.toDate?.()?.toLocaleDateString()}</p>
+                            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <CalendarIcon className="h-2.5 w-2.5" />
+                              Submitted: {i.submissionDate?.toDate?.()?.toLocaleDateString()}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -250,7 +263,8 @@ export default function StudentDashboard() {
                   ) : (
                     <div className="text-center py-12 border rounded-xl border-dashed">
                       <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">No submissions found yet.</p>
+                      <p className="text-sm text-muted-foreground font-medium">No submissions found yet.</p>
+                      <p className="text-xs text-muted-foreground/60">Your tuition requests will appear here after submission.</p>
                     </div>
                   )}
                 </CardContent>
@@ -260,14 +274,14 @@ export default function StudentDashboard() {
             <TabsContent value="feedback">
               <Card>
                 <CardHeader>
-                  <CardTitle>Feedback</CardTitle>
-                  <CardDescription>We value your thoughts on our platform.</CardDescription>
+                  <CardTitle>Platform Feedback</CardTitle>
+                  <CardDescription>We value your thoughts on how we can improve our services.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Textarea placeholder="How can we improve your learning experience?" />
+                  <Textarea placeholder="Share your suggestions or report issues here..." className="min-h-[150px]" />
                 </CardContent>
                 <CardFooter>
-                  <Button variant="secondary">Send Feedback</Button>
+                  <Button variant="secondary" className="w-full sm:w-auto">Send Feedback</Button>
                 </CardFooter>
               </Card>
             </TabsContent>
