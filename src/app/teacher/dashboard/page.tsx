@@ -50,6 +50,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
+import { sendNotificationEmail } from '@/app/actions/notifications';
 
 export default function TeacherDashboard() {
   const { user, isUserLoading } = useUser();
@@ -182,6 +183,28 @@ export default function TeacherDashboard() {
         comment: feedbackComment,
         createdAt: serverTimestamp()
       });
+
+      // Notify Admin in Firestore
+      addDocumentNonBlocking(collection(db, 'notifications'), {
+        type: 'feedback',
+        subject: `New Teacher Feedback: ${feedbackRating} Stars`,
+        body: `Teacher ${profile?.firstName} ${profile?.lastName} shared feedback: "${feedbackComment}"`,
+        userEmail: profile?.email || 'N/A',
+        userName: `${profile?.firstName} ${profile?.lastName}`,
+        timestamp: serverTimestamp(),
+        read: false
+      });
+
+      // Notify Admin via simulated email
+      sendNotificationEmail({
+        recipientType: 'admin',
+        type: 'interest',
+        userType: 'Teacher',
+        userName: `${profile?.firstName} ${profile?.lastName}`,
+        userEmail: profile?.email || '',
+        details: `Teacher provided a ${feedbackRating}-star review. Comment: ${feedbackComment}`
+      });
+
       toast({ title: "Feedback Received", description: "Thank you for your valuable feedback!" });
       setFeedbackComment('');
       setFeedbackRating('5');

@@ -194,6 +194,28 @@ export default function StudentDashboard() {
         teacherName: feedbackTeacher,
         createdAt: serverTimestamp()
       });
+
+      // Notify Admin in Firestore
+      addDocumentNonBlocking(collection(db, 'notifications'), {
+        type: 'feedback',
+        subject: `New Student Feedback: ${feedbackRating} Stars`,
+        body: `Student ${profile?.firstName} ${profile?.lastName} shared feedback: "${feedbackComment}"`,
+        userEmail: profile?.email || 'N/A',
+        userName: `${profile?.firstName} ${profile?.lastName}`,
+        timestamp: serverTimestamp(),
+        read: false
+      });
+
+      // Notify Admin via simulated email
+      sendNotificationEmail({
+        recipientType: 'admin',
+        type: 'interest',
+        userType: 'Student',
+        userName: `${profile?.firstName} ${profile?.lastName}`,
+        userEmail: profile?.email || '',
+        details: `Student provided a ${feedbackRating}-star review. Comment: ${feedbackComment}`
+      });
+
       toast({ title: "Feedback Received", description: "Thank you for sharing your thoughts!" });
       setFeedbackComment('');
       setFeedbackRating('5');
@@ -536,4 +558,3 @@ export default function StudentDashboard() {
     </div>
   );
 }
-

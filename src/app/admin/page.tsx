@@ -65,7 +65,8 @@ import {
   User,
   Mail,
   Menu,
-  Edit2
+  Edit2,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
@@ -87,7 +88,7 @@ function logSystemEvent(db: any, admin: any, type: string, description: string) 
 }
 
 // Helper to create admin notifications
-function createAdminNotification(db: any, type: 'registration' | 'interest' | 'assignment' | 'status_update', subject: string, body: string, userEmail?: string, userName?: string) {
+function createAdminNotification(db: any, type: 'registration' | 'interest' | 'assignment' | 'status_update' | 'feedback', subject: string, body: string, userEmail?: string, userName?: string) {
   addDocumentNonBlocking(collection(db, 'notifications'), {
     type,
     subject,
@@ -964,6 +965,7 @@ export default function AdminPortal() {
                         {n.type === 'interest' && <ClipboardList className="h-5 w-5 text-accent" />}
                         {n.type === 'assignment' && <UserPlus className="h-5 w-5 text-green-500" />}
                         {n.type === 'status_update' && <Edit2 className="h-5 w-5 text-blue-500" />}
+                        {n.type === 'feedback' && <MessageSquare className="h-5 w-5 text-orange-500" />}
                       </div>
                       <div>
                         <h4 className="font-bold text-sm">{n.subject}</h4>
