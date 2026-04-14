@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import Link from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -756,6 +756,9 @@ function SystemSettingsLogs({ isAdmin }: { isAdmin: boolean }) {
                     <TableCell>
                       <Badge variant="outline" className="text-[10px] uppercase">{log.type}</Badge>
                     </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-[10px] uppercase">{log.type}</Badge>
+                    </TableCell>
                     <TableCell className="text-xs">{log.description}</TableCell>
                     <TableCell className="text-right text-[10px]">{log.adminEmail}</TableCell>
                   </TableRow>
@@ -777,10 +780,19 @@ function AdminMessagesView({ isAdmin }: { isAdmin: boolean }) {
   const db = useFirestore();
   const messagesQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
-    return query(collection(db, 'messages'), orderBy('timestamp', 'desc'), limit(100));
+    return query(collection(db, 'messages'), limit(100));
   }, [db, isAdmin]);
-  const { data: messages, isLoading } = useCollection(messagesQuery);
+  const { data: rawMessages, isLoading } = useCollection(messagesQuery);
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
+
+  const messages = useMemo(() => {
+    if (!rawMessages) return null;
+    return [...rawMessages].sort((a, b) => {
+      const timeA = a.timestamp?.toMillis?.() || 0;
+      const timeB = b.timestamp?.toMillis?.() || 0;
+      return timeB - timeA;
+    });
+  }, [rawMessages]);
 
   if (!isAdmin) return null;
   if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
@@ -852,6 +864,7 @@ export default function AdminPortal() {
   const auth = useAuth();
   const router = useRouter();
   const { user, isUserLoading } = useUser();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('notifications');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
@@ -877,7 +890,7 @@ export default function AdminPortal() {
         description: "You do not have permission to view the Admin Portal.",
       });
     }
-  }, [isUserLoading, isAdminLoading, isAdmin, router]);
+  }, [isUserLoading, isAdminLoading, isAdmin, router, toast]);
 
   const usersQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
@@ -955,7 +968,9 @@ export default function AdminPortal() {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <BookOpen className="text-primary h-6 w-6" />
+        <div className="bg-primary p-1 rounded-lg">
+          <BookOpen className="text-primary-foreground h-5 w-5" />
+        </div>
         <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
       </Link>
       <nav className="flex-1 px-4 space-y-1">
@@ -990,7 +1005,9 @@ export default function AdminPortal() {
     <div className="flex min-h-screen bg-background flex-col lg:flex-row">
       <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card sticky top-0 z-40">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <BookOpen className="text-primary h-6 w-6" />
+          <div className="bg-primary p-1.5 rounded-lg">
+            <BookOpen className="text-primary-foreground h-6 w-6" />
+          </div>
           <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
         </Link>
         <Sheet>
