@@ -43,7 +43,9 @@ import {
   GraduationCap,
   CheckCircle2,
   Menu,
-  History
+  History,
+  MessageSquare,
+  Star
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
@@ -74,16 +76,19 @@ export default function StudentDashboard() {
   }, [db, user?.uid]);
   const { data: rawInterests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
 
-  const interests = useMemo(() => {
-    if (!rawInterests) return null;
-    return [...rawInterests].sort((a, b) => {
-      const timeA = a.submissionDate?.toMillis?.() || 0;
-      const timeB = b.submissionDate?.toMillis?.() || 0;
-      return timeB - timeA;
-    });
-  }, [rawInterests]);
+  const matchesQuery = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return query(
+      collection(db, 'matchProposals'),
+      where('studentId', '==', user.uid),
+      limit(50)
+    );
+  }, [db, user?.uid]);
+  const { data: matches } = useCollection(matchesQuery);
 
   const [activeTab, setActiveTab] = useState('interests');
+  
+  // Tuition Request State
   const [studentName, setStudentName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -94,6 +99,11 @@ export default function StudentDashboard() {
   const [notes, setNotes] = useState('');
   const [affordableRange, setAffordableRange] = useState('');
   const [intendedStartDate, setIntendedStartDate] = useState('');
+  
+  // Feedback State
+  const [feedbackRating, setFeedbackRating] = useState('5');
+  const [feedbackComment, setFeedbackComment] = useState('');
+  const [feedbackTeacher, setFeedbackTeacher] = useState('General Platform Feedback');
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -112,18 +122,11 @@ export default function StudentDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!subject || !studentName || !phone || !email || !school || !gradeLevel) {
-      toast({
-        variant: "destructive",
-        title: "Required Fields Missing",
-        description: "Please provide Name, Phone, Email, Subject, School, and Class to proceed."
-      });
+      toast({ variant: "destructive", title: "Required Fields Missing", description: "Please complete mandatory fields." });
       return; 
     }
-
     setIsSubmitting(true);
-    
     try {
       const submissionData = {
         studentId: user?.uid,
@@ -140,58 +143,54 @@ export default function StudentDashboard() {
         status: 'Pending',
         notes: notes || ''
       };
-
       await addDoc(collection(db, 'studentInterests'), submissionData);
-      
       addDocumentNonBlocking(collection(db, 'notifications'), {
         type: 'interest',
         subject: `Student Tuition Inquiry: ${subject}`,
-        body: `Student ${studentName} (${gradeLevel}) requested tuition for ${subject} at ${school}. Contact: ${phone}`,
+        body: `Student ${studentName} requested tuition for ${subject}.`,
         userEmail: email,
         userName: studentName,
         timestamp: serverTimestamp(),
         read: false
       });
-
-      // Simulated Emails
-      sendNotificationEmail({
-        recipientType: 'admin',
-        type: 'interest',
-        userType: 'Student',
-        userName: studentName,
-        userEmail: email,
-        details: `Subject: ${subject}, Grade: ${gradeLevel}, School: ${school}`
-      });
-
-      sendNotificationEmail({
-        recipientType: 'user',
-        type: 'interest',
-        userType: 'Student',
-        userName: studentName,
-        userEmail: email,
-        details: `Subject: ${subject}`
-      });
-      
       setShowSuccessDialog(true);
-
-      setSubject('');
-      setSchool('');
-      setGradeLevel('');
-      setAddress('');
-      setNotes('');
-      setPhone('');
-      setAffordableRange('');
-      setIntendedStartDate('');
-
+      setSubject(''); setSchool(''); setGradeLevel(''); setAddress(''); setNotes(''); setPhone(''); setAffordableRange(''); setIntendedStartDate('');
     } catch (error) {
       console.error(error);
-      toast({ variant: "destructive", title: "Submission Failed", description: "An unexpected error occurred." });
+      toast({ variant: "destructive", title: "Submission Failed", description: "An error occurred." });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const feeOptions = Array.from({ length: 15 }, (_, i) => 5000 + i * 1000);
+  const handleSubmitFeedback = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedbackComment || !feedbackRating) {
+      toast({ variant: "destructive", title: "Incomplete Feedback", description: "Please provide a rating and a comment." });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await addDoc(collection(db, 'feedback'), {
+        userId: user?.uid,
+        userName: `${profile?.firstName} ${profile?.lastName}`,
+        userType: 'Student',
+        rating: Number(feedbackRating),
+        comment: feedbackComment,
+        teacherName: feedbackTeacher,
+        createdAt: serverTimestamp()
+      });
+      toast({ title: "Feedback Received", description: "Thank you for sharing your thoughts!" });
+      setFeedbackComment('');
+      setFeedbackRating('5');
+    } catch (error) {
+      console.error(error);
+      toast({ variant: "destructive", title: "Feedback Error", description: "Could not submit feedback." });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const gradeOptions = Array.from({ length: 12 }, (_, i) => `Class ${i + 1}`);
 
   if (isUserLoading || isProfileLoading) {
@@ -205,8 +204,14 @@ export default function StudentDashboard() {
         <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
       </Link>
       <nav className="flex-1 px-4 space-y-1">
-        <Button variant={activeTab === 'interests' || activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('interests')}>
+        <Button variant={activeTab === 'interests' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('interests')}>
           <LayoutDashboard className="h-4 w-4" /> Dashboard
+        </Button>
+        <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('history')}>
+          <History className="h-4 w-4" /> Inquiry History
+        </Button>
+        <Button variant={activeTab === 'feedback' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('feedback')}>
+          <MessageSquare className="h-4 w-4" /> Feedback
         </Button>
       </nav>
       <div className="p-4 border-t">
@@ -226,17 +231,9 @@ export default function StudentDashboard() {
         </Link>
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6 text-primary" />
-            </Button>
+            <Button variant="ghost" size="icon"><Menu className="h-6 w-6 text-primary" /></Button>
           </SheetTrigger>
-          <SheetContent side="left">
-            <SheetHeader className="p-4 border-b">
-              <SheetTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-primary" />
-                Navigation
-              </SheetTitle>
-            </SheetHeader>
+          <SheetContent side="left" className="p-0">
             <SidebarContent />
           </SheetContent>
         </Sheet>
@@ -250,18 +247,13 @@ export default function StudentDashboard() {
         <div className="max-w-4xl mx-auto space-y-8">
           <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-headline font-bold text-primary">Student Dashboard</h1>
+              <h1 className="text-3xl font-headline font-bold text-primary">Student Portal</h1>
               <p className="text-muted-foreground">Manage your learning journey, {profile?.firstName}</p>
             </div>
-            <Badge variant="outline" className="w-fit border-primary text-primary bg-primary/5">Student Portal</Badge>
+            <Badge variant="outline" className="border-primary text-primary bg-primary/5">Student Dashboard</Badge>
           </header>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full max-w-md bg-muted grid-cols-2">
-              <TabsTrigger value="interests">New Tuition Request</TabsTrigger>
-              <TabsTrigger value="history">Inquiry History</TabsTrigger>
-            </TabsList>
-
             <TabsContent value="interests">
               <Card className="border-primary/10 shadow-xl">
                 <CardHeader>
@@ -272,30 +264,21 @@ export default function StudentDashboard() {
                   <CardContent className="space-y-6">
                     <div className="grid sm:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="studentName" className="flex items-center gap-1">
-                          <User className="h-3 w-3" /> Student Full Name <span className="text-destructive">*</span>
-                        </Label>
+                        <Label htmlFor="studentName">Student Full Name *</Label>
                         <Input id="studentName" value={studentName} onChange={e => setStudentName(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="subject" className="flex items-center gap-1">
-                          <BookOpen className="h-3 w-3" /> Subject Needed <span className="text-destructive">*</span>
-                        </Label>
+                        <Label htmlFor="subject">Subject Needed *</Label>
                         <Input id="subject" value={subject} onChange={e => setSubject(e.target.value)} required placeholder="e.g., Mathematics" />
                       </div>
                     </div>
-
                     <div className="grid sm:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="school" className="flex items-center gap-1">
-                          <School className="h-3 w-3" /> Current School <span className="text-destructive">*</span>
-                        </Label>
+                        <Label htmlFor="school">Current School *</Label>
                         <Input id="school" value={school} onChange={e => setSchool(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="gradeLevel" className="flex items-center gap-1">
-                          <GraduationCap className="h-3 w-3" /> Class / Grade <span className="text-destructive">*</span>
-                        </Label>
+                        <Label htmlFor="gradeLevel">Class / Grade *</Label>
                         <Select value={gradeLevel} onValueChange={setGradeLevel} required>
                           <SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger>
                           <SelectContent>
@@ -304,51 +287,19 @@ export default function StudentDashboard() {
                         </Select>
                       </div>
                     </div>
-
                     <div className="grid sm:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="phone" className="flex items-center gap-1">
-                          <Phone className="h-3 w-3" /> Contact Phone <span className="text-destructive">*</span>
-                        </Label>
+                        <Label htmlFor="phone">Contact Phone *</Label>
                         <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email" className="flex items-center gap-1">
-                          <Mail className="h-3 w-3" /> Contact Email <span className="text-destructive">*</span>
-                        </Label>
+                        <Label htmlFor="email">Contact Email *</Label>
                         <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
                       </div>
                     </div>
-
-                    <div className="grid sm:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-1"><IndianRupee className="h-3 w-3" /> Budget (INR)</Label>
-                        <Select value={affordableRange} onValueChange={setAffordableRange}>
-                          <SelectTrigger><SelectValue placeholder="Select budget" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Flexible">Flexible</SelectItem>
-                            {feeOptions.map(f => <SelectItem key={f} value={`${f} INR`}>{f} INR</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="startDate" className="flex items-center gap-1"><Calendar className="h-3 w-3" /> Start Date</Label>
-                        <Input id="startDate" type="date" value={intendedStartDate} onChange={e => setIntendedStartDate(e.target.value)} />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="address" className="flex items-center gap-1"><MapPin className="h-3 w-3" /> Address</Label>
-                      <Input id="address" value={address} onChange={e => setAddress(e.target.value)} />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="notes">Notes</Label>
-                      <Textarea id="notes" value={notes} onChange={e => setNotes(e.target.value)} className="min-h-[80px]" />
-                    </div>
                   </CardContent>
                   <CardFooter className="border-t pt-6">
-                    <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-12 text-lg shadow-lg">
+                    <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-12 text-lg">
                       {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                       Submit Request
                     </Button>
@@ -359,31 +310,65 @@ export default function StudentDashboard() {
 
             <TabsContent value="history">
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><History className="h-5 w-5 text-primary" /> Application History</CardTitle>
-                </CardHeader>
+                <CardHeader><CardTitle>Inquiry History</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                  {isLoadingInterests ? (
-                    <div className="flex justify-center py-12"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>
-                  ) : interests && interests.length > 0 ? (
-                    interests.map(i => (
-                      <div key={i.id} className="p-5 border rounded-2xl flex items-center justify-between gap-4 bg-card shadow-sm border-l-4 border-l-primary">
-                        <div>
-                          <p className="font-bold text-lg">{i.subject}</p>
-                          <p className="text-xs text-muted-foreground">{i.gradeOrClass} | {i.school}</p>
-                        </div>
-                        <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600' : i.status === 'In-Progress' ? 'bg-blue-500' : ''}>
-                          {i.status}
-                        </Badge>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-16 border-2 border-dashed rounded-2xl">
-                      <p className="text-muted-foreground">No inquiries found.</p>
-                      <Button variant="link" className="mt-2 text-primary font-bold" onClick={() => setActiveTab('interests')}>Start your first request now</Button>
+                  {isLoadingInterests ? <Loader2 className="animate-spin mx-auto" /> : (rawInterests && rawInterests.length > 0 ? [...rawInterests].sort((a,b) => b.submissionDate?.toMillis() - a.submissionDate?.toMillis()).map(i => (
+                    <div key={i.id} className="p-4 border rounded-xl flex items-center justify-between bg-card shadow-sm border-l-4 border-l-primary">
+                      <div><p className="font-bold">{i.subject}</p><p className="text-xs text-muted-foreground">{i.gradeOrClass}</p></div>
+                      <Badge variant={i.status === 'Pending' ? 'outline' : 'default'}>{i.status}</Badge>
                     </div>
-                  )}
+                  )) : (
+                    <div className="text-center py-12 border-2 border-dashed rounded-xl">
+                      <p className="text-muted-foreground">No inquiries found.</p>
+                      <Button variant="link" onClick={() => setActiveTab('interests')}>Start your first request now</Button>
+                    </div>
+                  ))}
                 </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="feedback">
+              <Card className="border-accent/10 shadow-xl">
+                <CardHeader>
+                  <CardTitle>Share Your Feedback</CardTitle>
+                  <CardDescription>Tell us about your experience with RP Coach-Up and your teachers.</CardDescription>
+                </CardHeader>
+                <form onSubmit={handleSubmitFeedback}>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label>Rating</Label>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <Button key={star} type="button" variant={Number(feedbackRating) >= star ? "default" : "outline"} size="icon" className="h-10 w-10" onClick={() => setFeedbackRating(star.toString())}>
+                            <Star className={`h-5 w-5 ${Number(feedbackRating) >= star ? "fill-current" : ""}`} />
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="feedbackTeacher">Who is this feedback for?</Label>
+                      <Select value={feedbackTeacher} onValueChange={setFeedbackTeacher}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="General Platform Feedback">General Platform Feedback</SelectItem>
+                          {matches?.map(m => (
+                            <SelectItem key={m.id} value={`Teacher: ${m.teacherName}`}>Teacher: {m.teacherName}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="feedbackComment">Comment</Label>
+                      <Textarea id="feedbackComment" value={feedbackComment} onChange={e => setFeedbackComment(e.target.value)} required placeholder="How can we improve? What did you like?" />
+                    </div>
+                  </CardContent>
+                  <CardFooter className="border-t pt-6">
+                    <Button type="submit" disabled={isSubmitting} className="w-full h-12 font-bold text-lg bg-accent text-accent-foreground hover:bg-accent/90">
+                      {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                      Submit Feedback
+                    </Button>
+                  </CardFooter>
+                </form>
               </Card>
             </TabsContent>
           </Tabs>
@@ -391,17 +376,14 @@ export default function StudentDashboard() {
       </main>
 
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <AlertDialogContent className="sm:max-w-[425px]">
-          <AlertDialogHeader className="flex flex-col items-center gap-4 py-4">
-            <div className="bg-green-100 p-3 rounded-full"><CheckCircle2 className="h-12 w-12 text-green-600" /></div>
-            <div className="text-center">
-              <AlertDialogTitle className="text-2xl font-headline font-bold text-primary">Request Submitted!</AlertDialogTitle>
-              <AlertDialogDescription className="text-base mt-2">
-                Please go and check the Inquiry History tab, you can see any status updates there. Our management will contact you within 7 working days, thanks!
-              </AlertDialogDescription>
-            </div>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-primary">Request Submitted!</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your request has been received. Our management will contact you within 7 working days. You can check the status in the Inquiry History tab.
+            </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogAction onClick={() => setShowSuccessDialog(false)} className="w-full h-12 text-lg font-bold">OK</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogFooter><AlertDialogAction onClick={() => {setShowSuccessDialog(false); setActiveTab('history');}}>OK</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>

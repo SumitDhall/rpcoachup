@@ -34,13 +34,14 @@ import {
   LogOut, 
   History, 
   Menu,
-  CheckCircle2
+  CheckCircle2,
+  MessageSquare,
+  Star
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
-import { sendNotificationEmail } from '@/app/actions/notifications';
 
 export default function TeacherDashboard() {
   const { user, isUserLoading } = useUser();
@@ -65,27 +66,21 @@ export default function TeacherDashboard() {
   }, [db, user?.uid]);
   const { data: rawInterests, isLoading: isLoadingInterests } = useCollection(teacherInterestsQuery);
 
-  const interests = useMemo(() => {
-    if (!rawInterests) return null;
-    return [...rawInterests].sort((a, b) => {
-      const timeA = a.submissionDate?.toMillis?.() || 0;
-      const timeB = b.submissionDate?.toMillis?.() || 0;
-      return timeB - timeA;
-    });
-  }, [rawInterests]);
-
   const [activeTab, setActiveTab] = useState('profile');
+  
+  // Specialty Form State
   const [teacherName, setTeacherName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [qualifications, setQualifications] = useState('');
   const [experienceYears, setExperienceYears] = useState('');
-  const [hoursPerWeek, setHoursPerWeek] = useState('');
-  const [expectedSalary, setExpectedSalary] = useState('');
   const [subjects, setSubjects] = useState('');
-  const [notes, setNotes] = useState('');
   const [resumeName, setResumeName] = useState('');
   const [resumeData, setResumeData] = useState('');
+
+  // Feedback State
+  const [feedbackRating, setFeedbackRating] = useState('5');
+  const [feedbackComment, setFeedbackComment] = useState('');
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -102,9 +97,7 @@ export default function TeacherDashboard() {
     if (file) {
       setResumeName(file.name);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setResumeData(reader.result as string);
-      };
+      reader.onloadend = () => setResumeData(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -117,79 +110,61 @@ export default function TeacherDashboard() {
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!teacherName || !subjects || !phone || !email || !resumeName) {
-      toast({
-        variant: "destructive",
-        title: "Missing Information",
-        description: "Please fill in all mandatory fields."
-      });
+      toast({ variant: "destructive", title: "Missing Info", description: "Complete mandatory fields." });
       return;
     }
     setIsSubmitting(true);
-
     try {
-      const submissionData = {
+      await addDoc(collection(db, 'teacherInterests'), {
         teacherId: user?.uid,
-        teacherName,
-        phone,
-        email,
+        teacherName, phone, email,
         qualifications: qualifications || 'N/A',
         experienceYears: experienceYears || '0',
-        hoursPerWeek: hoursPerWeek || '0',
-        expectedSalary: expectedSalary || 'N/A',
-        subjects,
-        resumeName: resumeName || '',
-        resumeData: resumeData || '', 
+        subjects, resumeName, resumeData,
         submissionDate: serverTimestamp(),
-        status: 'Pending',
-        notes: notes || ''
-      };
-
-      await addDoc(collection(db, 'teacherInterests'), submissionData);
-
+        status: 'Pending'
+      });
       addDocumentNonBlocking(collection(db, 'notifications'), {
         type: 'interest',
-        subject: `Professional Teacher Profile: ${teacherName}`,
-        body: `New teacher profile submitted for subjects: ${subjects}.`,
+        subject: `New Teacher Profile: ${teacherName}`,
+        body: `${teacherName} submitted a specialty profile for ${subjects}.`,
         userEmail: email,
         userName: teacherName,
         timestamp: serverTimestamp(),
         read: false
       });
-
-      // Simulated Emails
-      sendNotificationEmail({
-        recipientType: 'admin',
-        type: 'interest',
-        userType: 'Teacher',
-        userName: teacherName,
-        userEmail: email,
-        details: `Subjects: ${subjects}, Exp: ${experienceYears} yrs`
-      });
-
-      sendNotificationEmail({
-        recipientType: 'user',
-        type: 'interest',
-        userType: 'Teacher',
-        userName: teacherName,
-        userEmail: email,
-        details: `Specialization: ${subjects}`
-      });
-      
       setShowSuccessDialog(true);
-      
-      setQualifications('');
-      setExperienceYears('');
-      setHoursPerWeek('');
-      setExpectedSalary('');
-      setSubjects('');
-      setNotes('');
-      setResumeName('');
-      setResumeData('');
-      setPhone('');
-
+      setQualifications(''); setExperienceYears(''); setSubjects(''); setResumeName(''); setResumeData(''); setPhone('');
     } catch (error) {
       console.error(error);
       toast({ variant: "destructive", title: "Error", description: "Failed to submit profile." });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmitFeedback = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!feedbackComment || !feedbackRating) {
+      toast({ variant: "destructive", title: "Incomplete Feedback", description: "Please provide a rating and a comment." });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await addDoc(collection(db, 'feedback'), {
+        userId: user?.uid,
+        userName: `${profile?.firstName} ${profile?.lastName}`,
+        userType: 'Teacher',
+        rating: Number(feedbackRating),
+        comment: feedbackComment,
+        createdAt: serverTimestamp()
+      });
+      toast({ title: "Feedback Received", description: "Thank you for your valuable feedback!" });
+      setFeedbackComment('');
+      setFeedbackRating('5');
+    } catch (error) {
+      console.error(error);
+      toast({ variant: "destructive", title: "Feedback Error", description: "Could not submit feedback." });
     } finally {
       setIsSubmitting(false);
     }
@@ -206,8 +181,14 @@ export default function TeacherDashboard() {
         <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
       </Link>
       <nav className="flex-1 px-4 space-y-1">
-        <Button variant={activeTab === 'profile' || activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('profile')}>
+        <Button variant={activeTab === 'profile' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('profile')}>
           <LayoutDashboard className="h-4 w-4" /> Dashboard
+        </Button>
+        <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('history')}>
+          <History className="h-4 w-4" /> Professional Records
+        </Button>
+        <Button variant={activeTab === 'feedback' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('feedback')}>
+          <MessageSquare className="h-4 w-4" /> Feedback
         </Button>
       </nav>
       <div className="p-4 border-t">
@@ -229,13 +210,7 @@ export default function TeacherDashboard() {
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon"><Menu className="h-6 w-6 text-primary" /></Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64">
-            <SheetHeader className="p-4 border-b">
-              <SheetTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5 text-primary" />
-                Navigation
-              </SheetTitle>
-            </SheetHeader>
+          <SheetContent side="left" className="p-0">
             <SidebarContent />
           </SheetContent>
         </Sheet>
@@ -249,18 +224,13 @@ export default function TeacherDashboard() {
         <div className="max-w-4xl mx-auto space-y-8">
           <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-headline font-bold text-primary">Teacher Professional Portal</h1>
+              <h1 className="text-3xl font-headline font-bold text-primary">Teacher Portal</h1>
               <p className="text-muted-foreground">Welcome, Educator {profile?.firstName}</p>
             </div>
-            <Badge variant="outline" className="w-fit border-primary text-primary">Verified Teacher</Badge>
+            <Badge variant="outline" className="border-primary text-primary">Verified Teacher</Badge>
           </header>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="bg-muted w-full max-w-md grid grid-cols-2">
-              <TabsTrigger value="profile">Update Specialization</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
-            </TabsList>
-
             <TabsContent value="profile">
               <Card className="shadow-lg border-primary/10">
                 <CardHeader>
@@ -271,34 +241,20 @@ export default function TeacherDashboard() {
                   <CardContent className="space-y-6">
                     <div className="grid sm:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="teacherName">Full Name <span className="text-destructive">*</span></Label>
+                        <Label htmlFor="teacherName">Full Name *</Label>
                         <Input id="teacherName" value={teacherName} onChange={e => setTeacherName(e.target.value)} required />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Phone / WhatsApp <span className="text-destructive">*</span></Label>
+                        <Label htmlFor="phone">Phone / WhatsApp *</Label>
                         <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} required />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Professional Email <span className="text-destructive">*</span></Label>
-                      <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-                    </div>
-                    <div className="grid sm:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="qualifications">Qualification <span className="text-destructive">*</span></Label>
-                        <Input id="qualifications" value={qualifications} onChange={e => setQualifications(e.target.value)} required />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="experience">Years of Experience <span className="text-destructive">*</span></Label>
-                        <Input id="experience" type="number" value={experienceYears} onChange={e => setExperienceYears(e.target.value)} required />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="subjects">Subjects <span className="text-destructive">*</span></Label>
+                      <Label htmlFor="subjects">Subjects *</Label>
                       <Textarea id="subjects" value={subjects} onChange={e => setSubjects(e.target.value)} required />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="resume">Resume <span className="text-destructive">*</span></Label>
+                      <Label htmlFor="resume">Resume *</Label>
                       <Input id="resume" type="file" accept=".pdf,.doc,.docx" onChange={handleFileChange} required />
                     </div>
                   </CardContent>
@@ -314,29 +270,53 @@ export default function TeacherDashboard() {
 
             <TabsContent value="history">
               <Card>
-                <CardHeader><CardTitle className="flex items-center gap-2"><History className="h-5 w-5 text-primary" /> My Professional Records</CardTitle></CardHeader>
+                <CardHeader><CardTitle>My Professional Records</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                  {isLoadingInterests ? (
-                    <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-                  ) : interests && interests.length > 0 ? (
-                    interests.map(i => (
-                      <div key={i.id} className="p-4 border rounded-xl border-l-4 border-l-primary flex items-center justify-between gap-4">
-                        <div>
-                          <p className="font-bold text-sm">{i.subjects}</p>
-                          <span className="text-[10px] text-muted-foreground">{i.experienceYears} yrs experience</span>
-                        </div>
-                        <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600' : i.status === 'In-Progress' ? 'bg-blue-500' : ''}>
-                          {i.status}
-                        </Badge>
-                      </div>
-                    ))
-                  ) : (
+                  {isLoadingInterests ? <Loader2 className="animate-spin mx-auto" /> : (rawInterests && rawInterests.length > 0 ? [...rawInterests].sort((a,b) => b.submissionDate?.toMillis() - a.submissionDate?.toMillis()).map(i => (
+                    <div key={i.id} className="p-4 border rounded-xl border-l-4 border-l-primary flex items-center justify-between bg-card shadow-sm">
+                      <div><p className="font-bold">{i.subjects}</p><p className="text-[10px] text-muted-foreground">{i.experienceYears} yrs experience</p></div>
+                      <Badge variant={i.status === 'Pending' ? 'outline' : 'default'}>{i.status}</Badge>
+                    </div>
+                  )) : (
                     <div className="text-center py-12 border rounded-xl border-dashed">
                       <p className="text-sm text-muted-foreground">No records found.</p>
-                      <Button variant="link" onClick={() => setActiveTab('profile')} className="font-bold text-primary">Submit your specialties</Button>
+                      <Button variant="link" onClick={() => setActiveTab('profile')}>Submit your specialties</Button>
                     </div>
-                  )}
+                  ))}
                 </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="feedback">
+              <Card className="border-accent/10 shadow-xl">
+                <CardHeader>
+                  <CardTitle>Teacher Experience Feedback</CardTitle>
+                  <CardDescription>We value your expertise. Let us know how we can support you better.</CardDescription>
+                </CardHeader>
+                <form onSubmit={handleSubmitFeedback}>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label>Platform Rating</Label>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <Button key={star} type="button" variant={Number(feedbackRating) >= star ? "default" : "outline"} size="icon" className="h-10 w-10" onClick={() => setFeedbackRating(star.toString())}>
+                            <Star className={`h-5 w-5 ${Number(feedbackRating) >= star ? "fill-current" : ""}`} />
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="feedbackComment">Your Experience / Feedback</Label>
+                      <Textarea id="feedbackComment" value={feedbackComment} onChange={e => setFeedbackComment(e.target.value)} required placeholder="Share your teaching experience with RP Coach-Up..." />
+                    </div>
+                  </CardContent>
+                  <CardFooter className="border-t pt-6">
+                    <Button type="submit" disabled={isSubmitting} className="w-full h-12 font-bold text-lg bg-accent text-accent-foreground">
+                      {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                      Submit Feedback
+                    </Button>
+                  </CardFooter>
+                </form>
               </Card>
             </TabsContent>
           </Tabs>
@@ -344,17 +324,14 @@ export default function TeacherDashboard() {
       </main>
 
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <AlertDialogContent className="sm:max-w-[425px]">
-          <AlertDialogHeader className="flex flex-col items-center gap-4 py-4">
-            <div className="bg-green-100 p-3 rounded-full"><CheckCircle2 className="h-12 w-12 text-green-600" /></div>
-            <div className="text-center">
-              <AlertDialogTitle className="text-2xl font-headline font-bold text-primary">Request Received!</AlertDialogTitle>
-              <AlertDialogDescription className="text-base mt-2">
-                Your request has been received and our management team will contact you within 7 working days. And you can check the status of request in History tab.
-              </AlertDialogDescription>
-            </div>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-primary">Profile Received!</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your professional profile has been received. Our team will contact you within 7 working days. You can monitor progress in the Professional Records tab.
+            </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogAction onClick={() => setShowSuccessDialog(false)} className="w-full h-12 text-lg font-bold">OK</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogFooter><AlertDialogAction onClick={() => {setShowSuccessDialog(false); setActiveTab('history');}}>OK</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>

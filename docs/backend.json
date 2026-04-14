@@ -5,248 +5,64 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
       "type": "object",
-      "description": "Represents a registered user account on the RP Coach-Up platform, serving as a base for both students and teachers. This entity stores common user information and links to specific roles.",
+      "description": "Represents a registered user account on the RP Coach-Up platform, serving as a base for both students and teachers.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the UserProfile entity."
-        },
-        "email": {
-          "type": "string",
-          "description": "The unique email address of the user, used for login and communication.",
-          "format": "email"
-        },
-        "firstName": {
-          "type": "string",
-          "description": "The first name of the user."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "The last name of the user."
-        },
-        "userType": {
-          "type": "string",
-          "description": "The role of the user on the platform (Student or Teacher).",
-          "format": "string",
-          "items": {
-            "type": "string"
-          }
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the user profile was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the user profile was last updated.",
-          "format": "date-time"
-        }
+        "id": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "userType": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "email",
-        "firstName",
-        "lastName",
-        "userType",
-        "createdAt",
-        "updatedAt"
-      ]
-    },
-    "Student": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Student",
-      "type": "object",
-      "description": "Holds specific profile details for a student user, extending the base UserProfile.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Student entity."
-        },
-        "userProfileId": {
-          "type": "string",
-          "description": "Reference to the associated UserProfile. (Relationship: UserProfile 1:1 Student)"
-        },
-        "dateOfBirth": {
-          "type": "string",
-          "description": "The student's date of birth.",
-          "format": "date"
-        },
-        "gradeLevel": {
-          "type": "string",
-          "description": "The current academic grade or level of the student."
-        }
-      },
-      "required": [
-        "id",
-        "userProfileId"
-      ]
-    },
-    "Teacher": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Teacher",
-      "type": "object",
-      "description": "Holds specific profile details for a teacher user, extending the base UserProfile.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Teacher entity."
-        },
-        "userProfileId": {
-          "type": "string",
-          "description": "Reference to the associated UserProfile. (Relationship: UserProfile 1:1 Teacher)"
-        },
-        "qualifications": {
-          "type": "string",
-          "description": "Teacher's educational qualifications and certifications."
-        },
-        "experienceYears": {
-          "type": "number",
-          "description": "Number of years of teaching experience."
-        }
-      },
-      "required": [
-        "id",
-        "userProfileId"
-      ]
+      "required": ["id", "email", "firstName", "lastName", "userType", "createdAt", "updatedAt"]
     },
     "StudentInterest": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "StudentInterest",
       "type": "object",
-      "description": "Stores the specific subject and topic interests submitted by a student for tuition classes.",
+      "description": "Stores the specific subject and topic interests submitted by a student.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the StudentInterest entity."
-        },
-        "studentId": {
-          "type": "string",
-          "description": "Reference to the student account who submitted these interests."
-        },
-        "studentName": {
-          "type": "string",
-          "description": "The name of the student needing tuition."
-        },
-        "phone": {
-          "type": "string",
-          "description": "Contact phone number."
-        },
-        "school": {
-          "type": "string",
-          "description": "The school the student currently attends."
-        },
-        "gradeOrClass": {
-          "type": "string",
-          "description": "The current class or grade level of the student."
-        },
-        "address": {
-          "type": "string",
-          "description": "The address of the student."
-        },
-        "subject": {
-          "type": "string",
-          "description": "The main subject of interest."
-        },
-        "affordableRange": {
-          "type": "string",
-          "description": "The range of tuition fees affordable for the student."
-        },
-        "intendedStartDate": {
-          "type": "string",
-          "description": "The date when the student intends to start classes.",
-          "format": "date"
-        },
-        "submissionDate": {
-          "type": "string",
-          "description": "Timestamp when the interest form was submitted.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the interest submission."
-        },
-        "notes": {
-          "type": "string",
-          "description": "Additional notes or specific requirements."
-        }
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "subject": { "type": "string" },
+        "status": { "type": "string" },
+        "submissionDate": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "studentId",
-        "studentName",
-        "subject",
-        "submissionDate",
-        "status"
-      ]
+      "required": ["id", "studentId", "studentName", "subject", "submissionDate", "status"]
     },
     "TeacherInterest": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "TeacherInterest",
       "type": "object",
-      "description": "Stores the teaching interests and availability submitted by a teacher for tuition classes.",
+      "description": "Stores the teaching interests and availability submitted by a teacher.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the TeacherInterest entity."
-        },
-        "teacherId": {
-          "type": "string",
-          "description": "Reference to the teacher who submitted these interests."
-        },
-        "teacherName": {
-          "type": "string",
-          "description": "Full name of the teacher."
-        },
-        "phone": {
-          "type": "string",
-          "description": "Contact phone number."
-        },
-        "qualifications": {
-          "type": "string",
-          "description": "Educational background."
-        },
-        "experienceYears": {
-          "type": "string",
-          "description": "Years of working experience."
-        },
-        "subjects": {
-          "type": "string",
-          "description": "Subjects the teacher specializes in."
-        },
-        "hoursPerWeek": {
-          "type": "string",
-          "description": "Commitment in hours per week."
-        },
-        "expectedSalary": {
-          "type": "string",
-          "description": "Monthly salary expectations."
-        },
-        "resumeName": {
-          "type": "string",
-          "description": "Name of the uploaded resume file."
-        },
-        "submissionDate": {
-          "type": "string",
-          "description": "Timestamp when the interest form was submitted.",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "description": "The current status of the interest submission."
-        },
-        "notes": {
-          "type": "string",
-          "description": "Additional notes."
-        }
+        "id": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "subjects": { "type": "string" },
+        "status": { "type": "string" },
+        "submissionDate": { "type": "string", "format": "date-time" }
       },
-      "required": [
-        "id",
-        "teacherId",
-        "teacherName",
-        "submissionDate",
-        "status"
-      ]
+      "required": ["id", "teacherId", "teacherName", "submissionDate", "status"]
+    },
+    "Feedback": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Feedback",
+      "type": "object",
+      "description": "Represents user feedback about the platform or teachers.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userType": { "type": "string", "enum": ["Student", "Teacher"] },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "teacherName": { "type": "string", "description": "Optional: Name of the teacher being reviewed by a student." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "userName", "userType", "rating", "comment", "createdAt"]
     },
     "Notification": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -255,37 +71,19 @@
       "description": "Represents a system notification record for the administrator dashboard.",
       "properties": {
         "id": { "type": "string" },
-        "type": { "type": "string", "enum": ["registration", "interest", "assignment", "status_update"] },
+        "type": { "type": "string" },
         "subject": { "type": "string" },
         "body": { "type": "string" },
-        "userEmail": { "type": "string" },
-        "userName": { "type": "string" },
         "timestamp": { "type": "string", "format": "date-time" },
         "read": { "type": "boolean" }
       },
       "required": ["id", "type", "subject", "body", "timestamp"]
     },
-    "Message": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Message",
-      "type": "object",
-      "description": "Stores simulated email content for students and teachers to read in their dashboard.",
-      "properties": {
-        "id": { "type": "string" },
-        "recipientEmail": { "type": "string" },
-        "subject": { "type": "string" },
-        "body": { "type": "string" },
-        "timestamp": { "type": "string", "format": "date-time" },
-        "type": { "type": "string" },
-        "read": { "type": "boolean" }
-      },
-      "required": ["id", "recipientEmail", "subject", "body", "timestamp"]
-    },
     "MatchProposal": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "MatchProposal",
       "type": "object",
-      "description": "Represents a proposed match between a student and a teacher created by an administrator.",
+      "description": "Represents a proposed match between a student and a teacher.",
       "properties": {
         "id": { "type": "string" },
         "studentId": { "type": "string" },
@@ -299,10 +97,7 @@
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "anonymous"
-    ]
+    "providers": ["password"]
   },
   "firestore": {
     "structure": [
@@ -310,112 +105,56 @@
         "path": "/users/{userId}",
         "definition": {
           "entityName": "UserProfile",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "Stores core user profile details.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique Firebase Authentication UID of the user."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/UserProfile" },
+          "description": "Stores core user profile details."
         }
       },
       {
-        "path": "/studentInterests/{studentInterestId}",
+        "path": "/studentInterests/{id}",
         "definition": {
           "entityName": "StudentInterest",
-          "schema": {
-            "$ref": "#/backend/entities/StudentInterest"
-          },
-          "description": "Stores individual student interest submissions.",
-          "params": [
-            {
-              "name": "studentInterestId",
-              "description": "The unique identifier for a specific student interest submission."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/StudentInterest" },
+          "description": "Stores individual student interest submissions."
         }
       },
       {
-        "path": "/teacherInterests/{teacherInterestId}",
+        "path": "/teacherInterests/{id}",
         "definition": {
           "entityName": "TeacherInterest",
-          "schema": {
-            "$ref": "#/backend/entities/TeacherInterest"
-          },
-          "description": "Stores individual teacher interest and availability submissions.",
-          "params": [
-            {
-              "name": "teacherInterestId",
-              "description": "The unique identifier for a specific teacher interest submission."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/TeacherInterest" },
+          "description": "Stores individual teacher interest submissions."
         }
       },
       {
-        "path": "/notifications/{notificationId}",
+        "path": "/feedback/{id}",
+        "definition": {
+          "entityName": "Feedback",
+          "schema": { "$ref": "#/backend/entities/Feedback" },
+          "description": "Stores user feedback and testimonials."
+        }
+      },
+      {
+        "path": "/notifications/{id}",
         "definition": {
           "entityName": "Notification",
-          "schema": {
-            "$ref": "#/backend/entities/Notification"
-          },
-          "description": "Stores system notifications intended for administrators.",
-          "params": [
-            {
-              "name": "notificationId",
-              "description": "Unique identifier for the notification."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/Notification" },
+          "description": "Stores system notifications for admins."
         }
       },
       {
-        "path": "/messages/{messageId}",
+        "path": "/matchProposals/{id}",
         "definition": {
-          "entityName": "Message",
-          "schema": {
-            "$ref": "#/backend/entities/Message"
-          },
-          "description": "Stores simulated email content readable by users and admins.",
-          "params": [
-            {
-              "name": "messageId",
-              "description": "Unique identifier for the message."
-            }
-          ]
+          "entityName": "MatchProposal",
+          "schema": { "$ref": "#/backend/entities/MatchProposal" },
+          "description": "Stores admin-created matches."
         }
       },
       {
         "path": "/roles_admin/{adminId}",
         "definition": {
           "entityName": "AdminRole",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "A sentinel collection used for Database Access Control (DBAC) to designate administrators.",
-          "params": [
-            {
-              "name": "adminId",
-              "description": "The unique Firebase Authentication UID of an administrator."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/matchProposals/{matchProposalId}",
-        "definition": {
-          "entityName": "MatchProposal",
-          "schema": {
-            "$ref": "#/backend/entities/MatchProposal"
-          },
-          "description": "Stores administrator-created matches between students and teachers.",
-          "params": [
-            {
-              "name": "matchProposalId",
-              "description": "Unique identifier for a match proposal."
-            }
-          ]
+          "schema": { "$ref": "#/backend/entities/UserProfile" },
+          "description": "Sentinel collection for admin role verification."
         }
       }
     ]

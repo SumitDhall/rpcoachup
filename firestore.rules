@@ -2,12 +2,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
     
-    // Check if user is explicitly listed in the roles_admin collection
     function isAdmin() {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
@@ -16,12 +14,10 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // User Profiles
     match /users/{userId} {
       allow read: if isSignedIn();
       allow write: if isOwner(userId) || isAdmin();
       
-      // Nested profile documents
       match /studentProfile/studentProfile {
         allow read, write: if isOwner(userId) || isAdmin();
       }
@@ -30,46 +26,39 @@ service cloud.firestore {
       }
     }
 
-    // Student Interests
     match /studentInterests/{id} {
       allow create: if isSignedIn();
       allow read: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 
-    // Teacher Interests
     match /teacherInterests/{id} {
       allow create: if isSignedIn();
       allow read: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 
-    // Notifications (Admin only for read/manage)
+    match /feedback/{id} {
+      allow read: if true; // Publicly readable for the About Us page
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
     match /notifications/{id} {
       allow create: if isSignedIn();
       allow read, update, delete: if isAdmin();
     }
 
-    // Messages - Support both single document read and filtered list queries
-    match /messages/{id} {
-      allow create: if isSignedIn();
-      allow read: if isAdmin() || (isSignedIn() && request.auth.token.email == resource.data.recipientEmail);
-      allow update, delete: if isAdmin();
-    }
-
-    // Admin Role Registry - Public read for isSignedIn to allow role verification in UI
     match /roles_admin/{id} {
       allow read: if isSignedIn();
-      allow write: if false; // Managed via Firebase Console for security
+      allow write: if false;
     }
 
-    // Match Proposals
     match /matchProposals/{id} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
-    // System Activity Logs
     match /systemLogs/{id} {
       allow read, write: if isAdmin();
     }
