@@ -18,6 +18,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   BookOpen, 
   LayoutDashboard, 
@@ -33,7 +42,8 @@ import {
   IndianRupee,
   School,
   MapPin,
-  GraduationCap
+  GraduationCap,
+  CheckCircle2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
@@ -85,6 +95,7 @@ export default function StudentDashboard() {
   const [intendedStartDate, setIntendedStartDate] = useState('');
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -149,14 +160,18 @@ export default function StudentDashboard() {
         details: `Subject: ${subject}, Grade: ${gradeLevel}, School: ${school}, Budget: ${affordableRange}`
       });
       
-      toast({ 
-        title: "Application Success", 
-        description: "Your tuition requirements have been shared with our advisors." 
-      });
+      setShowSuccessDialog(true);
 
-      // Clear fields specific to the request to allow another one
+      // Clear non-profile fields
       setSubject('');
+      setSchool('');
+      setGradeLevel('');
+      setAddress('');
       setNotes('');
+      setPhone('');
+      setAffordableRange('');
+      setIntendedStartDate('');
+
     } catch (error) {
       console.error(error);
       toast({ 
@@ -427,6 +442,31 @@ export default function StudentDashboard() {
           </Tabs>
         </div>
       </main>
+
+      {/* Success Dialog */}
+      <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <AlertDialogContent className="sm:max-w-[425px]">
+          <AlertDialogHeader className="flex flex-col items-center gap-4 py-4">
+            <div className="bg-green-100 p-3 rounded-full">
+              <CheckCircle2 className="h-12 w-12 text-green-600" />
+            </div>
+            <div className="text-center">
+              <AlertDialogTitle className="text-2xl font-headline font-bold text-primary">Request Submitted!</AlertDialogTitle>
+              <AlertDialogDescription className="text-base mt-2">
+                Your tuition requirements have been successfully shared with our advisors. We will contact you shortly.
+              </AlertDialogDescription>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => setShowSuccessDialog(false)}
+              className="w-full h-12 text-lg font-bold"
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
