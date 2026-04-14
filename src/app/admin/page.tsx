@@ -83,6 +83,19 @@ function logSystemEvent(db: any, admin: any, type: string, description: string) 
   });
 }
 
+// Helper to create admin notifications
+function createAdminNotification(db: any, type: 'registration' | 'interest' | 'assignment' | 'status_update', subject: string, body: string, userEmail?: string, userName?: string) {
+  addDocumentNonBlocking(collection(db, 'notifications'), {
+    type,
+    subject,
+    body,
+    userEmail: userEmail || 'system',
+    userName: userName || 'System',
+    timestamp: serverTimestamp(),
+    read: false
+  });
+}
+
 // Component to handle student assignments for a teacher
 function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: string; teacherName: string }) {
   const db = useFirestore();
@@ -118,6 +131,16 @@ function StudentAssignmentManager({ teacherId, teacherName }: { teacherId: strin
     addDocumentNonBlocking(collection(db, 'matchProposals'), matchData);
     logSystemEvent(db, adminUser, 'assignment', `Assigned Student: ${studentFullName} to Teacher: ${teacherName}`);
     
+    // Create Notification
+    createAdminNotification(
+      db, 
+      'assignment', 
+      'New Student Assignment', 
+      `Student ${studentFullName} has been assigned to teacher ${teacherName}.`,
+      student.email,
+      studentFullName
+    );
+
     toast({
       title: "Student Assigned",
       description: `Successfully matched ${student.firstName} with ${teacherName}.`,
@@ -251,6 +274,16 @@ function TeacherAssignmentManager({ studentId, studentName }: { studentId: strin
     addDocumentNonBlocking(collection(db, 'matchProposals'), matchData);
     logSystemEvent(db, adminUser, 'assignment', `Assigned Teacher: ${teacherFullName} to Student: ${studentName}`);
 
+    // Create Notification
+    createAdminNotification(
+      db, 
+      'assignment', 
+      'New Teacher Assignment', 
+      `Teacher ${teacherFullName} has been assigned to student ${studentName}.`,
+      teacher.email,
+      teacherFullName
+    );
+
     toast({
       title: "Teacher Assigned",
       description: `Successfully matched ${teacher.firstName} with ${studentName}.`,
@@ -352,8 +385,9 @@ function TeacherAssignmentManager({ studentId, studentName }: { studentId: strin
 // Component to fetch and display role-specific profile details and interests
 function UserDetailsContent({ user }: { user: any }) {
   const db = useFirestore();
+  const { user: adminUser } = useUser();
   const { toast } = useToast();
-  const [statusChangeTarget, setStatusChangeTarget] = useState<{id: string, currentStatus: string, collection: string} | null>(null);
+  const [statusChangeTarget, setStatusChangeTarget] = useState<{id: string, currentStatus: string, collection: string, subject: string, userName: string, userEmail: string} | null>(null);
   
   const profilePath = user.userType === 'Student' 
     ? `users/${user.id}/studentProfile/studentProfile` 
@@ -391,6 +425,19 @@ function UserDetailsContent({ user }: { user: any }) {
     const interestRef = doc(db, statusChangeTarget.collection, statusChangeTarget.id);
     
     updateDocumentNonBlocking(interestRef, { status: newStatus });
+    
+    // Create Notification
+    createAdminNotification(
+      db,
+      'status_update',
+      `Status Update: ${statusChangeTarget.subject}`,
+      `The status for ${statusChangeTarget.userName}'s interest in "${statusChangeTarget.subject}" has been updated to ${newStatus}.`,
+      statusChangeTarget.userEmail,
+      statusChangeTarget.userName
+    );
+
+    logSystemEvent(db, adminUser, 'status_update', `Updated status to ${newStatus} for ${statusChangeTarget.userName}'s interest in ${statusChangeTarget.subject}`);
+
     setStatusChangeTarget(null);
   };
 
@@ -405,7 +452,6 @@ function UserDetailsContent({ user }: { user: any }) {
     }
 
     try {
-      // Data URI download (no decryption needed)
       const link = document.createElement('a');
       link.href = dataUrl;
       link.download = fileName;
@@ -444,7 +490,14 @@ function UserDetailsContent({ user }: { user: any }) {
                 <div className="flex justify-between items-center pb-2 border-b">
                   <span className="font-bold text-primary">{int.subject || int.subjects}</span>
                   <button 
-                    onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: interestCollection })}
+                    onClick={() => setStatusChangeTarget({ 
+                      id: int.id, 
+                      currentStatus: int.status, 
+                      collection: interestCollection,
+                      subject: int.subject || int.subjects,
+                      userName: int.studentName || int.teacherName,
+                      userEmail: int.email || user.email
+                    })}
                     className="focus:outline-none"
                   >
                     <Badge 
@@ -706,9 +759,19 @@ export default function AdminPortal() {
 
   const notificationsQuery = useMemoFirebase(() => {
     if (!db || !adminDoc) return null;
+    // Sort notifications by timestamp locally in render/memo to avoid index errors
     return query(collection(db, 'notifications'), limit(50));
   }, [db, adminDoc]);
-  const { data: notifications, isLoading: isLoadingNotifications } = useCollection(notificationsQuery);
+  const { data: rawNotifications, isLoading: isLoadingNotifications } = useCollection(notificationsQuery);
+
+  const notifications = useMemo(() => {
+    if (!rawNotifications) return [];
+    return [...rawNotifications].sort((a, b) => {
+      const timeA = a.timestamp?.toMillis?.() || 0;
+      const timeB = b.timestamp?.toMillis?.() || 0;
+      return timeB - timeA;
+    });
+  }, [rawNotifications]);
 
   const handleDeleteNotification = async () => {
     if (notificationToDelete) {
@@ -840,7 +903,10 @@ export default function AdminPortal() {
                   <div key={n.id} className="flex items-start justify-between p-4 border rounded-xl bg-card shadow-sm hover:border-primary/20 transition-colors">
                     <div className="flex gap-3">
                       <div className="bg-primary/10 p-2 rounded-lg h-fit">
-                        {n.type === 'registration' ? <UserCheck className="h-5 w-5 text-primary" /> : <ClipboardList className="h-5 w-5 text-accent" />}
+                        {n.type === 'registration' && <UserCheck className="h-5 w-5 text-primary" />}
+                        {n.type === 'interest' && <ClipboardList className="h-5 w-5 text-accent" />}
+                        {n.type === 'assignment' && <UserPlus className="h-5 w-5 text-green-500" />}
+                        {n.type === 'status_update' && <Edit2 className="h-5 w-5 text-blue-500" />}
                       </div>
                       <div>
                         <h4 className="font-bold text-sm">{n.subject}</h4>
