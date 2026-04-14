@@ -47,7 +47,8 @@ import {
   Briefcase,
   Menu,
   CheckCircle2,
-  MessageSquare
+  MessageSquare,
+  X
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
@@ -80,14 +81,14 @@ export default function TeacherDashboard() {
 
   const messagesQuery = useMemoFirebase(() => {
     if (!db || !user?.email) return null;
+    // Removed orderBy to avoid requiring a composite index during prototyping
     return query(
       collection(db, 'messages'),
       where('recipientEmail', '==', user.email),
-      orderBy('timestamp', 'desc'),
-      limit(50)
+      limit(100)
     );
   }, [db, user?.email]);
-  const { data: messages, isLoading: isLoadingMessages } = useCollection(messagesQuery);
+  const { data: rawMessages, isLoading: isLoadingMessages } = useCollection(messagesQuery);
 
   const interests = useMemo(() => {
     if (!rawInterests) return null;
@@ -97,6 +98,15 @@ export default function TeacherDashboard() {
       return timeB - timeA;
     });
   }, [rawInterests]);
+
+  const messages = useMemo(() => {
+    if (!rawMessages) return null;
+    return [...rawMessages].sort((a, b) => {
+      const timeA = a.timestamp?.toMillis?.() || 0;
+      const timeB = b.timestamp?.toMillis?.() || 0;
+      return timeB - timeA;
+    });
+  }, [rawMessages]);
 
   const [activeTab, setActiveTab] = useState('profile');
   const [teacherName, setTeacherName] = useState('');
@@ -181,7 +191,6 @@ export default function TeacherDashboard() {
         read: false
       });
 
-      // 1. Notify Admin
       sendNotificationEmail({
         recipientType: 'admin',
         type: 'interest',
@@ -191,7 +200,6 @@ export default function TeacherDashboard() {
         details: `Subjects: ${subjects}, Exp: ${experienceYears} yrs`
       });
 
-      // 2. Notify Teacher
       sendNotificationEmail({
         recipientType: 'user',
         type: 'interest',
@@ -259,7 +267,12 @@ export default function TeacherDashboard() {
             <Button variant="ghost" size="icon"><Menu className="h-6 w-6 text-primary" /></Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64">
-            <SheetHeader className="sr-only"><SheetTitle>Navigation Menu</SheetTitle></SheetHeader>
+            <SheetHeader className="p-4 border-b">
+              <SheetTitle className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-primary" />
+                Navigation
+              </SheetTitle>
+            </SheetHeader>
             <SidebarContent />
           </SheetContent>
         </Sheet>
