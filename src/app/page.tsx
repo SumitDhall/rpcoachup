@@ -11,7 +11,8 @@ import {
   SheetContent, 
   SheetTrigger, 
   SheetHeader, 
-  SheetTitle 
+  SheetTitle,
+  SheetClose
 } from "@/components/ui/sheet";
 import { 
   BookOpen, 
@@ -94,31 +95,43 @@ export default function Home() {
                     </SheetTitle>
                   </SheetHeader>
                   <nav className="flex flex-col gap-1 mt-6">
-                    <Link href="/programs/dashboard" className="text-base font-semibold py-3 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
-                      Programs
-                    </Link>
-                    <Link href="#features" className="text-base font-semibold py-3 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
-                      How it Works
-                    </Link>
-                    <Link href="/about" className="text-base font-semibold py-3 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
-                      About Us
-                    </Link>
+                    <SheetClose asChild>
+                      <Link href="/programs/dashboard" className="text-base font-semibold py-3 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                        Programs
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link href="#features" className="text-base font-semibold py-3 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                        How it Works
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link href="/about" className="text-base font-semibold py-3 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                        About Us
+                      </Link>
+                    </SheetClose>
                     
                     <div className="pt-6 mt-4 border-t border-border/50 flex flex-col gap-3">
                       {isUserLoading ? (
                          <div className="flex justify-center py-2"><Loader2 className="h-5 w-5 animate-spin" /></div>
                       ) : user ? (
-                        <Button className="w-full justify-start gap-2" asChild>
-                          <Link href="/login">Go to Dashboard</Link>
-                        </Button>
+                        <SheetClose asChild>
+                          <Button className="w-full justify-start gap-2" asChild>
+                            <Link href="/login">Go to Dashboard</Link>
+                          </Button>
+                        </SheetClose>
                       ) : (
                         <>
-                          <Button variant="outline" className="w-full justify-start" asChild>
-                            <Link href="/login">Log in</Link>
-                          </Button>
-                          <Button className="w-full justify-start" asChild>
-                            <Link href="/register">Get Started</Link>
-                          </Button>
+                          <SheetClose asChild>
+                            <Button variant="outline" className="w-full justify-start" asChild>
+                              <Link href="/login">Log in</Link>
+                            </Button>
+                          </SheetClose>
+                          <SheetClose asChild>
+                            <Button className="w-full justify-start" asChild>
+                              <Link href="/register">Get Started</Link>
+                            </Button>
+                          </SheetClose>
                         </>
                       )}
                     </div>

@@ -19,7 +19,8 @@ import {
   SheetContent, 
   SheetTrigger, 
   SheetHeader, 
-  SheetTitle 
+  SheetTitle,
+  SheetClose
 } from "@/components/ui/sheet";
 import { 
   BookOpen, 
@@ -139,31 +140,43 @@ export default function AboutPage() {
                     </SheetTitle>
                   </SheetHeader>
                   <nav className="flex flex-col gap-1 mt-6">
-                    <Link href="/programs/dashboard" className="text-base font-semibold py-3 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
-                      Programs
-                    </Link>
-                    <Link href="/#features" className="text-base font-semibold py-3 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
-                      How it Works
-                    </Link>
-                    <Link href="/about" className="text-base font-bold py-3 px-3 rounded-lg bg-primary/5 text-primary">
-                      About Us
-                    </Link>
+                    <SheetClose asChild>
+                      <Link href="/programs/dashboard" className="text-base font-semibold py-3 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                        Programs
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link href="/#features" className="text-base font-semibold py-3 px-3 rounded-lg hover:bg-secondary/50 transition-colors">
+                        How it Works
+                      </Link>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Link href="/about" className="text-base font-bold py-3 px-3 rounded-lg bg-primary/5 text-primary">
+                        About Us
+                      </Link>
+                    </SheetClose>
                     
                     <div className="pt-6 mt-4 border-t border-border/50 flex flex-col gap-3">
                       {isUserLoading ? (
                          <div className="flex justify-center py-2"><Loader2 className="h-5 w-5 animate-spin" /></div>
                       ) : user ? (
-                        <Button className="w-full justify-start gap-2" asChild>
-                          <Link href="/login">Dashboard</Link>
-                        </Button>
+                        <SheetClose asChild>
+                          <Button className="w-full justify-start gap-2" asChild>
+                            <Link href="/login">Dashboard</Link>
+                          </Button>
+                        </SheetClose>
                       ) : (
                         <>
-                          <Button variant="outline" className="w-full justify-start" asChild>
-                            <Link href="/login">Log in</Link>
-                          </Button>
-                          <Button className="w-full justify-start" asChild>
-                            <Link href="/register">Get Started</Link>
-                          </Button>
+                          <SheetClose asChild>
+                            <Button variant="outline" className="w-full justify-start" asChild>
+                              <Link href="/login">Log in</Link>
+                            </Button>
+                          </SheetClose>
+                          <SheetClose asChild>
+                            <Button className="w-full justify-start" asChild>
+                              <Link href="/register">Get Started</Link>
+                            </Button>
+                          </SheetClose>
                         </>
                       )}
                     </div>
@@ -223,7 +236,7 @@ export default function AboutPage() {
                 <div className="grid gap-6">
                   {[
                     { icon: Target, title: "Targeted Matching", desc: "We analyze student interests and teacher expertise to find the perfect educational overlap." },
-                    { icon: ShieldCheck, title: "Verified Excellence", desc: "Every teacher on our platform undergoes a rigorous verification process." },
+                    { icon: ShieldCheck, title: "Verified Excellence", desc: "Every teacher on our platform undergoes a regex verification process." },
                     { icon: Lightbulb, title: "Personalized Growth", desc: "We focus on individual learning paths rather than one-size-fits-all curricula." }
                   ].map((value, i) => (
                     <div key={i} className="flex gap-4">

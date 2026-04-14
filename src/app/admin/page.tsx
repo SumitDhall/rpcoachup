@@ -37,6 +37,7 @@ import {
   SheetTrigger,
   SheetHeader,
   SheetTitle,
+  SheetClose
 } from "@/components/ui/sheet";
 import { 
   BookOpen, 
@@ -796,7 +797,6 @@ export default function AdminPortal() {
 
   // Defensive Redirection for non-admins
   useEffect(() => {
-    // Only fire the toast if loading has finished and we've confirmed the user is NOT an admin
     if (!isUserLoading && !isAdminLoading && !isAdmin && user) {
       toast({
         variant: "destructive",
@@ -888,21 +888,31 @@ export default function AdminPortal() {
         <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
       </Link>
       <nav className="flex-1 px-4 space-y-1">
-        <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('notifications')}>
-          <Bell className="h-4 w-4" /> Notifications
-        </Button>
-        <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('students')}>
-          <UserCheck className="h-4 w-4" /> Students
-        </Button>
-        <Button variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('teachers')}>
-          <GraduationCap className="h-4 w-4" /> Teachers
-        </Button>
-        <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('settings')}>
-          <History className="h-4 w-4" /> Activity Logs
-        </Button>
-        <Button variant={activeTab === 'maintenance' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('maintenance')}>
-          <Database className="h-4 w-4" /> Maintenance
-        </Button>
+        <SheetClose asChild>
+          <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('notifications')}>
+            <Bell className="h-4 w-4" /> Notifications
+          </Button>
+        </SheetClose>
+        <SheetClose asChild>
+          <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('students')}>
+            <UserCheck className="h-4 w-4" /> Students
+          </Button>
+        </SheetClose>
+        <SheetClose asChild>
+          <Button variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('teachers')}>
+            <GraduationCap className="h-4 w-4" /> Teachers
+          </Button>
+        </SheetClose>
+        <SheetClose asChild>
+          <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('settings')}>
+            <History className="h-4 w-4" /> Activity Logs
+          </Button>
+        </SheetClose>
+        <SheetClose asChild>
+          <Button variant={activeTab === 'maintenance' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('maintenance')}>
+            <Database className="h-4 w-4" /> Maintenance
+          </Button>
+        </SheetClose>
       </nav>
       <div className="p-4 border-t">
         <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
@@ -937,7 +947,36 @@ export default function AdminPortal() {
       </header>
 
       <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
-        <SidebarContent />
+        <div className="flex flex-col h-full">
+          <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <div className="bg-primary p-1 rounded-lg">
+              <BookOpen className="text-primary-foreground h-5 w-5" />
+            </div>
+            <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
+          </Link>
+          <nav className="flex-1 px-4 space-y-1">
+            <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('notifications')}>
+              <Bell className="h-4 w-4" /> Notifications
+            </Button>
+            <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('students')}>
+              <UserCheck className="h-4 w-4" /> Students
+            </Button>
+            <Button variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('teachers')}>
+              <GraduationCap className="h-4 w-4" /> Teachers
+            </Button>
+            <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('settings')}>
+              <History className="h-4 w-4" /> Activity Logs
+            </Button>
+            <Button variant={activeTab === 'maintenance' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('maintenance')}>
+              <Database className="h-4 w-4" /> Maintenance
+            </Button>
+          </nav>
+          <div className="p-4 border-t">
+            <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" /> Sign Out
+            </Button>
+          </div>
+        </div>
       </aside>
 
       <main className="flex-1 lg:ml-64 p-4 lg:p-8">
