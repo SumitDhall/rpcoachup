@@ -7,7 +7,7 @@ This is a Next.js application powered by Firebase Studio, using AI to match stud
 ### 1. App Hosting vs. Hosting
 Because this is a Next.js app with dynamic server features, it uses **Firebase App Hosting**, not the traditional static "Firebase Hosting". 
 
-- **Traditional Hosting (`*.web.app`)**: This will show "Site Not Found" because your app is not a static site.
+- **Traditional Hosting (`*.web.app`)**: This will show "Site Not Found" or "Waiting for first release" because your app is not a static site. **Do not use the traditional Hosting dashboard for this project.**
 - **App Hosting URL**: Once your build completes, you will get a new URL (e.g., `https://<random-id>.<region>.hosted.app`).
 
 ### 2. How to Deploy
