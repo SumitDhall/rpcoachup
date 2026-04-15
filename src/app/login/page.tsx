@@ -47,10 +47,11 @@ export default function LoginPage() {
         const role = (userData.userType || 'Student').toLowerCase();
         router.push(`/${role}/dashboard`);
       } else {
+        // Handle case where user auth exists but no Firestore profile yet
         setIsRedirecting(false);
       }
     } catch (e) {
-      console.error("Redirection check failed:", e);
+      // Redirection errors are handled silently as they are often transient or handled by global listeners
       setIsRedirecting(false);
     }
   };
@@ -66,40 +67,42 @@ export default function LoginPage() {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      await handleRoleRedirect(userCredential.user.uid);
-      
-      toast({ 
-        title: "Login Successful", 
-        description: "Welcome back!" 
-      });
-    } catch (error: any) {
-      console.error("Login error:", error);
-      let errorMessage = "Invalid email or password.";
-      
-      if (error.code === 'auth/invalid-credential') {
-        errorMessage = "Invalid login credentials. Please check your email and password.";
-      } else if (error.code === 'auth/user-not-found') {
-        errorMessage = "Account not found.";
-      } else if (error.code === 'auth/wrong-password') {
-        errorMessage = "Incorrect password.";
-      } else if (error.code === 'auth/too-many-requests') {
-        errorMessage = "Too many failed attempts. Please try again later.";
-      }
+    // CRITICAL: Call signInWithEmailAndPassword directly (non-blocking).
+    // The successful authentication state change is handled by the useEffect above.
+    signInWithEmailAndPassword(auth, formData.email, formData.password)
+      .then(() => {
+        // Successful login notification
+        toast({ 
+          title: "Login Successful", 
+          description: "Welcome back!" 
+        });
+      })
+      .catch((error: any) => {
+        setIsLoading(false);
+        let errorMessage = "Invalid email or password.";
+        
+        // Handle specific Firebase Auth error codes
+        if (error.code === 'auth/invalid-credential') {
+          errorMessage = "Invalid login credentials. Please check your email and password.";
+        } else if (error.code === 'auth/user-not-found') {
+          errorMessage = "Account not found.";
+        } else if (error.code === 'auth/wrong-password') {
+          errorMessage = "Incorrect password.";
+        } else if (error.code === 'auth/too-many-requests') {
+          errorMessage = "Too many failed attempts. Please try again later.";
+        }
 
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: errorMessage,
+        // Do not use console.error() to log these standard auth errors to avoid the Next.js dev overlay.
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: errorMessage,
+        });
       });
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   if (isAuthCheckLoading || isRedirecting) {
