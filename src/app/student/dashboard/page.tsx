@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -290,7 +290,7 @@ export default function StudentDashboard() {
             <Button variant="ghost" size="icon"><Menu className="h-6 w-6 text-primary" /></Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0">
-            <SheetHeader className="sr-only">
+            <SheetHeader className="sr-only text-left">
               <SheetTitle>Student Navigation</SheetTitle>
             </SheetHeader>
             <SidebarContent />
