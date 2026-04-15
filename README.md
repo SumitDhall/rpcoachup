@@ -8,15 +8,24 @@ Because this is a Next.js app with dynamic features, it uses **Firebase App Host
 
 ### Phase 1: Push Code to GitHub
 Before starting the Firebase setup, your code must be in a GitHub repository:
-1. Create a new repository on [GitHub](https://github.com/new).
-2. Push all the files from this project to that repository's `main` branch.
+1. Create a new repository on [GitHub](https://github.com/new). Do not initialize it with a README.
+2. Open your terminal in the root folder of this project.
+3. Run the following commands:
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit of RP Coach-Up"
+   git branch -M main
+   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+   git push -u origin main
+   ```
 
 ### Phase 2: Set up App Hosting (The 5-Step Process)
 
 Go to the **App Hosting** dashboard in the Firebase Console and click "Get Started".
 
 #### 1. Choose a primary region
-- Select the region closest to your users (e.g., `us-central1` or `asia-southeast1`).
+- Select the region closest to your users (e.g., `us-central1`).
 
 #### 2. Import a GitHub repository
 - Click **Connect to GitHub**.
@@ -44,7 +53,7 @@ Once your App Hosting backend is created and the first "Rollout" is successful:
 1. Go to **App Hosting > [Your Backend] > Settings > Custom Domains**.
 2. **Add Domain**: Enter `rpcoachup.com`.
 3. **Verification (Step 1)**: Firebase will give you a **TXT record**. Add this to your domain registrar (GoDaddy, etc.).
-4. **Setup (Step 2)**: Once verified, click the domain name in the list. It will reveal **two A records** (IP addresses). Add these to your domain registrar.
+4. **Setup (Step 2)**: Once verified, **click the domain name** in the list. It will reveal **two A records** (IP addresses). Add these to your domain registrar.
 5. **Wait**: The status will show **"Minting certificate"**. This can take up to 24 hours. Your site is live when it says "Connected".
 
 ---
