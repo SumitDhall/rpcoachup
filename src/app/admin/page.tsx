@@ -849,7 +849,9 @@ export default function AdminPortal() {
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
 
-  if (isUserLoading || isAdminLoading) {
+  // If we are currently loading auth or role, or we have no user (logging out), show the loader.
+  // This prevents the Access Denied card from flickering during the sign-out process.
+  if (isUserLoading || isAdminLoading || !user) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -857,7 +859,8 @@ export default function AdminPortal() {
     );
   }
 
-  if (!user || !isAdmin) {
+  // Only show Access Denied if the user is authenticated but not an admin.
+  if (!isAdmin) {
     return (
       <div className="flex h-screen items-center justify-center p-4">
         <Card className="max-w-md w-full border-destructive/20 shadow-xl">
