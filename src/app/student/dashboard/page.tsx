@@ -482,9 +482,6 @@ export default function StudentDashboard() {
                           <p className="col-span-2">Date: {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}</p>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/5 self-start sm:self-center" asChild>
-                         <Link href={`/programs/dashboard`}>View Details</Link>
-                      </Button>
                     </div>
                   )) : (
                     <div className="text-center py-16 border-2 border-dashed rounded-2xl bg-secondary/5">
@@ -589,3 +586,4 @@ export default function StudentDashboard() {
     </div>
   );
 }
+
