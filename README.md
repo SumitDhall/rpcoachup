@@ -8,6 +8,7 @@ This is a Next.js application powered by Firebase Studio, using AI to match stud
 The platform includes a Genkit-powered email notification system. 
 - **Current Behavior**: When users register or submit inquiries, professional email content is generated and logged to the **server console**. 
 - **Production Path**: To send real emails, you will need to integrate a provider (e.g., Resend or SendGrid). This typically requires switching the Firebase project to the **Blaze (Pay-as-you-go)** plan to allow outgoing network requests.
+- **Troubleshooting**: If you are using the "Forgot Password" feature and don't see the email, please check your **Spam or Junk** folder.
 
 ### 🔑 Administrative Access
 Administrative access is managed via a "sentinel" collection in Firestore called `roles_admin`. A user is considered an admin if a document exists at `/roles_admin/{uid}`, where `{uid}` is their Firebase Authentication ID.
@@ -25,16 +26,24 @@ Administrative access is managed via a "sentinel" collection in Firestore called
    - Add a field (e.g., `isAdmin: true`).
 4. **Login**: Go to the `/login` page. Upon successful authentication, the app will recognize you as an admin and redirect you to the `/admin` dashboard.
 
-## 🌐 Custom Domains
-You can use your own domain (e.g., `www.yourbrand.com`) with this app for free (excluding the cost of the domain itself).
+## 🌐 Custom Domains & Hosting
+You can use your own domain (e.g., `www.yourbrand.com`) with this app.
 
-### How to set up:
-1. **Open Firebase Console**: Go to [console.firebase.google.com](https://console.firebase.google.com/).
-2. **Navigate to Hosting**: In the left sidebar, go to **Build** > **Hosting**.
-3. **Add Domain**: Click the **Add custom domain** button.
-4. **Enter Domain**: Type in your domain name and follow the verification steps.
-5. **Update DNS**: You will be provided with **A records** or a **TXT record**. Copy these into the DNS management panel of your domain registrar (e.g., GoDaddy, Namecheap, Google Domains).
-6. **Wait for SSL**: Once DNS is verified, Firebase will automatically provision a free SSL certificate. This can take anywhere from 1 to 24 hours to fully propagate.
+### Two-Step Domain Setup:
+1. **Step 1: Verification (TXT Record)**:
+   - In the Firebase Console, add your domain.
+   - Firebase will first provide a **TXT record**. Add this to your domain registrar (e.g., GoDaddy, Namecheap).
+   - This proves you own the domain. Wait for the "Verified" status in the console.
+2. **Step 2: Setup (A Records)**:
+   - Once verified, the Firebase Console will update to show **two A records** (IP addresses).
+   - Add these A records to your DNS settings. 
+   - **Note**: It can take up to 24 hours for SSL certificates to provision after DNS is updated.
+
+### 🚀 Troubleshooting "Blank Screen" on Default Host:
+If the app shows nothing on the default Firebase URL (`*.web.app`):
+1. **Check Console**: Open your browser's Developer Tools (F12) and check for JavaScript errors in the **Console** tab.
+2. **Build Deployment**: Ensure the latest code changes have been deployed.
+3. **Environment Variables**: Verify that your `firebaseConfig` in `src/firebase/config.ts` is correct and matches your project settings.
 
 ## Tech Stack
 - **Framework**: Next.js 15 (App Router)
@@ -42,7 +51,3 @@ You can use your own domain (e.g., `www.yourbrand.com`) with this app for free (
 - **Database**: Cloud Firestore
 - **Auth**: Firebase Authentication
 - **AI**: Google Genkit (Gemini 2.5 Flash)
-
-## Deployment & Hosting
-- **Hosting Plan**: Development is free on the **Spark** plan. Production usage of GenAI and external APIs typically requires the **Blaze** plan.
-- **App Hosting**: This project is configured for **Firebase App Hosting**, which handles server-side rendering (SSR) for Next.js automatically.
