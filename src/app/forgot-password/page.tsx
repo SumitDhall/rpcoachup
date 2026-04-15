@@ -24,11 +24,19 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      await sendPasswordResetEmail(auth, email);
+      // Configuration for the link in the email
+      const actionCodeSettings = {
+        // Redirect the user back to the login page after they reset their password
+        url: window.location.origin + '/login',
+        handleCodeInApp: false,
+      };
+
+      await sendPasswordResetEmail(auth, email, actionCodeSettings);
+      
       setIsSent(true);
       toast({
         title: "Reset Link Sent",
-        description: "Check your email for the password reset link.",
+        description: "Check your email (and spam folder) for the password reset link.",
       });
     } catch (error: any) {
       console.error("Password reset error:", error);
@@ -38,6 +46,8 @@ export default function ForgotPasswordPage() {
         message = "No account found with this email.";
       } else if (error.code === 'auth/invalid-email') {
         message = "Please enter a valid email address.";
+      } else if (error.code === 'auth/too-many-requests') {
+        message = "Too many requests. Please try again later.";
       }
       
       toast({
@@ -75,10 +85,14 @@ export default function ForgotPasswordPage() {
         {isSent ? (
           <CardContent className="flex flex-col items-center py-6 space-y-4">
             <CheckCircle2 className="h-16 w-16 text-green-500" />
-            <p className="text-center text-sm text-muted-foreground leading-relaxed">
-              An email has been sent to <span className="font-bold text-foreground">{email}</span>. 
-              Please check your inbox and follow the instructions to reset your password.
-            </p>
+            <div className="text-center space-y-2">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                An email has been sent to <span className="font-bold text-foreground">{email}</span>. 
+              </p>
+              <p className="text-xs text-muted-foreground bg-secondary/30 p-3 rounded-lg border border-dashed">
+                Tip: If you don't see the email within a few minutes, please check your <strong>Spam or Junk</strong> folder.
+              </p>
+            </div>
             <Button className="w-full mt-4 h-11" asChild>
               <Link href="/login">Return to Login</Link>
             </Button>
@@ -100,7 +114,7 @@ export default function ForgotPasswordPage() {
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Button className="w-full h-11 text-lg font-bold" disabled={isLoading}>
+              <Button className="w-full h-11 text-lg font-bold shadow-lg shadow-primary/20" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Send Reset Link
               </Button>
