@@ -464,24 +464,58 @@ export default function StudentDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>Inquiry History</CardTitle>
-                  <CardDescription>Track the status of your submitted tuition requests.</CardDescription>
+                  <CardDescription>Detailed records of your submitted tuition requests.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {isLoadingInterests ? <Loader2 className="animate-spin mx-auto text-primary" /> : (rawInterests && rawInterests.length > 0 ? [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => (
-                    <div key={i.id} className="p-5 border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between bg-card shadow-sm border-l-4 border-l-primary gap-4">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
+                <CardContent className="space-y-6">
+                  {isLoadingInterests ? (
+                    <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
+                  ) : (rawInterests && rawInterests.length > 0 ? [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => (
+                    <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
                           <p className="font-bold text-lg">{i.subject}</p>
-                          <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600' : ''}>
+                          <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600 text-white' : i.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
                             {i.status}
                           </Badge>
                         </div>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                          <p>Class: {i.gradeOrClass}</p>
-                          <p>Budget: {i.affordableRange}</p>
-                          <p className="col-span-2">Date: {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}
+                        </p>
+                      </div>
+                      
+                      <div className="grid sm:grid-cols-2 gap-6 text-sm border-t pt-4">
+                        <div className="space-y-2">
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Academic Details</p>
+                          <div className="space-y-1">
+                            <p className="flex items-center gap-2"><GraduationCap className="h-3.5 w-3.5 text-primary" /> Class: <span className="font-medium">{i.gradeOrClass}</span></p>
+                            <p className="flex items-center gap-2"><School className="h-3.5 w-3.5 text-primary" /> School: <span className="font-medium">{i.school}</span></p>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Budget & Timeline</p>
+                          <div className="space-y-1">
+                            <p className="flex items-center gap-2"><IndianRupee className="h-3.5 w-3.5 text-accent" /> Budget: <span className="font-medium text-accent">{i.affordableRange}</span></p>
+                            <p className="flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-accent" /> Start Date: <span className="font-medium">{i.intendedStartDate}</span></p>
+                          </div>
                         </div>
                       </div>
+
+                      <div className="space-y-2 text-sm bg-secondary/10 p-4 rounded-xl">
+                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-2">
+                          <MapPin className="h-3 w-3" /> Home Tuition Address
+                        </p>
+                        <p className="text-xs leading-relaxed">{i.address}</p>
+                      </div>
+
+                      {i.notes && (
+                        <div className="space-y-2 text-sm">
+                           <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-2">
+                             <Info className="h-3 w-3" /> Special Requirements
+                           </p>
+                           <p className="text-xs italic bg-accent/5 p-3 rounded-lg border-l-2 border-accent">"{i.notes}"</p>
+                        </div>
+                      )}
                     </div>
                   )) : (
                     <div className="text-center py-16 border-2 border-dashed rounded-2xl bg-secondary/5">
@@ -586,4 +620,3 @@ export default function StudentDashboard() {
     </div>
   );
 }
-
