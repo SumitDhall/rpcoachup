@@ -25,8 +25,18 @@ Administrative access is managed via a "sentinel" collection in Firestore called
    - Add a field (e.g., `isAdmin: true`).
 4. **Login**: Go to the `/login` page. Upon successful authentication, the app will recognize you as an admin and redirect you to the `/admin` dashboard.
 
-## Tech Stack
+## 🌐 Custom Domains
+You can use your own domain (e.g., `www.yourbrand.com`) with this app for free (excluding the cost of the domain itself).
 
+### How to set up:
+1. **Open Firebase Console**: Go to [console.firebase.google.com](https://console.firebase.google.com/).
+2. **Navigate to Hosting**: In the left sidebar, go to **Build** > **Hosting**.
+3. **Add Domain**: Click the **Add custom domain** button.
+4. **Enter Domain**: Type in your domain name and follow the verification steps.
+5. **Update DNS**: You will be provided with **A records** or a **TXT record**. Copy these into the DNS management panel of your domain registrar (e.g., GoDaddy, Namecheap, Google Domains).
+6. **Wait for SSL**: Once DNS is verified, Firebase will automatically provision a free SSL certificate. This can take anywhere from 1 to 24 hours to fully propagate.
+
+## Tech Stack
 - **Framework**: Next.js 15 (App Router)
 - **Styling**: Tailwind CSS + ShadCN UI
 - **Database**: Cloud Firestore
@@ -34,5 +44,5 @@ Administrative access is managed via a "sentinel" collection in Firestore called
 - **AI**: Google Genkit (Gemini 2.5 Flash)
 
 ## Deployment & Hosting
-- **Custom Domains**: Firebase Hosting supports custom domains for free. You only need to pay your domain registrar for the domain name itself.
 - **Hosting Plan**: Development is free on the **Spark** plan. Production usage of GenAI and external APIs typically requires the **Blaze** plan.
+- **App Hosting**: This project is configured for **Firebase App Hosting**, which handles server-side rendering (SSR) for Next.js automatically.
