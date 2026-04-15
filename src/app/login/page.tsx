@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { BookOpen, ArrowLeft, Loader2 } from 'lucide-react';
 import { useAuth, useFirestore, useUser } from '@/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
@@ -23,13 +23,16 @@ export default function LoginPage() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [hasAttemptedRedirect, setHasAttemptedRedirect] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
 
   const handleRoleRedirect = async (uid: string) => {
+    if (isRedirecting) return;
     setIsRedirecting(true);
+    
     try {
       // 1. Check Admin status
       const adminDocRef = doc(db, 'roles_admin', uid);
@@ -42,26 +45,41 @@ export default function LoginPage() {
       // 2. Check Standard User status
       const userDocRef = doc(db, 'users', uid);
       const userDoc = await getDoc(userDocRef);
+      
       if (userDoc.exists()) {
         const userData = userDoc.data();
         const role = (userData.userType || 'Student').toLowerCase();
         router.push(`/${role}/dashboard`);
       } else {
         // Handle case where user auth exists but no Firestore profile yet
+        toast({
+          variant: "destructive",
+          title: "Profile Not Found",
+          description: "We couldn't find your profile. Please contact support or try registering again.",
+        });
+        // Sign out to clean up state
+        await signOut(auth);
         setIsRedirecting(false);
+        setHasAttemptedRedirect(false);
       }
     } catch (e) {
-      // Redirection errors are handled silently as they are often transient or handled by global listeners
+      console.error("Redirection error:", e);
       setIsRedirecting(false);
+      setHasAttemptedRedirect(false);
     }
   };
 
   // Automatically redirect if user is already logged in
   useEffect(() => {
-    if (!isAuthCheckLoading && user && !isRedirecting) {
+    if (!isAuthCheckLoading && user && !isRedirecting && !hasAttemptedRedirect) {
+      setHasAttemptedRedirect(true);
       handleRoleRedirect(user.uid);
     }
-  }, [user, isAuthCheckLoading]);
+    // If user logs out, reset the attempt tracker
+    if (!isAuthCheckLoading && !user) {
+      setHasAttemptedRedirect(false);
+    }
+  }, [user, isAuthCheckLoading, isRedirecting, hasAttemptedRedirect]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -71,21 +89,21 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // CRITICAL: Call signInWithEmailAndPassword directly (non-blocking).
-    // The successful authentication state change is handled by the useEffect above.
+    // Reset attempt tracker on new manual login attempt
+    setHasAttemptedRedirect(false);
+
     signInWithEmailAndPassword(auth, formData.email, formData.password)
       .then(() => {
-        // Successful login notification
         toast({ 
           title: "Login Successful", 
-          description: "Welcome back!" 
+          description: "Verifying your profile details..." 
         });
+        // Redirection is handled by the useEffect above
       })
       .catch((error: any) => {
         setIsLoading(false);
         let errorMessage = "Invalid email or password.";
         
-        // Handle specific Firebase Auth error codes
         if (error.code === 'auth/invalid-credential') {
           errorMessage = "Invalid login credentials. Please check your email and password.";
         } else if (error.code === 'auth/user-not-found') {
@@ -96,7 +114,6 @@ export default function LoginPage() {
           errorMessage = "Too many failed attempts. Please try again later.";
         }
 
-        // Do not use console.error() to log these standard auth errors to avoid the Next.js dev overlay.
         toast({
           variant: "destructive",
           title: "Login Failed",
@@ -155,7 +172,7 @@ export default function LoginPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
-            <Button className="w-full h-11 text-lg" disabled={isLoading}>
+            <Button className="w-full h-11 text-lg font-bold" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
             </Button>
