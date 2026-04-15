@@ -161,8 +161,7 @@ export default function TeacherDashboard() {
       setPhone('');
       setExpectedSalary('');
     } catch (error) {
-      console.error(error);
-      toast({ variant: "destructive", title: "Submission Error", description: "Failed to submit your professional profile. Please try again." });
+      // Handled by central emitter
     } finally {
       setIsSubmitting(false);
     }
@@ -210,8 +209,7 @@ export default function TeacherDashboard() {
       setFeedbackComment('');
       setFeedbackRating('5');
     } catch (error) {
-      console.error(error);
-      toast({ variant: "destructive", title: "Feedback Error", description: "Could not submit feedback." });
+      // Handled by central emitter
     } finally {
       setIsSubmitting(false);
     }
@@ -268,6 +266,9 @@ export default function TeacherDashboard() {
             <Button variant="ghost" size="icon"><Menu className="h-6 w-6 text-primary" /></Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Teacher Navigation</SheetTitle>
+            </SheetHeader>
             <SidebarContent />
           </SheetContent>
         </Sheet>

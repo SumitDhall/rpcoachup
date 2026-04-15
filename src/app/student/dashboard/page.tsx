@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import Link from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -171,8 +171,7 @@ export default function StudentDashboard() {
       setShowSuccessDialog(true);
       setSubject(''); setSchool(''); setGradeLevel(''); setAddress(''); setNotes(''); setPhone(''); setAffordableRange(''); setIntendedStartDate('');
     } catch (error) {
-      console.error(error);
-      toast({ variant: "destructive", title: "Submission Failed", description: "An error occurred while saving your inquiry." });
+      // Handled by central emitter
     } finally {
       setIsSubmitting(false);
     }
@@ -221,8 +220,7 @@ export default function StudentDashboard() {
       setFeedbackComment('');
       setFeedbackRating('5');
     } catch (error) {
-      console.error(error);
-      toast({ variant: "destructive", title: "Feedback Error", description: "Could not submit feedback." });
+      // Handled by central emitter
     } finally {
       setIsSubmitting(false);
     }
@@ -292,6 +290,9 @@ export default function StudentDashboard() {
             <Button variant="ghost" size="icon"><Menu className="h-6 w-6 text-primary" /></Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Student Navigation</SheetTitle>
+            </SheetHeader>
             <SidebarContent />
           </SheetContent>
         </Sheet>
