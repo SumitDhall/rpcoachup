@@ -532,7 +532,7 @@ export default function StudentDashboard() {
                         <SelectContent>
                           <SelectItem value="General Platform Feedback">General Platform Feedback</SelectItem>
                           {matches?.map(m => (
-                            <SelectItem key={m.id} value={`Teacher: ${m.teacherName}`}>Teacher: {m.teacherName}</SelectItem>
+                            <SelectItem key={m.id} value={m.teacherName}>{m.teacherName}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
