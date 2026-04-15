@@ -55,12 +55,13 @@ export default function LoginPage() {
         toast({
           variant: "destructive",
           title: "Profile Not Found",
-          description: "We couldn't find your profile. Please contact support or try registering again.",
+          description: "Your account exists but your profile is missing. Please register to complete your profile.",
         });
         // Sign out to clean up state
         await signOut(auth);
         setIsRedirecting(false);
         setHasAttemptedRedirect(false);
+        router.push('/register');
       }
     } catch (e) {
       console.error("Redirection error:", e);
@@ -104,10 +105,17 @@ export default function LoginPage() {
         setIsLoading(false);
         let errorMessage = "Invalid email or password.";
         
-        if (error.code === 'auth/invalid-credential') {
+        if (error.code === 'auth/user-not-found') {
+          toast({
+            variant: "destructive",
+            title: "User Not Registered",
+            description: "We couldn't find an account with this email. Redirecting to registration...",
+          });
+          // Small delay before redirect to allow toast to be read
+          setTimeout(() => router.push('/register'), 2000);
+          return;
+        } else if (error.code === 'auth/invalid-credential') {
           errorMessage = "Invalid login credentials. Please check your email and password.";
-        } else if (error.code === 'auth/user-not-found') {
-          errorMessage = "Account not found.";
         } else if (error.code === 'auth/wrong-password') {
           errorMessage = "Incorrect password.";
         } else if (error.code === 'auth/too-many-requests') {
