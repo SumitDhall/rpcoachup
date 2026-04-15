@@ -31,18 +31,19 @@ You can use your own domain (e.g., `www.yourbrand.com`) with this app.
 
 ### Two-Step Domain Setup:
 1. **Step 1: Verification (TXT Record)**:
-   - In the Firebase Console, add your domain.
+   - In the Firebase Console (Hosting > Custom Domain), add your domain.
    - Firebase will first provide a **TXT record**. Add this to your domain registrar (e.g., GoDaddy, Namecheap).
-   - This proves you own the domain. Wait for the "Verified" status in the console.
+   - This proves you own the domain. Wait for the status to change from "Pending" to "Verified".
 2. **Step 2: Setup (A Records)**:
-   - Once verified, the Firebase Console will update to show **two A records** (IP addresses).
-   - Add these A records to your DNS settings. 
-   - **Note**: It can take up to 24 hours for SSL certificates to provision after DNS is updated.
+   - Once verified, the status often changes to **"Minting certificate"**.
+   - **Where to find A Records**: Click on the domain name itself in the list. A modal will pop up showing **two A records** (IP addresses).
+   - Add these A records to your DNS settings at your registrar. 
+   - **Note**: After adding A records, it can take up to 24 hours for the status to change to "Connected" and for the site to become live.
 
 ### 🚀 Troubleshooting "Blank Screen" on Default Host:
 If the app shows nothing on the default Firebase URL (`*.web.app`):
 1. **Check Console**: Open your browser's Developer Tools (F12) and check for JavaScript errors in the **Console** tab.
-2. **Build Deployment**: Ensure the latest code changes have been deployed.
+2. **Build Deployment**: Ensure the latest code changes have been deployed via your hosting provider.
 3. **Environment Variables**: Verify that your `firebaseConfig` in `src/firebase/config.ts` is correct and matches your project settings.
 
 ## Tech Stack
