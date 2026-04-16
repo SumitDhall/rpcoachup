@@ -45,7 +45,8 @@ import {
   Briefcase,
   FileText,
   Info,
-  Calendar
+  Calendar,
+  IndianRupee
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
@@ -414,29 +415,68 @@ export default function TeacherDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>My Professional Records</CardTitle>
-                  <CardDescription>View your submitted specialty profiles and application status.</CardDescription>
+                  <CardDescription>Detailed records of your submitted specialty profiles and application status.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                   {isLoadingInterests ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
                   ) : (rawInterests && rawInterests.length > 0 ? (
                     [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => (
-                      <div key={i.id} className="p-5 border rounded-xl border-l-4 border-l-primary flex flex-col sm:flex-row sm:items-center justify-between bg-card shadow-sm gap-4">
-                        <div className="space-y-1">
+                      <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
                             <p className="font-bold text-lg">{i.subjects}</p>
-                            <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600' : ''}>
+                            <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600 text-white' : i.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
                               {i.status}
                             </Badge>
                           </div>
-                          <div className="grid grid-cols-2 gap-x-4 text-xs text-muted-foreground">
-                            <p className="flex items-center gap-1"><Briefcase className="h-3 w-3" /> {i.experienceYears} yrs exp.</p>
-                            <p className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}</p>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}
+                          </p>
+                        </div>
+                        
+                        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-sm border-t pt-4">
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                              <User className="h-3 w-3" /> Teacher Details
+                            </p>
+                            <div className="space-y-1">
+                              <p className="font-medium">{i.teacherName}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><GraduationCap className="h-3.5 w-3.5" /> {i.qualifications}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><Briefcase className="h-3.5 w-3.5" /> {i.experienceYears} Years Experience</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                              <Phone className="h-3 w-3" /> Contact Details
+                            </p>
+                            <div className="space-y-1">
+                              <p className="flex items-center gap-2 font-medium"><Phone className="h-3.5 w-3.5 text-primary" /> {i.phone}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /> {i.email}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                              <IndianRupee className="h-3 w-3" /> Salary Expectation
+                            </p>
+                            <div className="space-y-1">
+                              <p className="flex items-center gap-2 text-accent font-bold"><IndianRupee className="h-3.5 w-3.5" /> {i.expectedSalary}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                               <FileText className="h-3 w-3" /> Supporting Docs
+                            </p>
+                            <div className="flex items-center gap-2 text-xs text-primary bg-primary/5 p-2 rounded-lg w-fit">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Resume: {i.resumeName}
+                            </div>
                           </div>
                         </div>
-                        <Button variant="outline" size="sm" asChild>
-                           <Link href="/programs/dashboard">Program Details</Link>
-                        </Button>
                       </div>
                     ))
                   ) : (
