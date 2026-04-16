@@ -6,17 +6,17 @@ import { generateNotificationEmail, type NotificationEmailInput } from '@/ai/flo
 /**
  * Server Action to generate professional notification email content using Genkit.
  * Returns the generated subject and body. 
- * Note: Firestore persistence is now handled by the client to ensure auth context.
  */
 export async function sendNotificationEmail(data: NotificationEmailInput) {
   try {
     const email = await generateNotificationEmail(data);
     const recipient = data.recipientType === 'admin' ? 'admin@rpcoachup.com' : data.userEmail;
 
-    // Simulation of sending an email (Console Log)
+    // Simulation of sending an email (Enhanced Console Logging for debugging)
     console.log('=========================================');
-    console.log(`📤 [SIMULATED EMAIL GENERATED] For: ${recipient}`);
+    console.log(`📤 [SIMULATED EMAIL] To: ${recipient}`);
     console.log(`📌 Subject: ${email.subject}`);
+    console.log(`📝 Body: ${email.body}`);
     console.log('=========================================');
 
     return { 

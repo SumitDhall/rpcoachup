@@ -315,12 +315,9 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
     
     updateDocumentNonBlocking(interestRef, { status: newStatus });
     
-    // REMOVED createAdminNotification here to reduce clutter. 
-    // The Admin is the one performing the action, so an alert to themselves is unnecessary.
-    // We still log the event and send the user email below.
-
     logSystemEvent(db, adminUser, 'status_update', `Updated status to ${newStatus} for ${statusChangeTarget.userName}'s interest in ${statusChangeTarget.subject}`);
 
+    // Notify the user via email
     sendNotificationEmail({
       recipientType: 'user',
       type: 'status_update',
@@ -328,6 +325,16 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
       userName: statusChangeTarget.userName,
       userEmail: statusChangeTarget.userEmail,
       details: `Your inquiry for "${statusChangeTarget.subject}" is now: ${newStatus}`
+    });
+
+    // Notify the admin via email
+    sendNotificationEmail({
+      recipientType: 'admin',
+      type: 'status_update',
+      userType: user.userType,
+      userName: statusChangeTarget.userName,
+      userEmail: statusChangeTarget.userEmail,
+      details: `Administrator updated inquiry for "${statusChangeTarget.subject}" (User: ${statusChangeTarget.userName}) to ${newStatus}.`
     });
 
     setStatusChangeTarget(null);
@@ -775,28 +782,6 @@ export default function AdminPortal() {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="flex h-screen items-center justify-center p-4">
-        <Card className="max-w-md w-full border-destructive/20 shadow-xl">
-          <CardHeader className="text-center">
-            <div className="mx-auto bg-destructive/10 p-3 rounded-full w-fit mb-4">
-              <ShieldAlert className="h-8 w-8 text-destructive" />
-            </div>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>You do not have administrative permissions.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex gap-3">
-            <Button variant="outline" className="flex-1" onClick={handleSignOut}>Sign Out</Button>
-            <Button className="flex-1" asChild>
-              <Link href="/">Return Home</Link>
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     );
   }
