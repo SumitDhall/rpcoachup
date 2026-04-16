@@ -27,34 +27,32 @@ This app uses **Firebase App Hosting** for Next.js SSR support.
 
 ---
 
-## 🛠 Troubleshooting Build & Rollout Errors
+## 🛠 Troubleshooting Rollout Errors
 
-### 1. "GitHub Connection Error"
-If the rollout fails at the "Fetch Source" step:
+### 1. "Invalid apphosting.yaml"
+If you see this error, ensure your `apphosting.yaml` matches the simplified version currently in the project. We recommend managing environment variables via the Firebase Console UI rather than the YAML file to avoid formatting issues.
+
+### 2. Missing GEMINI_API_KEY (AI Features)
+This app uses AI for matching and notifications. You **must** add your API key:
+1. Go to **App Hosting** dashboard for your backend.
+2. Navigate to **Settings > Environment variables**.
+3. Click **Add variable**:
+   - **Variable path**: `GEMINI_API_KEY`
+   - **Value**: [Your Google AI Studio API Key]
+   - **Availability**: Check both **Build** and **Runtime**.
+4. Click **Save** and trigger a **New Rollout**.
+
+### 3. "No buildpack groups passed detection"
+This means your GitHub repository is empty or the files are in a subfolder.
+- Ensure you ran the `git push` commands in **Phase 1**.
+- Check your GitHub repo URL to verify `package.json` is visible in the root folder.
+
+### 4. "GitHub Connection Error"
 - Go to your **GitHub Settings > Applications**.
 - Find **Firebase App Hosting** and click **Configure**.
 - Ensure the repository you created is selected in the list of authorized repos.
 
-### 2. Missing Environment Variables
-This app uses AI features that require an API key.
-1. Go to the **App Hosting** dashboard for your backend.
-2. Navigate to **Settings > Environment variables**.
-3. Add a new variable:
-   - **Key**: `GEMINI_API_KEY`
-   - **Value**: Your Google AI Studio API Key.
-4. Click **Save** and trigger a new rollout.
-
-### 3. "No buildpack groups passed detection"
-This means your GitHub repository is empty. Ensure you have successfully run the `git push` command from the terminal in this editor.
-
 ---
-
-## 🔑 Custom Domain Setup (rpcoachup.com)
-
-1. Go to **App Hosting > [Your Backend] > Settings > Custom Domains**.
-2. **Step 1**: Add the **TXT record** to your domain registrar.
-3. **Step 2**: Once verified, **click the domain name** to see the **two A records** (IP addresses). Add these to your registrar.
-4. **Wait**: The status will show **"Minting certificate"**. This can take up to 24 hours.
 
 ## 🔑 Administrative Access
 1. Register on the `/register` page.
