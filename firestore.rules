@@ -14,55 +14,40 @@ service cloud.firestore {
      * Data Structure:
      * - User-specific private data (profiles, interests, offerings, drafts) is strictly 
      *   segregated under /users/{userId} paths.
-     * - Shared or public entities (sessions, enrollments, recommendations) are stored 
-     *   in top-level collections with denormalized UID fields (e.g., studentUserId, teacherUserId).
+     * - Shared or public entities (sessions, enrollments, recommendations, proposals) are stored 
+     *   in top-level collections with denormalized UID fields (e.g., studentId, teacherId).
      * - Subjects are treated as a global, administrative catalog.
      * 
      * Key Security Decisions:
      * - Global admin privileges are verified via the existence of a record in the /roles_admin collection.
      * - Ownership is verified by matching the Firebase Auth UID to path variables or 
      *   denormalized internal fields.
-     * - "Prototyping Mode" allows for schema flexibility while strictly enforcing that 
-     *   users can only write data they own or are authorized to manage.
-     * - Critical relational fields (like creator IDs) are enforced as immutable during updates.
      */
 
     // --- Helper Functions ---
 
-    /** @description Checks if the user is authenticated with Firebase. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** @description Checks if the user's UID matches a specific ID (path or field). */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /** @description Combined check for ownership and document existence for updates/deletes. */
     function isExistingOwner(userId) {
       return resource != null && isOwner(userId);
     }
 
-    /** @description Checks if the user has a global administrator role via DBAC. */
     function isAdmin() {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
-    /** @description Validates that a field is not being changed during an update. */
     function isImmutable(fieldName) {
       return request.resource.data[fieldName] == resource.data[fieldName];
     }
 
     // --- Collection Rules ---
 
-    /**
-     * @description Core user document. Users can manage their own data; Admins can view the directory.
-     * @path /users/{userId}
-     * @allow (create) if auth.uid == userId
-     * @deny (list) if not an admin
-     * @principle Ownership for users, Admin for management.
-     */
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
@@ -70,13 +55,6 @@ service cloud.firestore {
       allow update: if isExistingOwner(userId) && isImmutable('id');
       allow delete: if isAdmin();
 
-      /**
-       * @description Student-specific profile. Nested under user for implicit ownership.
-       * @path /users/{userId}/studentProfile/{profileId}
-       * @allow (get) if auth.uid == userId
-       * @deny (create) if auth.uid != userId
-       * @principle Path-based ownership inheritance.
-       */
       match /studentProfile/{profileId} {
         allow get, list: if isOwner(userId) || isAdmin();
         allow create: if isOwner(userId);
@@ -84,13 +62,6 @@ service cloud.firestore {
         allow delete: if isExistingOwner(userId) || isAdmin();
       }
 
-      /**
-       * @description Teacher-specific profile. Nested under user for implicit ownership.
-       * @path /users/{userId}/teacherProfile/{profileId}
-       * @allow (get) if signed in (teachers are public to students)
-       * @deny (update) if not the owner
-       * @principle Public profile visibility for recruitment, private writes.
-       */
       match /teacherProfile/{profileId} {
         allow get, list: if isSignedIn();
         allow create: if isOwner(userId);
@@ -98,123 +69,51 @@ service cloud.firestore {
         allow delete: if isExistingOwner(userId) || isAdmin();
       }
 
-      /**
-       * @description Private student interests (tuition requests).
-       * @path /users/{userId}/studentInterests/{interestId}
-       * @allow (list) if auth.uid == userId
-       * @principle Personal data tree isolation.
-       */
       match /studentInterests/{interestId} {
         allow get, list: if isOwner(userId) || isAdmin();
-        allow create: if isOwner(userId) && request.resource.data.studentProfileId == userId;
-        allow update: if isExistingOwner(userId) && isImmutable('studentProfileId');
+        allow create: if isOwner(userId) && request.resource.data.studentId == userId;
+        allow update: if isExistingOwner(userId) && isImmutable('studentId');
         allow delete: if isExistingOwner(userId) || isAdmin();
       }
 
-      /**
-       * @description Private teacher offerings (subjects they can teach).
-       * @path /users/{userId}/teacherOfferings/{offeringId}
-       * @allow (create) if auth.uid == userId
-       * @principle Personal data tree isolation.
-       */
-      match /teacherOfferings/{offeringId} {
+      match /teacherInterests/{offeringId} {
         allow get, list: if isOwner(userId) || isAdmin();
-        allow create: if isOwner(userId) && request.resource.data.teacherProfileId == userId;
-        allow update: if isExistingOwner(userId) && isImmutable('teacherProfileId');
-        allow delete: if isExistingOwner(userId) || isAdmin();
-      }
-
-      /**
-       * @description Private draft sessions not yet published to the public catalog.
-       * @path /users/{userId}/draftCourseSessions/{draftId}
-       * @allow (get) if auth.uid == userId
-       * @deny (get) if not the teacher
-       * @principle Structural segregation of drafts.
-       */
-      match /draftCourseSessions/{draftId} {
-        allow get, list: if isOwner(userId) || isAdmin();
-        allow create: if isOwner(userId);
-        allow update: if isExistingOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.teacherId == userId;
+        allow update: if isExistingOwner(userId) && isImmutable('teacherId');
         allow delete: if isExistingOwner(userId) || isAdmin();
       }
     }
 
-    /**
-     * @description Global subject catalog. 
-     * @path /subjects/{subjectId}
-     * @allow (get) if signed in
-     * @deny (create) if not admin
-     * @principle Read-only global catalog for standard users.
-     */
     match /subjects/{subjectId} {
       allow get, list: if isSignedIn();
       allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Public/Active course sessions. Managed by teachers.
-     * @path /courseSessions/{courseSessionId}
-     * @allow (list) if signed in
-     * @allow (update) if auth.uid == resource.data.teacherUserId
-     * @principle Denormalized ownership for write authorization.
-     */
-    match /courseSessions/{courseSessionId} {
-      allow get, list: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.teacherUserId == request.auth.uid;
-      allow update: if isExistingOwner(resource.data.teacherUserId) && isImmutable('teacherUserId');
-      allow delete: if isExistingOwner(resource.data.teacherUserId) || isAdmin();
-    }
-
-    /**
-     * @description Student enrollments in sessions. Accessible by both student and teacher.
-     * @path /enrollments/{enrollmentId}
-     * @allow (get) if auth.uid == resource.data.studentUserId || auth.uid == resource.data.teacherUserId
-     * @principle Shared access via multiple denormalized UID fields.
-     */
-    match /enrollments/{enrollmentId} {
-      allow get, list: if isSignedIn() && (request.auth.uid == resource.data.studentUserId || request.auth.uid == resource.data.teacherUserId || isAdmin());
-      allow create: if isSignedIn() && request.resource.data.studentUserId == request.auth.uid;
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
-    }
-
-    /**
-     * @description AI recommendations. Visible to the student and the suggested teacher.
-     * @path /matchRecommendations/{recommendationId}
-     * @allow (list) if auth.uid == resource.data.studentUserId
-     * @deny (create) if not admin
-     * @principle Restricted administrative creation with shared read access.
-     */
-    match /matchRecommendations/{recommendationId} {
-      allow get, list: if isSignedIn() && (request.auth.uid == resource.data.studentUserId || request.auth.uid == resource.data.teacherUserId || isAdmin());
+    match /matchProposals/{matchId} {
+      allow get, list: if isSignedIn() && (request.auth.uid == resource.data.studentId || request.auth.uid == resource.data.teacherId || isAdmin());
       allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Platform and educational feedback.
-     * @path /feedback/{feedbackId}
-     * @allow (create) if request.resource.data.ownerUserId == auth.uid
-     * @deny (update) if not the submitter
-     * @principle Authenticated creation with owner-based management.
-     */
-    match /feedback/{feedbackId} {
-      allow get, list: if (isSignedIn() && (request.auth.uid == resource.data.ownerUserId)) || isAdmin();
-      allow create: if isSignedIn() && request.resource.data.ownerUserId == request.auth.uid;
-      allow update: if isExistingOwner(resource.data.ownerUserId) && isImmutable('ownerUserId');
-      allow delete: if isExistingOwner(resource.data.ownerUserId) || isAdmin();
+    match /notifications/{notificationId} {
+      allow create: if isSignedIn();
+      allow get, list, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Role registry for global admins. Read-only for admins to verify permissions.
-     * @path /roles_admin/{adminId}
-     * @allow (get) if auth.uid == adminId
-     * @deny (write) if anyone (admins are typically provisioned via backend/console)
-     * @principle Database-level access control (DBAC).
-     */
+    match /systemLogs/{logId} {
+      allow get, list, create, update, delete: if isAdmin();
+    }
+
+    match /feedback/{feedbackId} {
+      allow get, list: if (isSignedIn() && (request.auth.uid == resource.data.userId)) || isAdmin();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isExistingOwner(resource.data.userId) && isImmutable('userId');
+      allow delete: if isExistingOwner(resource.data.userId) || isAdmin();
+    }
+
     match /roles_admin/{adminId} {
       allow get: if isOwner(adminId) || isAdmin();
       allow list: if isAdmin();
-      allow create, update, delete: if false; // Provisioned via Admin SDK/Console only for safety
+      allow create, update, delete: if false; 
     }
   }
 }
