@@ -21,22 +21,20 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email) return;
+    
     setIsLoading(true);
 
     try {
-      // Configuration for the link in the email
-      const actionCodeSettings = {
-        // Redirect the user back to the login page after they reset their password
-        url: window.location.origin + '/login',
-        handleCodeInApp: false,
-      };
-
-      await sendPasswordResetEmail(auth, email, actionCodeSettings);
+      // We remove the explicit actionCodeSettings here. 
+      // Firebase will use the default redirect behavior configured in the Firebase Console.
+      // This avoids "Unauthorized Domain" errors if the current window origin hasn't been whitelisted.
+      await sendPasswordResetEmail(auth, email);
       
       setIsSent(true);
       toast({
         title: "Reset Link Sent",
-        description: "Check your email (and spam folder) for the password reset link.",
+        description: "Check your email for the password reset link.",
       });
     } catch (error: any) {
       console.error("Password reset error:", error);
@@ -48,6 +46,8 @@ export default function ForgotPasswordPage() {
         message = "Please enter a valid email address.";
       } else if (error.code === 'auth/too-many-requests') {
         message = "Too many requests. Please try again later.";
+      } else if (error.code === 'auth/unauthorized-continue-uri') {
+        message = "The redirect URL is not authorized in Firebase Console.";
       }
       
       toast({
@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
               <BookOpen className="text-primary-foreground h-8 w-8" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-headline">Reset Password</CardTitle>
+          <CardTitle className="text-3xl font-headline font-bold">Reset Password</CardTitle>
           <CardDescription>
             {isSent 
               ? "Instructions have been sent to your email." 
