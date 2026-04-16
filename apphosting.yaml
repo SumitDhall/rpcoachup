@@ -5,3 +5,12 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+
+env:
+  # These variables are available at build time and runtime.
+  # GEMINI_API_KEY is required for the AI matching features.
+  # You should manage the actual value in the Firebase Console Secrets/Env UI.
+  - variable: GEMINI_API_KEY
+    availability:
+      - BUILD
+      - RUNTIME

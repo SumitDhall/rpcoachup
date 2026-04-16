@@ -27,17 +27,25 @@ This app uses **Firebase App Hosting** for Next.js SSR support.
 
 ---
 
-## 🛠 Troubleshooting Build Errors
+## 🛠 Troubleshooting Build & Rollout Errors
 
-If you see **"An error occurred in your build"** or **"Error creating rollout"**:
+### 1. "GitHub Connection Error"
+If the rollout fails at the "Fetch Source" step:
+- Go to your **GitHub Settings > Applications**.
+- Find **Firebase App Hosting** and click **Configure**.
+- Ensure the repository you created is selected in the list of authorized repos.
 
-1. **Check the Logs**:
-   - In the App Hosting dashboard, click on the failed rollout.
-   - Click the link **"View Cloud Build logs"**. This will open Google Cloud Console and show you the exact error (e.g., a missing environment variable or a code error).
-2. **Missing Secrets**:
-   - If your build uses API keys (like `GEMINI_API_KEY`), you must add them in **App Hosting > [Your Backend] > Settings > Environment variables**.
-3. **Red Bar Error**:
-   - If "Create rollout" gives a red error bar, try refreshing the page or checking if your GitHub connection is still active in the **Project Settings > Integrations** tab.
+### 2. Missing Environment Variables
+This app uses AI features that require an API key.
+1. Go to the **App Hosting** dashboard for your backend.
+2. Navigate to **Settings > Environment variables**.
+3. Add a new variable:
+   - **Key**: `GEMINI_API_KEY`
+   - **Value**: Your Google AI Studio API Key.
+4. Click **Save** and trigger a new rollout.
+
+### 3. "No buildpack groups passed detection"
+This means your GitHub repository is empty. Ensure you have successfully run the `git push` command from the terminal in this editor.
 
 ---
 
