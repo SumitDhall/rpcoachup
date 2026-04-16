@@ -880,11 +880,36 @@ export default function AdminPortal() {
     }
     
     if (activeTab === 'teachers') {
-      return users.filter(u => u.userType === 'Teacher');
+      const baseTeachers = users.filter(u => u.userType === 'Teacher');
+      if (!allTeacherInterests) return baseTeachers;
+
+      // Filter and Sort Logic for Teachers (Matching Student Logic)
+      return baseTeachers
+        .map(t => {
+          const teacherInterests = allTeacherInterests.filter(i => i.teacherId === t.id);
+          const hasPending = teacherInterests.some(i => i.status === 'Pending');
+          const hasInProgress = teacherInterests.some(i => i.status === 'In-Progress');
+          const hasCompleted = teacherInterests.some(i => i.status === 'Completed');
+          
+          const oldestInquiryDate = teacherInterests.reduce((min, i) => {
+            const date = i.submissionDate?.toMillis?.() || Infinity;
+            return date < min ? date : min;
+          }, Infinity);
+
+          return { ...t, teacherInterests, hasPending, hasInProgress, hasCompleted, oldestInquiryDate };
+        })
+        // Only include teachers with non-empty profiles
+        .filter(t => t.teacherInterests.length > 0)
+        // Sort: Pending first, then by date (oldest first / first come first serve)
+        .sort((a, b) => {
+          if (a.hasPending && !b.hasPending) return -1;
+          if (!a.hasPending && b.hasPending) return 1;
+          return a.oldestInquiryDate - b.oldestInquiryDate;
+        });
     }
     
     return [];
-  }, [users, allStudentInterests, activeTab]);
+  }, [users, allStudentInterests, allTeacherInterests, activeTab]);
 
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
@@ -1060,19 +1085,17 @@ export default function AdminPortal() {
             </Card>
           )}
 
-          {(activeTab === 'students' || activeTab === 'teachers') && (activeTab === 'students' && !allStudentInterests ? (
+          {(activeTab === 'students' || activeTab === 'teachers') && ((activeTab === 'students' && !allStudentInterests) || (activeTab === 'teachers' && !allTeacherInterests) ? (
             <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
           ) : (
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <CardTitle>{activeTab === 'students' ? 'Student Inquiries' : 'Registered Teachers'}</CardTitle>
-                    {activeTab === 'students' && (
-                      <CardDescription className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-tight">
-                        <Clock className="h-3 w-3" /> Sorting: Pending first, oldest inquiries priority
-                      </CardDescription>
-                    )}
+                    <CardTitle>{activeTab === 'students' ? 'Student Inquiries' : 'Teacher Profiles'}</CardTitle>
+                    <CardDescription className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-tight">
+                      <Clock className="h-3 w-3" /> Sorting: Pending first, oldest priority
+                    </CardDescription>
                   </div>
                   <Badge variant="secondary">{filteredUsers.length} Found</Badge>
                 </div>
@@ -1104,9 +1127,9 @@ export default function AdminPortal() {
                           <TableCell className="hidden sm:table-cell text-muted-foreground">
                             <div className="flex flex-col gap-1">
                                 <span className="text-[11px]">{u.email}</span>
-                                {activeTab === 'students' && u.oldestInquiryDate !== Infinity && (
+                                {u.oldestInquiryDate !== Infinity && (
                                    <span className="text-[9px] flex items-center gap-1 font-medium text-primary">
-                                     <Clock className="h-2.5 w-2.5" /> First Inquiry: {new Date(u.oldestInquiryDate).toLocaleDateString()}
+                                     <Clock className="h-2.5 w-2.5" /> {activeTab === 'students' ? 'First Inquiry:' : 'First Applied:'} {new Date(u.oldestInquiryDate).toLocaleDateString()}
                                    </span>
                                 )}
                             </div>
