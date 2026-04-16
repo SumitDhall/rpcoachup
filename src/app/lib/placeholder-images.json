@@ -3,21 +3,21 @@
   "placeholderImages": [
     {
       "id": "hero-education",
-      "description": "A vibrant modern classroom with a teacher and students engaged in learning",
-      "imageUrl": "https://picsum.photos/seed/classroom1/1200/600",
-      "imageHint": "classroom teacher"
+      "description": "Students and teacher collaborating in a modern, tech-enabled classroom environment",
+      "imageUrl": "https://picsum.photos/seed/education-hero/1200/600",
+      "imageHint": "modern classroom"
     },
     {
       "id": "teacher-mentoring",
-      "description": "A teacher mentoring a student one-on-one in a bright educational setting",
-      "imageUrl": "https://picsum.photos/seed/classroom2/600/400",
-      "imageHint": "teacher classroom"
+      "description": "Focused one-on-one mentorship session between an expert educator and a student",
+      "imageUrl": "https://picsum.photos/seed/mentoring-session/600/400",
+      "imageHint": "teacher student"
     },
     {
       "id": "online-course",
-      "description": "A teacher conducting a digital class on a professional learning platform",
-      "imageUrl": "https://picsum.photos/seed/classroom3/600/400",
-      "imageHint": "online classroom"
+      "description": "Professional home tuition setup with personalized learning materials",
+      "imageUrl": "https://picsum.photos/seed/home-tuition/600/400",
+      "imageHint": "study room"
     }
   ]
 }
