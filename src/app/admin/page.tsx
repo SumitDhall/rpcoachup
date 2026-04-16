@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -76,7 +75,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { sendNotificationEmail } from '@/app/actions/notifications';
 
-// Helper to log system events
 function logSystemEvent(db: any, admin: any, type: string, description: string) {
   if (!admin) return;
   addDocumentNonBlocking(collection(db, 'systemLogs'), {
@@ -88,7 +86,6 @@ function logSystemEvent(db: any, admin: any, type: string, description: string) 
   });
 }
 
-// Helper to create admin notifications
 function createAdminNotification(db: any, type: 'registration' | 'interest' | 'assignment' | 'status_update' | 'feedback', subject: string, body: string, userEmail?: string, userName?: string) {
   addDocumentNonBlocking(collection(db, 'notifications'), {
     type,
@@ -101,7 +98,6 @@ function createAdminNotification(db: any, type: 'registration' | 'interest' | 'a
   });
 }
 
-// Component to handle student assignments for a teacher
 function StudentAssignmentManager({ teacherId, teacherName, isAdmin }: { teacherId: string; teacherName: string; isAdmin: boolean }) {
   const db = useFirestore();
   const { user: adminUser } = useUser();
@@ -255,7 +251,6 @@ function StudentAssignmentManager({ teacherId, teacherName, isAdmin }: { teacher
   );
 }
 
-// Component to handle teacher assignments for a student
 function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { studentId: string; studentName: string; isAdmin: boolean }) {
   const db = useFirestore();
   const { user: adminUser } = useUser();
@@ -409,7 +404,6 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
   );
 }
 
-// Component to fetch and display role-specific profile details and interests
 function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) {
   const db = useFirestore();
   const { user: adminUser } = useUser();
@@ -795,16 +789,16 @@ export default function AdminPortal() {
 
   const isAdmin = !!adminDoc;
 
-  // Defensive Redirection for non-admins
   useEffect(() => {
-    if (!isUserLoading && !isAdminLoading && !isAdmin && user) {
+    // Only trigger warning toast if loading has definitely finished and user is not an admin
+    if (!isUserLoading && !isAdminLoading && user && adminDocRef && !isAdmin) {
       toast({
         variant: "destructive",
         title: "Access Restricted",
         description: "You do not have permission to view the Admin Portal.",
       });
     }
-  }, [isUserLoading, isAdminLoading, isAdmin, user, toast]);
+  }, [isUserLoading, isAdminLoading, isAdmin, user, adminDocRef, toast]);
 
   const usersQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
@@ -849,8 +843,6 @@ export default function AdminPortal() {
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
 
-  // If we are currently loading auth or role, or we have no user (logging out), show the loader.
-  // This prevents the Access Denied card from flickering during the sign-out process.
   if (isUserLoading || isAdminLoading || !user) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -859,7 +851,6 @@ export default function AdminPortal() {
     );
   }
 
-  // Only show Access Denied if the user is authenticated but not an admin.
   if (!isAdmin) {
     return (
       <div className="flex h-screen items-center justify-center p-4">
