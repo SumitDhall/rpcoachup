@@ -859,12 +859,15 @@ export default function AdminPortal() {
         .map(s => {
           const studentInterests = allStudentInterests.filter(i => i.studentId === s.id);
           const hasPending = studentInterests.some(i => i.status === 'Pending');
+          const hasInProgress = studentInterests.some(i => i.status === 'In-Progress');
+          const hasCompleted = studentInterests.some(i => i.status === 'Completed');
+          
           const oldestInquiryDate = studentInterests.reduce((min, i) => {
             const date = i.submissionDate?.toMillis?.() || Infinity;
             return date < min ? date : min;
           }, Infinity);
 
-          return { ...s, studentInterests, hasPending, oldestInquiryDate };
+          return { ...s, studentInterests, hasPending, hasInProgress, hasCompleted, oldestInquiryDate };
         })
         // Only include students with non-empty inquiries
         .filter(s => s.studentInterests.length > 0)
@@ -1089,9 +1092,11 @@ export default function AdminPortal() {
                         <TableRow key={u.id} className={`hover:bg-secondary/5 ${u.hasPending ? 'bg-primary/5' : ''}`}>
                           <TableCell className="font-medium">
                             <div className="flex flex-col">
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <span>{u.firstName} {u.lastName}</span>
-                                {u.hasPending && <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5">NEW</Badge>}
+                                {u.hasPending && <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge>}
+                                {u.hasInProgress && <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">IN-PROGRESS</Badge>}
+                                {u.hasCompleted && <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">COMPLETED</Badge>}
                               </div>
                               <span className="sm:hidden text-[10px] text-muted-foreground">{u.email}</span>
                             </div>
