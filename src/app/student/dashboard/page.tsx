@@ -484,32 +484,48 @@ export default function StudentDashboard() {
                         </p>
                       </div>
                       
-                      <div className="grid sm:grid-cols-2 gap-6 text-sm border-t pt-4">
+                      <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-sm border-t pt-4">
                         <div className="space-y-2">
-                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Academic Details</p>
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                            <User className="h-3 w-3" /> Student & Academic
+                          </p>
                           <div className="space-y-1">
-                            <p className="flex items-center gap-2"><GraduationCap className="h-3.5 w-3.5 text-primary" /> Class: <span className="font-medium">{i.gradeOrClass}</span></p>
-                            <p className="flex items-center gap-2"><School className="h-3.5 w-3.5 text-primary" /> School: <span className="font-medium">{i.school}</span></p>
+                            <p className="font-medium">{i.studentName}</p>
+                            <p className="flex items-center gap-2 text-muted-foreground"><GraduationCap className="h-3.5 w-3.5" /> {i.gradeOrClass}</p>
+                            <p className="flex items-center gap-2 text-muted-foreground"><School className="h-3.5 w-3.5" /> {i.school}</p>
                           </div>
                         </div>
-                        <div className="space-y-2">
-                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Budget & Timeline</p>
-                          <div className="space-y-1">
-                            <p className="flex items-center gap-2"><IndianRupee className="h-3.5 w-3.5 text-accent" /> Budget: <span className="font-medium text-accent">{i.affordableRange}</span></p>
-                            <p className="flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-accent" /> Start Date: <span className="font-medium">{i.intendedStartDate}</span></p>
-                          </div>
-                        </div>
-                      </div>
 
-                      <div className="space-y-2 text-sm bg-secondary/10 p-4 rounded-xl">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-2">
-                          <MapPin className="h-3 w-3" /> Home Tuition Address
-                        </p>
-                        <p className="text-xs leading-relaxed">{i.address}</p>
+                        <div className="space-y-2">
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                            <Phone className="h-3 w-3" /> Contact Details
+                          </p>
+                          <div className="space-y-1">
+                            <p className="flex items-center gap-2 font-medium"><Phone className="h-3.5 w-3.5 text-primary" /> {i.phone}</p>
+                            <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /> {i.email}</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                            <IndianRupee className="h-3 w-3" /> Budget & Timeline
+                          </p>
+                          <div className="space-y-1">
+                            <p className="flex items-center gap-2 text-accent font-bold"><IndianRupee className="h-3.5 w-3.5" /> {i.affordableRange}</p>
+                            <p className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-3.5 w-3.5" /> Starts: {i.intendedStartDate}</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                             <MapPin className="h-3 w-3" /> Location
+                          </p>
+                          <p className="text-xs leading-relaxed text-muted-foreground bg-secondary/10 p-2 rounded-lg">{i.address}</p>
+                        </div>
                       </div>
 
                       {i.notes && (
-                        <div className="space-y-2 text-sm">
+                        <div className="space-y-2 text-sm pt-2">
                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-2">
                              <Info className="h-3 w-3" /> Special Requirements
                            </p>
