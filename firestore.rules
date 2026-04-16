@@ -6,22 +6,9 @@ service cloud.firestore {
      * RP Coach-Up Security Rules
      * 
      * Core Philosophy:
-     * This ruleset implements a robust, multi-tenant educational platform model. It relies 
-     * heavily on "Authorization Independence" through data denormalization. By copying 
-     * owner and participant UIDs directly onto documents, we ensure that security 
-     * decisions are fast, scalable, and don't require expensive recursive document lookups.
-     * 
-     * Data Structure:
-     * - User-specific private data (profiles, interests, offerings, drafts) is strictly 
-     *   segregated under /users/{userId} paths.
-     * - Shared or public entities (sessions, enrollments, recommendations, proposals) are stored 
-     *   in top-level collections with denormalized UID fields (e.g., studentId, teacherId).
-     * - Subjects are treated as a global, administrative catalog.
-     * 
-     * Key Security Decisions:
-     * - Global admin privileges are verified via the existence of a record in the /roles_admin collection.
-     * - Ownership is verified by matching the Firebase Auth UID to path variables or 
-     *   denormalized internal fields.
+     * This ruleset implements a robust, multi-tenant educational platform model. 
+     * Shared or public entities (sessions, enrollments, recommendations, proposals) are stored 
+     * in top-level collections with denormalized UID fields (e.g., studentId, teacherId).
      */
 
     // --- Helper Functions ---
@@ -68,20 +55,20 @@ service cloud.firestore {
         allow update: if isExistingOwner(userId);
         allow delete: if isExistingOwner(userId) || isAdmin();
       }
+    }
 
-      match /studentInterests/{interestId} {
-        allow get, list: if isOwner(userId) || isAdmin();
-        allow create: if isOwner(userId) && request.resource.data.studentId == userId;
-        allow update: if isExistingOwner(userId) && isImmutable('studentId');
-        allow delete: if isExistingOwner(userId) || isAdmin();
-      }
+    match /studentInterests/{interestId} {
+      allow get, list: if isOwner(resource.data.studentId) || isAdmin();
+      allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
+      allow update: if isExistingOwner(resource.data.studentId) && isImmutable('studentId');
+      allow delete: if isExistingOwner(resource.data.studentId) || isAdmin();
+    }
 
-      match /teacherInterests/{offeringId} {
-        allow get, list: if isOwner(userId) || isAdmin();
-        allow create: if isOwner(userId) && request.resource.data.teacherId == userId;
-        allow update: if isExistingOwner(userId) && isImmutable('teacherId');
-        allow delete: if isExistingOwner(userId) || isAdmin();
-      }
+    match /teacherInterests/{interestId} {
+      allow get, list: if isOwner(resource.data.teacherId) || isAdmin();
+      allow create: if isSignedIn() && request.resource.data.teacherId == request.auth.uid;
+      allow update: if isExistingOwner(resource.data.teacherId) && isImmutable('teacherId');
+      allow delete: if isExistingOwner(resource.data.teacherId) || isAdmin();
     }
 
     match /subjects/{subjectId} {

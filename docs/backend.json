@@ -22,6 +22,8 @@
         "studentId": { "type": "string" },
         "studentName": { "type": "string" },
         "subject": { "type": "string" },
+        "school": { "type": "string" },
+        "gradeOrClass": { "type": "string" },
         "status": { "type": "string" }
       }
     },
@@ -65,6 +67,14 @@
     "/users/{userId}": {
       "schema": { "$ref": "#/backend/entities/User" },
       "description": "User profiles."
+    },
+    "/studentInterests/{interestId}": {
+      "schema": { "$ref": "#/backend/entities/StudentInterest" },
+      "description": "Student tuition inquiries."
+    },
+    "/teacherInterests/{interestId}": {
+      "schema": { "$ref": "#/backend/entities/TeacherInterest" },
+      "description": "Teacher specialty profiles."
     },
     "/matchProposals/{matchId}": {
       "schema": { "$ref": "#/backend/entities/MatchProposal" },
