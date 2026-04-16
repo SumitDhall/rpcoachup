@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -66,7 +67,8 @@ import {
   Mail,
   Menu,
   Edit2,
-  MessageSquare
+  MessageSquare,
+  Clock
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
@@ -789,8 +791,20 @@ export default function AdminPortal() {
 
   const isAdmin = !!adminDoc;
 
+  // Global fetch of interests for sorting and filtering students
+  const studentInterestsQuery = useMemoFirebase(() => {
+    if (!db || !isAdmin) return null;
+    return query(collection(db, 'studentInterests'), limit(500));
+  }, [db, isAdmin]);
+  const { data: allStudentInterests } = useCollection(studentInterestsQuery);
+
+  const teacherInterestsQuery = useMemoFirebase(() => {
+    if (!db || !isAdmin) return null;
+    return query(collection(db, 'teacherInterests'), limit(500));
+  }, [db, isAdmin]);
+  const { data: allTeacherInterests } = useCollection(teacherInterestsQuery);
+
   useEffect(() => {
-    // Only trigger warning toast if loading has definitely finished and user is not an admin
     if (!isUserLoading && !isAdminLoading && user && adminDocRef && !isAdmin) {
       toast({
         variant: "destructive",
@@ -835,10 +849,39 @@ export default function AdminPortal() {
 
   const filteredUsers = useMemo(() => {
     if (!users) return [];
-    if (activeTab === 'students') return users.filter(u => u.userType === 'Student');
-    if (activeTab === 'teachers') return users.filter(u => u.userType === 'Teacher');
+    
+    if (activeTab === 'students') {
+      const baseStudents = users.filter(u => u.userType === 'Student');
+      if (!allStudentInterests) return baseStudents;
+
+      // Filter and Sort Logic for Students
+      return baseStudents
+        .map(s => {
+          const studentInterests = allStudentInterests.filter(i => i.studentId === s.id);
+          const hasPending = studentInterests.some(i => i.status === 'Pending');
+          const oldestInquiryDate = studentInterests.reduce((min, i) => {
+            const date = i.submissionDate?.toMillis?.() || Infinity;
+            return date < min ? date : min;
+          }, Infinity);
+
+          return { ...s, studentInterests, hasPending, oldestInquiryDate };
+        })
+        // Only include students with non-empty inquiries
+        .filter(s => s.studentInterests.length > 0)
+        // Sort: Pending first, then by date (oldest first / first come first serve)
+        .sort((a, b) => {
+          if (a.hasPending && !b.hasPending) return -1;
+          if (!a.hasPending && b.hasPending) return 1;
+          return a.oldestInquiryDate - b.oldestInquiryDate;
+        });
+    }
+    
+    if (activeTab === 'teachers') {
+      return users.filter(u => u.userType === 'Teacher');
+    }
+    
     return [];
-  }, [users, activeTab]);
+  }, [users, allStudentInterests, activeTab]);
 
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
@@ -883,27 +926,27 @@ export default function AdminPortal() {
       </Link>
       <nav className="flex-1 px-4 space-y-1">
         <SheetClose asChild>
-          <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('notifications')}>
+          <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => {setActiveTab('notifications'); setCurrentPage(1);}}>
             <Bell className="h-4 w-4" /> Notifications
           </Button>
         </SheetClose>
         <SheetClose asChild>
-          <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('students')}>
+          <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => {setActiveTab('students'); setCurrentPage(1);}}>
             <UserCheck className="h-4 w-4" /> Students
           </Button>
         </SheetClose>
         <SheetClose asChild>
-          <Button variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('teachers')}>
+          <Button variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => {setActiveTab('teachers'); setCurrentPage(1);}}>
             <GraduationCap className="h-4 w-4" /> Teachers
           </Button>
         </SheetClose>
         <SheetClose asChild>
-          <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('settings')}>
+          <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => {setActiveTab('settings'); setCurrentPage(1);}}>
             <History className="h-4 w-4" /> Activity Logs
           </Button>
         </SheetClose>
         <SheetClose asChild>
-          <Button variant={activeTab === 'maintenance' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('maintenance')}>
+          <Button variant={activeTab === 'maintenance' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => {setActiveTab('maintenance'); setCurrentPage(1);}}>
             <Database className="h-4 w-4" /> Maintenance
           </Button>
         </SheetClose>
@@ -949,19 +992,19 @@ export default function AdminPortal() {
             <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
           </Link>
           <nav className="flex-1 px-4 space-y-1">
-            <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('notifications')}>
+            <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => {setActiveTab('notifications'); setCurrentPage(1);}}>
               <Bell className="h-4 w-4" /> Notifications
             </Button>
-            <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('students')}>
+            <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => {setActiveTab('students'); setCurrentPage(1);}}>
               <UserCheck className="h-4 w-4" /> Students
             </Button>
-            <Button variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('teachers')}>
+            <Button variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => {setActiveTab('teachers'); setCurrentPage(1);}}>
               <GraduationCap className="h-4 w-4" /> Teachers
             </Button>
-            <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('settings')}>
+            <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => {setActiveTab('settings'); setCurrentPage(1);}}>
               <History className="h-4 w-4" /> Activity Logs
             </Button>
-            <Button variant={activeTab === 'maintenance' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('maintenance')}>
+            <Button variant={activeTab === 'maintenance' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => {setActiveTab('maintenance'); setCurrentPage(1);}}>
               <Database className="h-4 w-4" /> Maintenance
             </Button>
           </nav>
@@ -1014,12 +1057,21 @@ export default function AdminPortal() {
             </Card>
           )}
 
-          {(activeTab === 'students' || activeTab === 'teachers') && (
+          {(activeTab === 'students' || activeTab === 'teachers') && (activeTab === 'students' && !allStudentInterests ? (
+            <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+          ) : (
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>{activeTab === 'students' ? 'Students' : 'Teachers'}</CardTitle>
-                  <Badge variant="secondary">{filteredUsers.length} Total</Badge>
+                  <div className="space-y-1">
+                    <CardTitle>{activeTab === 'students' ? 'Student Inquiries' : 'Registered Teachers'}</CardTitle>
+                    {activeTab === 'students' && (
+                      <CardDescription className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-tight">
+                        <Clock className="h-3 w-3" /> Sorting: Pending first, oldest inquiries priority
+                      </CardDescription>
+                    )}
+                  </div>
+                  <Badge variant="secondary">{filteredUsers.length} Found</Badge>
                 </div>
               </CardHeader>
               <CardContent>
@@ -1028,27 +1080,39 @@ export default function AdminPortal() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Name</TableHead>
-                        <TableHead className="hidden sm:table-cell">Email</TableHead>
+                        <TableHead className="hidden sm:table-cell">Details</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {paginatedUsers.length > 0 ? paginatedUsers.map(u => (
-                        <TableRow key={u.id} className="hover:bg-secondary/5">
+                        <TableRow key={u.id} className={`hover:bg-secondary/5 ${u.hasPending ? 'bg-primary/5' : ''}`}>
                           <TableCell className="font-medium">
                             <div className="flex flex-col">
-                              <span>{u.firstName} {u.lastName}</span>
+                              <div className="flex items-center gap-2">
+                                <span>{u.firstName} {u.lastName}</span>
+                                {u.hasPending && <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5">NEW</Badge>}
+                              </div>
                               <span className="sm:hidden text-[10px] text-muted-foreground">{u.email}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="hidden sm:table-cell text-muted-foreground">{u.email}</TableCell>
+                          <TableCell className="hidden sm:table-cell text-muted-foreground">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[11px]">{u.email}</span>
+                                {activeTab === 'students' && u.oldestInquiryDate !== Infinity && (
+                                   <span className="text-[9px] flex items-center gap-1 font-medium text-primary">
+                                     <Clock className="h-2.5 w-2.5" /> First Inquiry: {new Date(u.oldestInquiryDate).toLocaleDateString()}
+                                   </span>
+                                )}
+                            </div>
+                          </TableCell>
                           <TableCell className="text-right">
-                            <Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View Details</Button>
+                            <Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View {activeTab === 'students' ? 'Requests' : 'Profile'}</Button>
                           </TableCell>
                         </TableRow>
                       )) : (
                         <TableRow>
-                          <TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No users found.</TableCell>
+                          <TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No results found.</TableCell>
                         </TableRow>
                       )}
                     </TableBody>
@@ -1063,7 +1127,7 @@ export default function AdminPortal() {
                 )}
               </CardContent>
             </Card>
-          )}
+          ))}
 
           {activeTab === 'settings' && <SystemSettingsLogs isAdmin={isAdmin} />}
 
