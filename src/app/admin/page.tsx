@@ -315,14 +315,9 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
     
     updateDocumentNonBlocking(interestRef, { status: newStatus });
     
-    createAdminNotification(
-      db,
-      'status_update',
-      `Status Update: ${statusChangeTarget.subject}`,
-      `The status for ${statusChangeTarget.userName}'s interest in "${statusChangeTarget.subject}" has been updated to ${newStatus}.`,
-      statusChangeTarget.userEmail,
-      statusChangeTarget.userName
-    );
+    // REMOVED createAdminNotification here to reduce clutter. 
+    // The Admin is the one performing the action, so an alert to themselves is unnecessary.
+    // We still log the event and send the user email below.
 
     logSystemEvent(db, adminUser, 'status_update', `Updated status to ${newStatus} for ${statusChangeTarget.userName}'s interest in ${statusChangeTarget.subject}`);
 
