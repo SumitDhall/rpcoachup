@@ -1,6 +1,12 @@
+
 # RP Coach-Up Platform
 
 This is a Next.js 15 application powered by Firebase Studio, using AI to match students with teachers and courses.
+
+## 🖼 How to use your own images
+1.  **Prepare your images**: Rename your downloaded images to `hero-education.jpg`, `teacher-mentoring.jpg`, and `online-course.jpg`.
+2.  **Upload to Project**: Create a folder named `public/images` in your project root and place the files there.
+3.  **Verify**: The application is already configured to look for these files in the `public/images` directory via `src/app/lib/placeholder-images.json`.
 
 ## 🚀 Step-by-Step Deployment Guide (App Hosting)
 
@@ -30,7 +36,7 @@ This app uses **Firebase App Hosting** for Next.js SSR support.
 ## 🛠 Troubleshooting Rollout Errors
 
 ### 1. "Invalid apphosting.yaml"
-If you see this error, ensure your `apphosting.yaml` matches the simplified version currently in the project. We recommend managing environment variables via the Firebase Console UI rather than the YAML file to avoid formatting issues.
+We recommend managing environment variables via the Firebase Console UI. Ensure your `apphosting.yaml` is simple and does not contain syntax errors.
 
 ### 2. Missing GEMINI_API_KEY (AI Features)
 This app uses AI for matching and notifications. You **must** add your API key:
@@ -42,12 +48,7 @@ This app uses AI for matching and notifications. You **must** add your API key:
    - **Availability**: Check both **Build** and **Runtime**.
 4. Click **Save** and trigger a **New Rollout**.
 
-### 3. "No buildpack groups passed detection"
-This means your GitHub repository is empty or the files are in a subfolder.
-- Ensure you ran the `git push` commands in **Phase 1**.
-- Check your GitHub repo URL to verify `package.json` is visible in the root folder.
-
-### 4. "GitHub Connection Error"
+### 3. "GitHub Connection Error"
 - Go to your **GitHub Settings > Applications**.
 - Find **Firebase App Hosting** and click **Configure**.
 - Ensure the repository you created is selected in the list of authorized repos.

@@ -4,19 +4,19 @@
     {
       "id": "hero-education",
       "description": "Students and teacher collaborating in a modern, tech-enabled classroom environment",
-      "imageUrl": "https://picsum.photos/seed/education-hero/1200/600",
+      "imageUrl": "/images/hero-education.jpg",
       "imageHint": "modern classroom"
     },
     {
       "id": "teacher-mentoring",
       "description": "Focused one-on-one mentorship session between an expert educator and a student",
-      "imageUrl": "https://picsum.photos/seed/mentoring-session/600/400",
+      "imageUrl": "/images/teacher-mentoring.jpg",
       "imageHint": "teacher student"
     },
     {
       "id": "online-course",
       "description": "Professional home tuition setup with personalized learning materials",
-      "imageUrl": "https://picsum.photos/seed/home-tuition/600/400",
+      "imageUrl": "/images/online-course.jpg",
       "imageHint": "study room"
     }
   ]
