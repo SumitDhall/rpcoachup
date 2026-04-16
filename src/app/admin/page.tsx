@@ -106,11 +106,19 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Get all teachers
   const teachersQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
     return query(collection(db, 'users'), where('userType', '==', 'Teacher'), limit(100));
   }, [db, isAdmin]);
   const { data: teachers, isLoading: isLoadingTeachers } = useCollection(teachersQuery);
+
+  // Get all completed teacher interests to filter eligible teachers
+  const completedInterestsQuery = useMemoFirebase(() => {
+    if (!db || !isAdmin) return null;
+    return query(collection(db, 'teacherInterests'), where('status', '==', 'Completed'), limit(500));
+  }, [db, isAdmin]);
+  const { data: completedInterests, isLoading: isLoadingInterests } = useCollection(completedInterestsQuery);
 
   const matchesQuery = useMemoFirebase(() => {
     if (!db || !isAdmin || !studentId) return null;
@@ -121,6 +129,10 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
   const matchedTeacherIds = useMemo(() => {
     return new Set(currentMatches?.map(m => m.teacherId) || []);
   }, [currentMatches]);
+
+  const completedTeacherIds = useMemo(() => {
+    return new Set(completedInterests?.map(i => i.teacherId) || []);
+  }, [completedInterests]);
 
   const handleAssignTeacher = (teacher: any) => {
     const teacherFullName = `${teacher.firstName} ${teacher.lastName}`;
@@ -176,23 +188,28 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
   const filteredTeachers = useMemo(() => {
     if (!teachers) return [];
     return teachers.filter(t => 
-      `${t.firstName} ${t.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.email.toLowerCase().includes(searchTerm.toLowerCase())
+      completedTeacherIds.has(t.id) && (
+        `${t.firstName} ${t.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.email.toLowerCase().includes(searchTerm.toLowerCase())
+      )
     );
-  }, [teachers, searchTerm]);
+  }, [teachers, searchTerm, completedTeacherIds]);
 
   if (!isAdmin) return null;
-  if (isLoadingTeachers || isLoadingMatches) {
+  if (isLoadingTeachers || isLoadingMatches || isLoadingInterests) {
     return <div className="flex justify-center p-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   }
 
   return (
     <div className="space-y-4 pt-6 border-t mt-6">
       <div className="flex items-center justify-between">
-        <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-          <UserPlus className="h-4 w-4" />
-          Assign Teachers
-        </h4>
+        <div className="space-y-1">
+          <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <UserPlus className="h-4 w-4" />
+            Assign Teachers
+          </h4>
+          <p className="text-[10px] text-muted-foreground italic">Only showing verified/completed teachers</p>
+        </div>
         <Badge variant="secondary" className="font-normal">
           {matchedTeacherIds.size} Assigned
         </Badge>
@@ -201,7 +218,7 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input 
-          placeholder="Search teachers..." 
+          placeholder="Search verified teachers..." 
           className="pl-9 h-9 text-xs"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -246,7 +263,7 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
             );
           })
         ) : (
-          <p className="text-center py-4 text-xs text-muted-foreground italic">No teachers found.</p>
+          <p className="text-center py-4 text-xs text-muted-foreground italic">No verified teachers found.</p>
         )}
       </div>
     </div>
