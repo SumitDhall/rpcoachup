@@ -6,9 +6,7 @@ service cloud.firestore {
      * RP Coach-Up Security Rules
      * 
      * Core Philosophy:
-     * This ruleset implements a robust, multi-tenant educational platform model. 
-     * Shared or public entities (sessions, enrollments, recommendations, proposals) are stored 
-     * in top-level collections with denormalized UID fields (e.g., studentId, teacherId).
+     * Robust, role-based access control for students, teachers, and admins.
      */
 
     // --- Helper Functions ---
@@ -58,16 +56,16 @@ service cloud.firestore {
     }
 
     match /studentInterests/{interestId} {
-      allow get, list: if isOwner(resource.data.studentId) || isAdmin();
+      allow get, list: if (isSignedIn() && request.auth.uid == resource.data.studentId) || isAdmin();
       allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
-      allow update: if isExistingOwner(resource.data.studentId) && isImmutable('studentId');
+      allow update: if isAdmin() || (isExistingOwner(resource.data.studentId) && isImmutable('studentId'));
       allow delete: if isExistingOwner(resource.data.studentId) || isAdmin();
     }
 
     match /teacherInterests/{interestId} {
-      allow get, list: if isOwner(resource.data.teacherId) || isAdmin();
+      allow get, list: if (isSignedIn() && request.auth.uid == resource.data.teacherId) || isAdmin();
       allow create: if isSignedIn() && request.resource.data.teacherId == request.auth.uid;
-      allow update: if isExistingOwner(resource.data.teacherId) && isImmutable('teacherId');
+      allow update: if isAdmin() || (isExistingOwner(resource.data.teacherId) && isImmutable('teacherId'));
       allow delete: if isExistingOwner(resource.data.teacherId) || isAdmin();
     }
 
@@ -91,7 +89,8 @@ service cloud.firestore {
     }
 
     match /feedback/{feedbackId} {
-      allow get, list: if (isSignedIn() && (request.auth.uid == resource.data.userId)) || isAdmin();
+      // Feedback is readable by everyone to showcase on the About page
+      allow get, list: if true; 
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update: if isExistingOwner(resource.data.userId) && isImmutable('userId');
       allow delete: if isExistingOwner(resource.data.userId) || isAdmin();

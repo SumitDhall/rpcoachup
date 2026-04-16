@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -106,12 +105,14 @@ export default function RegisterPage() {
 
       router.push(`/${role.toLowerCase()}/dashboard`);
     } catch (error: any) {
-      console.error("Registration error:", error);
       let msg = "An error occurred during registration.";
+      
       if (error.code === 'auth/email-already-in-use') {
-        msg = "This email address is already registered.";
+        msg = "This email address is already in use. Please try a different email or log in.";
       } else if (error.code === 'auth/weak-password') {
         msg = "Your password is too weak. Please use at least 6 characters.";
+      } else if (error.code === 'auth/invalid-email') {
+        msg = "Please enter a valid email address.";
       }
       
       toast({
@@ -119,6 +120,7 @@ export default function RegisterPage() {
         title: "Registration Failed",
         description: msg,
       });
+      console.error("Registration error:", error.code, error.message);
     } finally {
       setIsLoading(false);
     }
