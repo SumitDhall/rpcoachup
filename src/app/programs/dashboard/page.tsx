@@ -170,7 +170,7 @@ export default function ProgramsDashboard() {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Email Resume</p>
-                    <p className="text-xl font-bold">rpcoachup@gmail.com</p>
+                    <p className="text-xl font-bold">support@rpcoachup.com</p>
                   </div>
                 </div>
               </div>
