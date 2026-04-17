@@ -9,7 +9,7 @@ This is a Next.js 15 application powered by Firebase Studio, using AI to match s
 3.  **Verify**: The application is configured to look for these files in `public/images` via `src/app/lib/placeholder-images.json`.
 
 ## 🎨 How to update the Favicon
-1.  Generate a `favicon.ico` file (16x16 or 32x32 pixels).
+1.  Generate a `favicon.ico` file (16x16 or 32x32 pixels) using your logo.
 2.  Place the file in the `public/` folder.
 3.  Next.js will automatically use this file as the browser tab icon.
 
@@ -48,27 +48,26 @@ If your build fails, it is likely because the environment variable is missing.
 4. **Important**: Ensure availability is checked for both **Build** and **Runtime**.
 5. Trigger a new rollout.
 
-### 2. SSH Access Setup (For Git Push Errors)
+### 2. "Not Secure" Warning (SSL/HTTPS)
+If your browser shows a "Not Secure" warning:
+- **Custom Domains**: Firebase automatically provisions SSL certificates for custom domains, but it can take **24-48 hours** after you update your DNS records.
+- **Force HTTPS**: Firebase App Hosting handles the redirect from `http` to `https` automatically. If the certificate is still "Provisioning", you will see a warning. Please wait for the status to show "Active" in the Firebase Console under Hosting.
+
+### 3. SSH Access Setup (For Git Push Errors)
 If you see "Missing or invalid credentials" or `ECONNREFUSED` errors when pushing code:
 
 1.  **Generate a new SSH key**:
     ```bash
     ssh-keygen -t ed25519 -C "your_email@example.com"
     ```
-    *(Press Enter for all prompts)*
-
-2.  **Start the SSH agent and add your key**:
+2.  **Start the SSH agent**:
     ```bash
     eval "$(ssh-agent -s)"
     ssh-add ~/.ssh/id_ed25519
     ```
-
-3.  **Copy your public key**:
-    ```bash
-    cat ~/.ssh/id_ed25519.pub
-    ```
-    *Copy the string and add it to your GitHub account under **Settings > SSH and GPG keys**.*
-
+3.  **Add public key to GitHub**:
+    - Run `cat ~/.ssh/id_ed25519.pub` and copy the output.
+    - Go to GitHub **Settings > SSH and GPG keys** and add it.
 4.  **Update Git remote**:
     ```bash
     git remote set-url origin git@github.com:YOUR_USERNAME/YOUR_REPO_NAME.git
