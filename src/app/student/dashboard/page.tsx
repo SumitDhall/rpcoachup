@@ -88,7 +88,8 @@ export default function StudentDashboard() {
   }, [db, user?.uid]);
   const { data: matches } = useCollection(matchesQuery);
 
-  const [activeTab, setActiveTab] = useState('interests');
+  // Set 'history' (Tutor Inquiry) as the default landing tab
+  const [activeTab, setActiveTab] = useState('history');
   
   // Tuition Request State
   const [studentName, setStudentName] = useState('');
@@ -496,7 +497,7 @@ export default function StudentDashboard() {
                       <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-sm border-t pt-4">
                         <div className="space-y-2">
                           <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                            <User className="h-3 w-3" /> Student & Academic
+                            <User className="h-4 w-4" /> Student & Academic
                           </p>
                           <div className="space-y-1">
                             <p className="font-medium">{i.studentName}</p>
