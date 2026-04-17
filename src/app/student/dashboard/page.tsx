@@ -254,13 +254,13 @@ export default function StudentDashboard() {
       </Link>
       <nav className="flex-1 px-4 space-y-1">
         <SheetClose asChild>
-          <Button variant={activeTab === 'interests' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('interests')}>
-            <LayoutDashboard className="h-4 w-4" /> Inquiry Form
+          <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('history')}>
+            <History className="h-4 w-4" /> Tutor Inquiry
           </Button>
         </SheetClose>
         <SheetClose asChild>
-          <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('history')}>
-            <History className="h-4 w-4" /> Tutor Inquiry
+          <Button variant={activeTab === 'interests' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('interests')}>
+            <PlusCircle className="h-4 w-4" /> Submit Enquiry
           </Button>
         </SheetClose>
         <SheetClose asChild>
@@ -308,11 +308,11 @@ export default function StudentDashboard() {
             <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
           </Link>
           <nav className="flex-1 px-4 space-y-1">
-            <Button variant={activeTab === 'interests' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('interests')}>
-              <LayoutDashboard className="h-4 w-4" /> Inquiry Form
-            </Button>
             <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('history')}>
               <History className="h-4 w-4" /> Tutor Inquiry
+            </Button>
+            <Button variant={activeTab === 'interests' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('interests')}>
+              <PlusCircle className="h-4 w-4" /> Submit Enquiry
             </Button>
             <Button variant={activeTab === 'feedback' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('feedback')}>
               <MessageSquare className="h-4 w-4" /> Feedback
