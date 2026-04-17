@@ -618,8 +618,8 @@ export default function AdminPortal() {
         <SidebarContent isMobile={false} />
       </aside>
 
-      <main className="flex-1 lg:ml-64 p-4 lg:p-8">
-        <div className="max-w-6xl mx-auto space-y-8">
+      <main className="flex-1 lg:ml-64 p-4 lg:p-8 flex flex-col min-h-screen">
+        <div className="max-w-6xl mx-auto space-y-8 flex-1 w-full">
           <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div><h1 className="text-3xl font-headline font-bold text-primary">Admin Portal</h1><p className="text-muted-foreground">System Administration and Matching</p></div></header>
 
           {activeTab === 'notifications' && (
@@ -655,21 +655,21 @@ export default function AdminPortal() {
             </Card>
           )}
         </div>
-      </main>
 
-      <footer className="bg-secondary/30 border-t py-12 lg:ml-64">
-        <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-6"><div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div><span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span></div>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-8 text-sm font-medium">
-            <a href="tel:+919896959389" className="flex items-center gap-2 hover:text-primary transition-colors"><Phone className="h-4 w-4" /> +91 98969 59389</a>
-            <a href="mailto:support@rpcoachup.com" className="flex items-center gap-2 hover:text-primary transition-colors"><Mail className="h-4 w-4" /> support@rpcoachup.com</a>
+        <footer className="bg-secondary/30 border-t py-12 mt-auto">
+          <div className="container mx-auto px-4 text-center">
+            <div className="flex items-center justify-center gap-2 mb-6"><div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div><span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span></div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-8 text-sm font-medium">
+              <a href="tel:+919896959389" className="flex items-center gap-2 hover:text-primary transition-colors"><Phone className="h-4 w-4" /> +91 98969 59389</a>
+              <a href="mailto:support@rpcoachup.com" className="flex items-center gap-2 hover:text-primary transition-colors"><Mail className="h-4 w-4" /> support@rpcoachup.com</a>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">© 2026 RP Coach-Up. All rights reserved.</p>
+              <p className="text-[10px] text-muted-foreground/40 font-medium italic">design and developed by 'SK group'</p>
+            </div>
           </div>
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">© 2026 RP Coach-Up. All rights reserved.</p>
-            <p className="text-[10px] text-muted-foreground/40 font-medium italic">design and developed by 'SK group'</p>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      </main>
 
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
