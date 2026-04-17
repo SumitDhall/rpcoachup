@@ -260,7 +260,7 @@ export default function StudentDashboard() {
         </SheetClose>
         <SheetClose asChild>
           <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('history')}>
-            <History className="h-4 w-4" /> Inquiry History
+            <History className="h-4 w-4" /> Tutor Inquiry
           </Button>
         </SheetClose>
         <SheetClose asChild>
@@ -312,7 +312,7 @@ export default function StudentDashboard() {
               <LayoutDashboard className="h-4 w-4" /> Inquiry Form
             </Button>
             <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('history')}>
-              <History className="h-4 w-4" /> Inquiry History
+              <History className="h-4 w-4" /> Tutor Inquiry
             </Button>
             <Button variant={activeTab === 'feedback' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('feedback')}>
               <MessageSquare className="h-4 w-4" /> Feedback
@@ -466,7 +466,7 @@ export default function StudentDashboard() {
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <CardTitle>Inquiry History</CardTitle>
+                      <CardTitle>Tutor Inquiry</CardTitle>
                       <CardDescription>Detailed records of your submitted tuition requests.</CardDescription>
                     </div>
                     {rawInterests && rawInterests.length > 0 && (
@@ -620,6 +620,7 @@ export default function StudentDashboard() {
         </div>
       </main>
 
+      <({setActiveTab('history'); setShowSuccessDialog(false); setActiveTab('history');}}
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
@@ -630,7 +631,7 @@ export default function StudentDashboard() {
             <AlertDialogDescription className="text-center text-base">
               Your inquiry has been received. Our management team will contact you within **7 working days**. 
               <br /><br />
-              You can track the progress of this request in the **Inquiry History** tab.
+              You can track the progress of this request in the **Tutor Inquiry** tab.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-center mt-6">
