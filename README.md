@@ -33,17 +33,24 @@ This app uses **Firebase App Hosting** for Next.js SSR support.
 
 ---
 
-## 🛠 Troubleshooting Git & Deployment
+## 🛠 Troubleshooting Build & Deployment
 
-### 1. SSH Access Setup (Recommended)
-If you see "Missing or invalid credentials" or `ECONNREFUSED` errors, SSH is the most reliable way to push your code.
+### 1. Missing GEMINI_API_KEY (CRITICAL)
+If your build fails, it is likely because the environment variable is missing. 
+1. Go to **App Hosting** dashboard in Firebase Console.
+2. Select your backend > **Settings > Environment variables**.
+3. Add `GEMINI_API_KEY` with your key from Google AI Studio.
+4. **Important**: Ensure availability is checked for both **Build** and **Runtime**.
+5. Trigger a new rollout.
+
+### 2. SSH Access Setup (For Git Push Errors)
+If you see "Missing or invalid credentials" or `ECONNREFUSED` errors when pushing code:
 
 1.  **Generate a new SSH key**:
-    In the terminal, run:
     ```bash
     ssh-keygen -t ed25519 -C "your_email@example.com"
     ```
-    *(Press Enter for all prompts to use default settings)*
+    *(Press Enter for all prompts)*
 
 2.  **Start the SSH agent and add your key**:
     ```bash
@@ -55,28 +62,13 @@ If you see "Missing or invalid credentials" or `ECONNREFUSED` errors, SSH is the
     ```bash
     cat ~/.ssh/id_ed25519.pub
     ```
-    *Copy the long string starting with `ssh-ed25519`.*
+    *Copy the string and add it to your GitHub account under **Settings > SSH and GPG keys**.*
 
-4.  **Add the key to GitHub**:
-    - Go to your GitHub **Settings**.
-    - Click **SSH and GPG keys** in the sidebar.
-    - Click **New SSH key**, give it a title (e.g., "Firebase Studio"), and paste your key.
-
-5.  **Change your Git remote to use SSH**:
+4.  **Update Git remote**:
     ```bash
     git remote set-url origin git@github.com:YOUR_USERNAME/YOUR_REPO_NAME.git
-    ```
-
-6.  **Push your code**:
-    ```bash
     git push -u origin main
     ```
-
-### 2. Missing GEMINI_API_KEY
-This app uses AI for matching. You **must** add your API key in the Firebase Console:
-1. Go to **App Hosting** dashboard > **Settings > Environment variables**.
-2. Add `GEMINI_API_KEY` with your key from Google AI Studio.
-3. Check both **Build** and **Runtime** availability.
 
 ---
 
