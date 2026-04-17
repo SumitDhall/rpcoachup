@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -439,7 +438,7 @@ export default function TeacherDashboard() {
                         <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-sm border-t pt-4">
                           <div className="space-y-2">
                             <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                              <User className="h-3 w-3" /> Teacher Details
+                              <User className="h-4 w-4" /> Teacher Details
                             </p>
                             <div className="space-y-1">
                               <p className="font-medium">{i.teacherName}</p>
@@ -502,20 +501,21 @@ export default function TeacherDashboard() {
                   <CardContent className="space-y-8 pt-8">
                     <div className="space-y-4">
                       <Label className="text-lg">Overall Platform Satisfaction</Label>
-                      <div className="flex gap-3">
+                      <div className="flex gap-4">
                         {[1, 2, 3, 4, 5].map(star => (
                           <Button 
                             key={star} 
                             type="button" 
                             variant={Number(feedbackRating) >= star ? "default" : "outline"} 
                             size="icon" 
-                            className={`h-12 w-12 rounded-xl transition-all ${Number(feedbackRating) >= star ? 'bg-accent text-accent-foreground scale-110 shadow-md' : 'hover:border-accent/50'}`} 
+                            className={`h-12 w-12 rounded-xl transition-all duration-300 hover:scale-125 hover:rotate-6 active:scale-90 ${Number(feedbackRating) >= star ? 'bg-accent text-accent-foreground scale-110 shadow-lg shadow-accent/40' : 'hover:border-accent/50'}`} 
                             onClick={() => setFeedbackRating(star.toString())}
                           >
-                            <Star className={`h-6 w-6 ${Number(feedbackRating) >= star ? "fill-current" : ""}`} />
+                            <Star className={`h-6 w-6 transition-transform duration-500 ${Number(feedbackRating) >= star ? "fill-current scale-110" : "scale-100"}`} />
                           </Button>
                         ))}
                       </div>
+                      <p className="text-xs text-muted-foreground italic animate-pulse">Select a star to rate our platform</p>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="feedbackComment" className="text-lg">Your Feedback / Suggestions</Label>
