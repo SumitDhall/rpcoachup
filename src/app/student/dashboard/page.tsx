@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -620,7 +619,6 @@ export default function StudentDashboard() {
         </div>
       </main>
 
-      <({setActiveTab('history'); setShowSuccessDialog(false); setActiveTab('history');}}
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
