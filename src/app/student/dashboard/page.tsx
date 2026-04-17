@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,6 @@ import {
 } from "@/components/ui/sheet";
 import {
   BookOpen,
-  LayoutDashboard,
   Loader2,
   LogOut,
   User,
@@ -88,7 +87,7 @@ export default function StudentDashboard() {
   }, [db, user?.uid]);
   const { data: matches } = useCollection(matchesQuery);
 
-  // Set 'history' (Tutor Inquiry) as the default landing tab
+  // Default landing tab is 'history' (Tutor Inquiry)
   const [activeTab, setActiveTab] = useState('history');
   
   // Tuition Request State
@@ -159,7 +158,6 @@ export default function StudentDashboard() {
         read: false
       });
 
-      // Simulated confirmation email
       sendNotificationEmail({
         recipientType: 'user',
         type: 'interest',
@@ -196,7 +194,6 @@ export default function StudentDashboard() {
         createdAt: serverTimestamp()
       });
 
-      // Notify Admin in Firestore
       addDocumentNonBlocking(collection(db, 'notifications'), {
         type: 'feedback',
         subject: `New Student Feedback: ${feedbackRating} Stars`,
@@ -207,7 +204,6 @@ export default function StudentDashboard() {
         read: false
       });
 
-      // Notify Admin via simulated email
       sendNotificationEmail({
         recipientType: 'admin',
         type: 'interest',
@@ -345,7 +341,6 @@ export default function StudentDashboard() {
                 </CardHeader>
                 <form onSubmit={handleSubmitInterest}>
                   <CardContent className="space-y-8 pt-8">
-                    {/* Basic Info Group */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
                         <User className="h-4 w-4" /> Personal Information
@@ -362,7 +357,6 @@ export default function StudentDashboard() {
                       </div>
                     </div>
 
-                    {/* Academic Info Group */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
                         <School className="h-4 w-4" /> Academic Details
@@ -384,7 +378,6 @@ export default function StudentDashboard() {
                       </div>
                     </div>
 
-                    {/* Contact & Location Group */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
                         <MapPin className="h-4 w-4" /> Contact & Location
@@ -412,7 +405,6 @@ export default function StudentDashboard() {
                       </div>
                     </div>
 
-                    {/* Budget & Timeline Group */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
                         <IndianRupee className="h-4 w-4" /> Budget & Timeline
@@ -434,7 +426,6 @@ export default function StudentDashboard() {
                       </div>
                     </div>
 
-                    {/* Additional Info */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
                         <Info className="h-4 w-4" /> Additional Information
@@ -629,9 +620,9 @@ export default function StudentDashboard() {
             </div>
             <AlertDialogTitle className="text-center text-2xl text-primary">Request Submitted!</AlertDialogTitle>
             <AlertDialogDescription className="text-center text-base">
-              Your inquiry has been received. Our management team will contact you within **7 working days**. 
+              Thank you for your enquiry. Our support team will contact you within 7 working days. 
               <br /><br />
-              You can track the progress of this request in the **Tutor Inquiry** tab.
+              You can track the progress of your request on Tutor Enquiry page.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-center mt-6">
