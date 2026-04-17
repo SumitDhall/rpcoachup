@@ -8,6 +8,11 @@ This is a Next.js 15 application powered by Firebase Studio, using AI to match s
 2.  **Upload to Project**: Place the files in the `public/images` directory.
 3.  **Verify**: The application is configured to look for these files in `public/images` via `src/app/lib/placeholder-images.json`.
 
+## 🎨 How to update the Favicon
+1.  Generate a `favicon.ico` file (16x16 or 32x32 pixels).
+2.  Place the file in the `public/` folder.
+3.  Next.js will automatically use this file as the browser tab icon.
+
 ## 🚀 Step-by-Step Deployment Guide (App Hosting)
 
 This app uses **Firebase App Hosting** for Next.js SSR support.
