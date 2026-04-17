@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import Link from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -51,7 +51,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
-import { collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { sendNotificationEmail } from '@/app/actions/notifications';
 
