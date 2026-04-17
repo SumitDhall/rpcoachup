@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo } from 'react';
@@ -50,7 +51,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
-import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { sendNotificationEmail } from '@/app/actions/notifications';
 
@@ -388,6 +389,13 @@ export default function TeacherDashboard() {
                               Resume: {i.resumeName}
                             </div>
                           </div>
+
+                          <div className="col-span-full space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                               <BookOpen className="h-3.5 w-3.5" /> Subjects Specialisation in
+                            </p>
+                            <p className="text-xs bg-secondary/10 p-2 rounded-lg leading-relaxed">{i.subjects}</p>
+                          </div>
                         </div>
                       </div>
                     ))
@@ -561,9 +569,9 @@ export default function TeacherDashboard() {
             </div>
             <AlertDialogTitle className="text-center text-2xl text-primary">Profile Received!</AlertDialogTitle>
             <AlertDialogDescription className="text-center text-base">
-              Your professional specialty profile has been received. Our team will review your qualifications and resume and contact you within **7 working days** for verification.
+              Thank you for submitting your interest. Our support team will review your application and contact you within 7 working days for the next process.
               <br /><br />
-              You can monitor the status of your application in the **Professional Records** tab.
+              You can monitor the status of your application at the Professional Records page.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-center mt-6">
