@@ -183,7 +183,7 @@ export default function Home() {
                 <div className="absolute -inset-4 bg-primary/10 rounded-2xl blur-3xl transition group-hover:bg-primary/20" />
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-border aspect-[16/9]">
                   <Image 
-                    src={heroImg?.imageUrl || "https://picsum.photos/seed/edu1/1200/600"} 
+                    src={heroImg?.imageUrl || "/images/hero-education.jpg"} 
                     alt="Students learning"
                     width={1200}
                     height={600}
@@ -240,7 +240,7 @@ export default function Home() {
               </div>
               <div className="relative rounded-2xl overflow-hidden border shadow-xl bg-muted aspect-[4/5]">
                  <Image 
-                    src={mentorImg?.imageUrl || "https://picsum.photos/seed/classroom2/800/1000"} 
+                    src={mentorImg?.imageUrl || "/images/teacher-mentoring.jpg"} 
                     alt="Educational mentoring"
                     width={800}
                     height={1000}

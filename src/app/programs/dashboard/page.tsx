@@ -202,7 +202,7 @@ export default function ProgramsDashboard() {
               <div className="absolute -inset-4 bg-primary/20 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative rounded-3xl overflow-hidden border-4 border-white shadow-2xl w-full max-w-[450px] aspect-[4/5]">
                 <Image 
-                  src={onlineCourseImg?.imageUrl || "https://picsum.photos/seed/classroom3/800/1000"} 
+                  src={onlineCourseImg?.imageUrl || "/images/online-course.jpg"} 
                   alt="Home Tuition Program"
                   fill
                   className="object-cover transform transition-transform duration-500 group-hover:scale-105"

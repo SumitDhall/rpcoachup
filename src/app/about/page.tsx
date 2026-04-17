@@ -106,8 +106,8 @@ export default function AboutPage() {
               {isUserLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               ) : user ? (
-                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled>
-                  <span>Dashboard</span>
+                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+                  <Link href="/login">Dashboard</Link>
                 </Button>
               ) : (
                 <>
@@ -160,8 +160,8 @@ export default function AboutPage() {
                          <div className="flex justify-center py-2"><Loader2 className="h-5 w-5 animate-spin" /></div>
                       ) : user ? (
                         <SheetClose asChild>
-                          <Button className="w-full justify-start gap-2" disabled>
-                            Dashboard
+                          <Button className="w-full justify-start gap-2" asChild>
+                            <Link href="/login">Dashboard</Link>
                           </Button>
                         </SheetClose>
                       ) : (
@@ -216,7 +216,7 @@ export default function AboutPage() {
                 <div className="absolute -inset-4 bg-primary/10 rounded-3xl blur-2xl" />
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl border aspect-[16/10]">
                   <Image 
-                    src={mentorImg?.imageUrl || "https://picsum.photos/seed/edu2/600/400"} 
+                    src={mentorImg?.imageUrl || "/images/teacher-mentoring.jpg"} 
                     alt={mentorImg?.description || "Teacher mentoring a student"}
                     fill
                     className="object-cover"
