@@ -5,8 +5,8 @@ This is a Next.js 15 application powered by Firebase Studio, using AI to match s
 
 ## 🖼 How to use your own images
 1.  **Prepare your images**: Rename your downloaded images to `hero-education.jpg`, `teacher-mentoring.jpg`, and `online-course.jpg`.
-2.  **Upload to Project**: Create a folder named `public/images` in your project root and place the files there.
-3.  **Verify**: The application is already configured to look for these files in the `public/images` directory via `src/app/lib/placeholder-images.json`.
+2.  **Upload to Project**: Place the files in the `public/images` directory.
+3.  **Verify**: The application is configured to look for these files in `public/images` via `src/app/lib/placeholder-images.json`.
 
 ## 🚀 Step-by-Step Deployment Guide (App Hosting)
 
@@ -33,25 +33,26 @@ This app uses **Firebase App Hosting** for Next.js SSR support.
 
 ---
 
-## 🛠 Troubleshooting Rollout Errors
+## 🛠 Troubleshooting Git & Deployment
 
-### 1. "Invalid apphosting.yaml"
-We recommend managing environment variables via the Firebase Console UI. Ensure your `apphosting.yaml` is simple and does not contain syntax errors.
+### 1. "Missing or invalid credentials" (Git Push Error)
+If you see `ECONNREFUSED` or credential errors during `git push`:
+1. **Set Identity**:
+   ```bash
+   git config --global user.email "you@example.com"
+   git config --global user.name "Your Name"
+   ```
+2. **Use Token**: Update your remote to include a GitHub Personal Access Token (PAT):
+   ```bash
+   git remote set-url origin https://YOUR_TOKEN@github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+   git push
+   ```
 
-### 2. Missing GEMINI_API_KEY (AI Features)
-This app uses AI for matching and notifications. You **must** add your API key:
-1. Go to **App Hosting** dashboard for your backend.
-2. Navigate to **Settings > Environment variables**.
-3. Click **Add variable**:
-   - **Variable path**: `GEMINI_API_KEY`
-   - **Value**: [Your Google AI Studio API Key]
-   - **Availability**: Check both **Build** and **Runtime**.
-4. Click **Save** and trigger a **New Rollout**.
-
-### 3. "GitHub Connection Error"
-- Go to your **GitHub Settings > Applications**.
-- Find **Firebase App Hosting** and click **Configure**.
-- Ensure the repository you created is selected in the list of authorized repos.
+### 2. Missing GEMINI_API_KEY
+This app uses AI for matching. You **must** add your API key in the Firebase Console:
+1. Go to **App Hosting** dashboard > **Settings > Environment variables**.
+2. Add `GEMINI_API_KEY` with your key from Google AI Studio.
+3. Check both **Build** and **Runtime** availability.
 
 ---
 
@@ -59,3 +60,5 @@ This app uses AI for matching and notifications. You **must** add your API key:
 1. Register on the `/register` page.
 2. Get your UID from the **Authentication** tab in Firebase Console.
 3. Create a document in the `roles_admin` collection where the **Document ID** is your UID.
+
+© 2026 RP Coach-Up | design and developed by 'SK group'
