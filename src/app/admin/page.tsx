@@ -554,35 +554,41 @@ export default function AdminPortal() {
 
   if (isUserLoading || isAdminLoading || !user) return <div className="flex h-screen items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-      <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div>
-        <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
-      </Link>
-      <nav className="flex-1 px-4 space-y-1">
-        <SheetClose asChild>
-          <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('notifications')}><Bell className="h-4 w-4" />Notifications</Button>
-        </SheetClose>
-        <SheetClose asChild>
-          <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('students')}><UserCheck className="h-4 w-4" />Students</Button>
-        </SheetClose>
-        <SheetClose asChild>
-          <Button variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('teachers')}><GraduationCap className="h-4 w-4" />Teachers</Button>
-        </SheetClose>
-        <SheetClose asChild>
-          <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('settings')}><History className="h-4 w-4" />Activity Logs</Button>
-        </SheetClose>
-        <SheetClose asChild>
-          <Button variant={activeTab === 'maintenance' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('maintenance')}><Database className="h-4 w-4" />Maintenance</Button>
-        </SheetClose>
-      </nav>
-      <div className="p-4 border-t space-y-4">
-        <div className="px-2 space-y-2 text-[10px] text-muted-foreground"><p className="flex items-center gap-2"><Phone className="h-3 w-3" /> +91 98969 59389</p><p className="flex items-center gap-2"><Mail className="h-3 w-3" /> support@rpcoachup.com</p></div>
-        <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}><LogOut className="h-4 w-4 mr-2" />Sign Out</Button>
+  const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => {
+    const NavButton = ({ id, icon: Icon, label }: { id: string, icon: any, label: string }) => {
+      const btn = (
+        <Button 
+          variant={activeTab === id ? 'secondary' : 'ghost'} 
+          className="w-full justify-start gap-3" 
+          onClick={() => setActiveTab(id)}
+        >
+          <Icon className="h-4 w-4" />
+          {label}
+        </Button>
+      );
+      return isMobile ? <SheetClose asChild>{btn}</SheetClose> : btn;
+    };
+
+    return (
+      <div className="flex flex-col h-full">
+        <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div>
+          <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
+        </Link>
+        <nav className="flex-1 px-4 space-y-1">
+          <NavButton id="notifications" icon={Bell} label="Notifications" />
+          <NavButton id="students" icon={UserCheck} label="Students" />
+          <NavButton id="teachers" icon={GraduationCap} label="Teachers" />
+          <NavButton id="settings" icon={History} label="Activity Logs" />
+          <NavButton id="maintenance" icon={Database} label="Maintenance" />
+        </nav>
+        <div className="p-4 border-t space-y-4">
+          <div className="px-2 space-y-2 text-[10px] text-muted-foreground"><p className="flex items-center gap-2"><Phone className="h-3 w-3" /> +91 98969 59389</p><p className="flex items-center gap-2"><Mail className="h-3 w-3" /> support@rpcoachup.com</p></div>
+          <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}><LogOut className="h-4 w-4 mr-2" />Sign Out</Button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex min-h-screen bg-background flex-col lg:flex-row">
@@ -602,14 +608,14 @@ export default function AdminPortal() {
             <SheetHeader className="sr-only">
               <SheetTitle>Admin Navigation</SheetTitle>
             </SheetHeader>
-            <SidebarContent />
+            <SidebarContent isMobile={true} />
           </SheetContent>
         </Sheet>
       </header>
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
-        <SidebarContent />
+        <SidebarContent isMobile={false} />
       </aside>
 
       <main className="flex-1 lg:ml-64 p-4 lg:p-8">

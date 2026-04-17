@@ -56,7 +56,7 @@ import { sendNotificationEmail } from '@/app/actions/notifications';
 
 export default function TeacherDashboard() {
   const { user, isUserLoading } = useUser();
-  const auth = useAuth();
+  const auth = authInstance = useAuth();
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
@@ -221,42 +221,46 @@ export default function TeacherDashboard() {
     return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-      <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <div className="bg-primary p-1 rounded-lg">
-          <BookOpen className="text-primary-foreground h-5 w-5" />
-        </div>
-        <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
-      </Link>
-      <nav className="flex-1 px-4 space-y-1">
-        <SheetClose asChild>
-          <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('history')}>
-            <History className="h-4 w-4" /> Professional Records
-          </Button>
-        </SheetClose>
-        <SheetClose asChild>
-          <Button variant={activeTab === 'profile' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('profile')}>
-            <PlusCircle className="h-4 w-4" /> Submit Profile
-          </Button>
-        </SheetClose>
-        <SheetClose asChild>
-          <Button variant={activeTab === 'feedback' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('feedback')}>
-            <MessageSquare className="h-4 w-4" /> Feedback
-          </Button>
-        </SheetClose>
-      </nav>
-      <div className="p-4 border-t space-y-4">
-        <div className="px-2 space-y-2 text-[10px] text-muted-foreground">
-          <p className="flex items-center gap-2"><Phone className="h-3 w-3" /> +91 98969 59389</p>
-          <p className="flex items-center gap-2"><Mail className="h-3 w-3" /> support@rpcoachup.com</p>
-        </div>
-        <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
-          <LogOut className="h-4 w-4 mr-2" /> Sign Out
+  const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => {
+    const NavButton = ({ id, icon: Icon, label }: { id: string, icon: any, label: string }) => {
+      const btn = (
+        <Button 
+          variant={activeTab === id ? 'secondary' : 'ghost'} 
+          className="w-full justify-start gap-3" 
+          onClick={() => setActiveTab(id)}
+        >
+          <Icon className="h-4 w-4" />
+          {label}
         </Button>
+      );
+      return isMobile ? <SheetClose asChild>{btn}</SheetClose> : btn;
+    };
+
+    return (
+      <div className="flex flex-col h-full">
+        <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="bg-primary p-1 rounded-lg">
+            <BookOpen className="text-primary-foreground h-5 w-5" />
+          </div>
+          <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
+        </Link>
+        <nav className="flex-1 px-4 space-y-1">
+          <NavButton id="history" icon={History} label="Professional Records" />
+          <NavButton id="profile" icon={PlusCircle} label="Submit Profile" />
+          <NavButton id="feedback" icon={MessageSquare} label="Feedback" />
+        </nav>
+        <div className="p-4 border-t space-y-4">
+          <div className="px-2 space-y-2 text-[10px] text-muted-foreground">
+            <p className="flex items-center gap-2"><Phone className="h-3 w-3" /> +91 98969 59389</p>
+            <p className="flex items-center gap-2"><Mail className="h-3 w-3" /> support@rpcoachup.com</p>
+          </div>
+          <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4 mr-2" /> Sign Out
+          </Button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="flex min-h-screen bg-background flex-col lg:flex-row">
@@ -275,40 +279,13 @@ export default function TeacherDashboard() {
             <SheetHeader className="sr-only">
               <SheetTitle>Teacher Navigation</SheetTitle>
             </SheetHeader>
-            <SidebarContent />
+            <SidebarContent isMobile={true} />
           </SheetContent>
         </Sheet>
       </header>
 
       <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
-        <div className="flex flex-col h-full">
-          <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="bg-primary p-1 rounded-lg">
-              <BookOpen className="text-primary-foreground h-5 w-5" />
-            </div>
-            <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
-          </Link>
-          <nav className="flex-1 px-4 space-y-1">
-            <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('history')}>
-              <History className="h-4 w-4" /> Professional Records
-            </Button>
-            <Button variant={activeTab === 'profile' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('profile')}>
-              <PlusCircle className="h-4 w-4" /> Submit Profile
-            </Button>
-            <Button variant={activeTab === 'feedback' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('feedback')}>
-              <MessageSquare className="h-4 w-4" /> Feedback
-            </Button>
-          </nav>
-          <div className="p-4 border-t space-y-4">
-            <div className="px-2 space-y-2 text-[10px] text-muted-foreground">
-              <p className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer"><Phone className="h-3 w-3" /> +91 98969 59389</p>
-              <p className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer"><Mail className="h-3 w-3" /> support@rpcoachup.com</p>
-            </div>
-            <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" /> Sign Out
-            </Button>
-          </div>
-        </div>
+        <SidebarContent isMobile={false} />
       </aside>
 
       <main className="flex-1 lg:ml-64 p-4 lg:p-8 flex flex-col min-h-screen">
