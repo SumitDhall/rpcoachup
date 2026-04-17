@@ -43,7 +43,7 @@ import { collection, query, limit, where } from 'firebase/firestore';
 export default function AboutPage() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
-  const mentorImg = PlaceHolderImages.find(img => img.id === 'teacher-mentoring');
+  const aboutImg = PlaceHolderImages.find(img => img.id === 'student-teacher');
 
   const isLoggedIn = !!user;
 
@@ -216,11 +216,11 @@ export default function AboutPage() {
                 <div className="absolute -inset-4 bg-primary/10 rounded-3xl blur-2xl" />
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl border aspect-[16/10]">
                   <Image 
-                    src={mentorImg?.imageUrl || "/images/teacher-mentoring.jpg"} 
-                    alt={mentorImg?.description || "Teacher mentoring a student"}
+                    src={aboutImg?.imageUrl || "/images/student-teacher.jpg"} 
+                    alt={aboutImg?.description || "Teacher and student collaborating"}
                     fill
                     className="object-cover"
-                    data-ai-hint="teacher mentoring"
+                    data-ai-hint="teacher student"
                   />
                 </div>
               </div>

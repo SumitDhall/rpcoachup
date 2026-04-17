@@ -4,20 +4,26 @@
     {
       "id": "hero-education",
       "description": "Students and teacher collaborating in a modern, tech-enabled classroom environment",
-      "imageUrl": "/images/hero-education.jpg",
+      "imageUrl": "/images/hero-education.jpg?v=3",
       "imageHint": "modern classroom"
     },
     {
       "id": "teacher-mentoring",
       "description": "Focused one-on-one mentorship session between an expert educator and a student",
-      "imageUrl": "/images/teacher-mentoring.jpg",
+      "imageUrl": "/images/teacher-mentoring.jpg?v=3",
       "imageHint": "teacher student"
     },
     {
       "id": "online-course",
       "description": "Professional home tuition setup with personalized learning materials",
-      "imageUrl": "/images/online-course.jpg",
+      "imageUrl": "/images/online-course.jpg?v=3",
       "imageHint": "study room"
+    },
+    {
+      "id": "student-teacher",
+      "description": "A collaborative session between a teacher and a student",
+      "imageUrl": "/images/student-teacher.jpg?v=3",
+      "imageHint": "teacher student"
     }
   ]
 }
