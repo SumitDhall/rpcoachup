@@ -88,10 +88,7 @@ export default function StudentDashboard() {
   }, [db, user?.uid]);
   const { data: matches } = useCollection(matchesQuery);
 
-  // Default landing tab is 'history' (Tutor Inquiry)
   const [activeTab, setActiveTab] = useState('history');
-  
-  // Tuition Request State
   const [studentName, setStudentName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -103,7 +100,6 @@ export default function StudentDashboard() {
   const [affordableRange, setAffordableRange] = useState('');
   const [intendedStartDate, setIntendedStartDate] = useState('');
   
-  // Feedback State
   const [feedbackRating, setFeedbackRating] = useState('5');
   const [feedbackComment, setFeedbackComment] = useState('');
   const [feedbackTeacher, setFeedbackTeacher] = useState('General Platform Feedback');
@@ -171,7 +167,6 @@ export default function StudentDashboard() {
       setShowSuccessDialog(true);
       setSubject(''); setSchool(''); setGradeLevel(''); setAddress(''); setNotes(''); setPhone(''); setAffordableRange(''); setIntendedStartDate('');
     } catch (error) {
-      // Handled by central emitter
     } finally {
       setIsSubmitting(false);
     }
@@ -218,7 +213,6 @@ export default function StudentDashboard() {
       setFeedbackComment('');
       setFeedbackRating('5');
     } catch (error) {
-      // Handled by central emitter
     } finally {
       setIsSubmitting(false);
     }
@@ -597,18 +591,26 @@ export default function StudentDashboard() {
           </Tabs>
         </div>
 
-        <footer className="mt-auto pt-12 pb-8 border-t text-center text-muted-foreground">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-4 text-xs font-medium">
-            <a href="tel:+919896959389" className="flex items-center gap-1.5 hover:text-primary transition-colors">
-              <Phone className="h-3 w-3" /> +91 98969 59389
-            </a>
-            <a href="mailto:support@rpcoachup.com" className="flex items-center gap-1.5 hover:text-primary transition-colors">
-              <Mail className="h-3 w-3" /> support@rpcoachup.com
-            </a>
-          </div>
-          <div className="space-y-1">
-            <p className="text-[10px]">© 2026 RP Coach-Up Platform. All rights reserved.</p>
-            <p className="text-[10px] text-muted-foreground/30 italic">design and developed by 'SK group'</p>
+        <footer className="bg-secondary/30 border-t py-12 mt-auto">
+          <div className="container mx-auto px-4 text-center">
+            <div className="flex items-center justify-center gap-2 mb-6">
+              <div className="bg-primary p-1 rounded-lg">
+                <BookOpen className="text-primary-foreground h-5 w-5" />
+              </div>
+              <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-8 text-sm font-medium">
+              <a href="tel:+919896959389" className="flex items-center gap-2 hover:text-primary transition-colors">
+                <Phone className="h-4 w-4" /> +91 98969 59389
+              </a>
+              <a href="mailto:support@rpcoachup.com" className="flex items-center gap-2 hover:text-primary transition-colors">
+                <Mail className="h-4 w-4" /> support@rpcoachup.com
+              </a>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">© 2026 RP Coach-Up. All rights reserved.</p>
+              <p className="text-[10px] text-muted-foreground/40 font-medium italic">design and developed by 'SK group'</p>
+            </div>
           </div>
         </footer>
       </main>
@@ -639,3 +641,4 @@ export default function StudentDashboard() {
     </div>
   );
 }
+
