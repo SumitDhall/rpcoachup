@@ -358,7 +358,7 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
                 <div className="flex justify-between items-center pb-2 border-b">
                   <span className="font-bold text-primary">{int.subject || int.subjects}</span>
                   <button onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: interestCollection, subject: int.subject || int.subjects, userName: int.studentName || int.teacherName, userEmail: int.email || user.email })} className="focus:outline-none">
-                    <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className={`text-[10px] cursor-pointer ${int.status === 'Completed' ? 'bg-green-600' : int.status === 'In-Progress' ? 'bg-blue-500' : ''}`}>
+                    <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className={`text-[10px] cursor-pointer ${int.status === 'Completed' ? 'bg-green-600 text-white' : int.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}`}>
                       {int.status}
                     </Badge>
                   </button>
@@ -554,21 +554,62 @@ export default function AdminPortal() {
 
   if (isUserLoading || isAdminLoading || !user) return <div className="flex h-screen items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
 
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
+      <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div>
+        <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
+      </Link>
+      <nav className="flex-1 px-4 space-y-1">
+        <SheetClose asChild>
+          <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('notifications')}><Bell className="h-4 w-4" />Notifications</Button>
+        </SheetClose>
+        <SheetClose asChild>
+          <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('students')}><UserCheck className="h-4 w-4" />Students</Button>
+        </SheetClose>
+        <SheetClose asChild>
+          <Button variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('teachers')}><GraduationCap className="h-4 w-4" />Teachers</Button>
+        </SheetClose>
+        <SheetClose asChild>
+          <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('settings')}><History className="h-4 w-4" />Activity Logs</Button>
+        </SheetClose>
+        <SheetClose asChild>
+          <Button variant={activeTab === 'maintenance' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('maintenance')}><Database className="h-4 w-4" />Maintenance</Button>
+        </SheetClose>
+      </nav>
+      <div className="p-4 border-t space-y-4">
+        <div className="px-2 space-y-2 text-[10px] text-muted-foreground"><p className="flex items-center gap-2"><Phone className="h-3 w-3" /> +91 98969 59389</p><p className="flex items-center gap-2"><Mail className="h-3 w-3" /> support@rpcoachup.com</p></div>
+        <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}><LogOut className="h-4 w-4 mr-2" />Sign Out</Button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex min-h-screen bg-background flex-col lg:flex-row">
+      {/* Mobile Header */}
+      <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card sticky top-0 z-40">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="bg-primary p-1.5 rounded-lg">
+            <BookOpen className="text-primary-foreground h-6 w-6" />
+          </div>
+          <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
+        </Link>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon"><Menu className="h-6 w-6 text-primary" /></Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Admin Navigation</SheetTitle>
+            </SheetHeader>
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+      </header>
+
+      {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
-        <Link href="/" className="p-6 flex items-center gap-2 hover:opacity-80 transition-opacity"><div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div><span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span></Link>
-        <nav className="flex-1 px-4 space-y-1">
-          <Button variant={activeTab === 'notifications' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('notifications')}><Bell className="h-4 w-4" />Notifications</Button>
-          <Button variant={activeTab === 'students' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('students')}><UserCheck className="h-4 w-4" />Students</Button>
-          <Button variant={activeTab === 'teachers' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('teachers')}><GraduationCap className="h-4 w-4" />Teachers</Button>
-          <Button variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('settings')}><History className="h-4 w-4" />Activity Logs</Button>
-          <Button variant={activeTab === 'maintenance' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('maintenance')}><Database className="h-4 w-4" />Maintenance</Button>
-        </nav>
-        <div className="p-4 border-t space-y-4">
-          <div className="px-2 space-y-2 text-[10px] text-muted-foreground"><p className="flex items-center gap-2"><Phone className="h-3 w-3" /> +91 98969 59389</p><p className="flex items-center gap-2"><Mail className="h-3 w-3" /> support@rpcoachup.com</p></div>
-          <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}><LogOut className="h-4 w-4 mr-2" />Sign Out</Button>
-        </div>
+        <SidebarContent />
       </aside>
 
       <main className="flex-1 lg:ml-64 p-4 lg:p-8">
@@ -593,7 +634,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader><div className="flex items-center justify-between"><div><CardTitle>{activeTab === 'students' ? 'Student Inquiries' : 'Teacher Profiles'}</CardTitle></div><Badge variant="secondary">{filteredUsers.length} Found</Badge></div></CardHeader>
               <CardContent>
-                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Details</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">IN-PROGRESS</Badge> : u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasCompleted ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">COMPLETED</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View {activeTab === 'students' ? 'Requests' : 'Profile'}</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No results found.</TableCell></TableRow>}</TableBody></Table></div>
+                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Details</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">IN-PROGRESS</Badge> : u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasCompleted && !u.hasInProgress && !u.hasPending ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">COMPLETED</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View {activeTab === 'students' ? 'Requests' : 'Profile'}</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No results found.</TableCell></TableRow>}</TableBody></Table></div>
                 {totalPages > 1 && <div className="flex justify-center gap-2 mt-4"><Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button><span className="text-xs self-center font-medium">Page {currentPage} of {totalPages}</span><Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button></div>}
               </CardContent>
             </Card>
