@@ -44,11 +44,6 @@ export default function AboutPage() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const mentorImg = PlaceHolderImages.find(img => img.id === 'teacher-mentoring');
-  const [currentYear, setCurrentYear] = useState<number | null>(null);
-
-  useEffect(() => {
-    setCurrentYear(new Date().getFullYear());
-  }, []);
 
   const isLoggedIn = !!user;
 
@@ -387,7 +382,10 @@ export default function AboutPage() {
               <Mail className="h-4 w-4" /> support@rpcoachup.com
             </a>
           </div>
-          <p className="text-sm text-muted-foreground mb-8">© {currentYear || '2025'} RP Coach-Up. Empowering education through technology.</p>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">© 2026 RP Coach-Up. Empowering education through technology.</p>
+            <p className="text-[10px] text-muted-foreground/40 font-medium italic">design and developed by 'SK group'</p>
+          </div>
         </div>
       </footer>
     </div>

@@ -270,9 +270,14 @@ export default function ProgramsDashboard() {
                 <Mail className="h-4 w-4" /> support@rpcoachup.com
               </a>
             </div>
-            <p className="text-sm text-muted-foreground">
-              © 2025 RP Coach-Up. Empowering local education through verified home tuition programs.
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                © 2026 RP Coach-Up. Empowering local education through verified home tuition programs.
+              </p>
+              <p className="text-[10px] text-muted-foreground/40 font-medium italic">
+                design and developed by 'SK group'
+              </p>
+            </div>
           </footer>
         </div>
       </main>

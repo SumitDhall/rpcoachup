@@ -123,8 +123,9 @@ export default function ForgotPasswordPage() {
         )}
       </Card>
       
-      <div className="mt-8 text-center text-sm text-muted-foreground">
-        Need help? Contact <a href="mailto:support@rpcoachup.com" className="text-primary hover:underline">support@rpcoachup.com</a>
+      <div className="mt-8 text-center text-sm text-muted-foreground space-y-2">
+        <div>Need help? Contact <a href="mailto:support@rpcoachup.com" className="text-primary hover:underline">support@rpcoachup.com</a></div>
+        <div className="text-[10px] text-muted-foreground/30 italic">© 2026 RP Coach-Up | design and developed by 'SK group'</div>
       </div>
     </div>
   );

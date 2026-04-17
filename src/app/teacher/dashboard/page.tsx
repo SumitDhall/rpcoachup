@@ -576,7 +576,10 @@ export default function TeacherDashboard() {
               <Mail className="h-3 w-3" /> support@rpcoachup.com
             </a>
           </div>
-          <p className="text-[10px]">© 2025 RP Coach-Up Platform. All rights reserved.</p>
+          <div className="space-y-1">
+            <p className="text-[10px]">© 2026 RP Coach-Up Platform. All rights reserved.</p>
+            <p className="text-[10px] text-muted-foreground/30 italic">design and developed by 'SK group'</p>
+          </div>
         </footer>
       </main>
 

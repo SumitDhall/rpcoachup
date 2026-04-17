@@ -268,9 +268,14 @@ export default function Home() {
               <Mail className="h-4 w-4" /> support@rpcoachup.com
             </a>
           </div>
-          <p className="text-sm text-muted-foreground">
-            © {mounted ? new Date().getFullYear() : '2025'} RP Coach-Up. All rights reserved.
-          </p>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              © 2026 RP Coach-Up. All rights reserved.
+            </p>
+            <p className="text-[10px] text-muted-foreground/40 font-medium italic">
+              design and developed by 'SK group'
+            </p>
+          </div>
         </div>
       </footer>
     </div>
