@@ -54,14 +54,14 @@ export default function LoginPage() {
         // Handle case where user auth exists but no Firestore profile yet
         toast({
           variant: "destructive",
-          title: "Profile Not Found",
-          description: "Your account exists but your profile is missing. Please register to complete your profile.",
+          title: "Profile Missing",
+          description: "Your login was successful, but your profile details are missing from our database. Please contact support or try registering again with a different email.",
         });
-        // Sign out to clean up state
+        // We sign out here to allow them to attempt a clean registration or contact support
         await signOut(auth);
         setIsRedirecting(false);
         setHasAttemptedRedirect(false);
-        router.push('/register');
+        // We don't automatically redirect to register to avoid the loop
       }
     } catch (e) {
       console.error("Redirection error:", e);
@@ -109,10 +109,8 @@ export default function LoginPage() {
           toast({
             variant: "destructive",
             title: "User Not Registered",
-            description: "We couldn't find an account with this email. Redirecting to registration...",
+            description: "We couldn't find an account with this email. Please register for a new account.",
           });
-          // Small delay before redirect to allow toast to be read
-          setTimeout(() => router.push('/register'), 2000);
           return;
         } else if (error.code === 'auth/invalid-credential') {
           errorMessage = "Invalid login credentials. Please check your email and password.";

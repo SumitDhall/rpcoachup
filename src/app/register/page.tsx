@@ -109,7 +109,7 @@ export default function RegisterPage() {
       let msg = "An error occurred during registration.";
       
       if (error.code === 'auth/email-already-in-use') {
-        msg = "This email address is already in use. Please try a different email or log in.";
+        msg = "This email is already registered in our system. Please try logging in instead. If you can't remember your password, use the Forgot Password link.";
       } else if (error.code === 'auth/weak-password') {
         msg = "Your password is too weak. Please use at least 6 characters.";
       } else if (error.code === 'auth/invalid-email') {
