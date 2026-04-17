@@ -45,7 +45,8 @@ import {
   FileText,
   Info,
   Calendar,
-  IndianRupee
+  IndianRupee,
+  PlusCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
@@ -76,7 +77,8 @@ export default function TeacherDashboard() {
   }, [db, user?.uid]);
   const { data: rawInterests, isLoading: isLoadingInterests } = useCollection(teacherInterestsQuery);
 
-  const [activeTab, setActiveTab] = useState('profile');
+  // Set default tab to 'history' (Professional Records)
+  const [activeTab, setActiveTab] = useState('history');
   
   // Specialty Form State
   const [teacherName, setTeacherName] = useState('');
@@ -229,13 +231,13 @@ export default function TeacherDashboard() {
       </Link>
       <nav className="flex-1 px-4 space-y-1">
         <SheetClose asChild>
-          <Button variant={activeTab === 'profile' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('profile')}>
-            <LayoutDashboard className="h-4 w-4" /> Dashboard
+          <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('history')}>
+            <History className="h-4 w-4" /> Professional Records
           </Button>
         </SheetClose>
         <SheetClose asChild>
-          <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('history')}>
-            <History className="h-4 w-4" /> Professional Records
+          <Button variant={activeTab === 'profile' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('profile')}>
+            <PlusCircle className="h-4 w-4" /> Submit Profile
           </Button>
         </SheetClose>
         <SheetClose asChild>
@@ -283,11 +285,11 @@ export default function TeacherDashboard() {
             <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
           </Link>
           <nav className="flex-1 px-4 space-y-1">
-            <Button variant={activeTab === 'profile' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('profile')}>
-              <LayoutDashboard className="h-4 w-4" /> Dashboard
-            </Button>
             <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('history')}>
               <History className="h-4 w-4" /> Professional Records
+            </Button>
+            <Button variant={activeTab === 'profile' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('profile')}>
+              <PlusCircle className="h-4 w-4" /> Submit Profile
             </Button>
             <Button variant={activeTab === 'feedback' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('feedback')}>
               <MessageSquare className="h-4 w-4" /> Feedback
@@ -312,10 +314,98 @@ export default function TeacherDashboard() {
           </header>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsContent value="history">
+              <Card>
+                <CardHeader>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <CardTitle>Professional Records</CardTitle>
+                      <CardDescription>Detailed records of your submitted specialty profiles and application status.</CardDescription>
+                    </div>
+                    <Button onClick={() => setActiveTab('profile')} className="gap-2">
+                      <PlusCircle className="h-4 w-4" /> New/Updated Profile
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {isLoadingInterests ? (
+                    <div className="flex justify-center p-8"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
+                  ) : (rawInterests && rawInterests.length > 0 ? (
+                    [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => (
+                      <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-lg">{i.subjects}</p>
+                            <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600 text-white' : i.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
+                              {i.status}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}
+                          </p>
+                        </div>
+                        
+                        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-sm border-t pt-4">
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                              <User className="h-4 w-4" /> Teacher Details
+                            </p>
+                            <div className="space-y-1">
+                              <p className="font-medium">{i.teacherName}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><GraduationCap className="h-3.5 w-3.5" /> {i.qualifications}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><Briefcase className="h-3.5 w-3.5" /> {i.experienceYears} Years Experience</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                              <Phone className="h-3 w-3" /> Contact Details
+                            </p>
+                            <div className="space-y-1">
+                              <p className="flex items-center gap-2 font-medium"><Phone className="h-3.5 w-3.5 text-primary" /> {i.phone}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /> {i.email}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                              <IndianRupee className="h-3 w-3" /> Salary Expectation
+                            </p>
+                            <div className="space-y-1">
+                              <p className="flex items-center gap-2 text-accent font-bold"><IndianRupee className="h-3.5 w-3.5" /> {i.expectedSalary}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                               <FileText className="h-3 w-3" /> Supporting Docs
+                            </p>
+                            <div className="flex items-center gap-2 text-xs text-primary bg-primary/5 p-2 rounded-lg w-fit">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Resume: {i.resumeName}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-16 border-2 border-dashed rounded-2xl bg-secondary/5">
+                      <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto mb-4 text-primary">
+                        <Briefcase className="h-8 w-8" />
+                      </div>
+                      <p className="text-muted-foreground font-medium mb-4">No professional records found.</p>
+                      <Button onClick={() => setActiveTab('profile')}>Submit your first profile</Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="profile">
               <Card className="shadow-2xl border-primary/10 overflow-hidden">
                 <CardHeader className="bg-primary/5 border-b">
-                  <CardTitle>Professional Specialty Profile</CardTitle>
+                  <CardTitle>Submit Profile</CardTitle>
                   <CardDescription>Update your teaching subjects, qualifications, and professional background.</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmitInterest}>
@@ -407,87 +497,6 @@ export default function TeacherDashboard() {
                     </Button>
                   </CardFooter>
                 </form>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="history">
-              <Card>
-                <CardHeader>
-                  <CardTitle>My Professional Records</CardTitle>
-                  <CardDescription>Detailed records of your submitted specialty profiles and application status.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {isLoadingInterests ? (
-                    <div className="flex justify-center p-8"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
-                  ) : (rawInterests && rawInterests.length > 0 ? (
-                    [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => (
-                      <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <p className="font-bold text-lg">{i.subjects}</p>
-                            <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600 text-white' : i.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
-                              {i.status}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}
-                          </p>
-                        </div>
-                        
-                        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-sm border-t pt-4">
-                          <div className="space-y-2">
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                              <User className="h-4 w-4" /> Teacher Details
-                            </p>
-                            <div className="space-y-1">
-                              <p className="font-medium">{i.teacherName}</p>
-                              <p className="flex items-center gap-2 text-muted-foreground"><GraduationCap className="h-3.5 w-3.5" /> {i.qualifications}</p>
-                              <p className="flex items-center gap-2 text-muted-foreground"><Briefcase className="h-3.5 w-3.5" /> {i.experienceYears} Years Experience</p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                              <Phone className="h-3 w-3" /> Contact Details
-                            </p>
-                            <div className="space-y-1">
-                              <p className="flex items-center gap-2 font-medium"><Phone className="h-3.5 w-3.5 text-primary" /> {i.phone}</p>
-                              <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /> {i.email}</p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                              <IndianRupee className="h-3 w-3" /> Salary Expectation
-                            </p>
-                            <div className="space-y-1">
-                              <p className="flex items-center gap-2 text-accent font-bold"><IndianRupee className="h-3.5 w-3.5" /> {i.expectedSalary}</p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                               <FileText className="h-3 w-3" /> Supporting Docs
-                            </p>
-                            <div className="flex items-center gap-2 text-xs text-primary bg-primary/5 p-2 rounded-lg w-fit">
-                              <CheckCircle2 className="h-3 w-3" />
-                              Resume: {i.resumeName}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-16 border-2 border-dashed rounded-2xl bg-secondary/5">
-                      <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto mb-4 text-primary">
-                        <Briefcase className="h-8 w-8" />
-                      </div>
-                      <p className="text-muted-foreground font-medium mb-4">No professional records found.</p>
-                      <Button onClick={() => setActiveTab('profile')}>Submit your first profile</Button>
-                    </div>
-                  ))}
-                </CardContent>
               </Card>
             </TabsContent>
 
