@@ -23,7 +23,9 @@ import {
   Zap, 
   Search, 
   Loader2,
-  Menu 
+  Menu,
+  Phone,
+  Mail
 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useUser } from '@/firebase';
@@ -253,10 +255,22 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-secondary/30 border-t py-12">
-        <div className="container mx-auto px-4">
-          <div className="pt-8 text-center text-sm text-muted-foreground">
-            © {mounted ? new Date().getFullYear() : '2025'} RP Coach-Up. All rights reserved.
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div>
+            <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
           </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-8 text-sm font-medium">
+            <a href="tel:+919896959389" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Phone className="h-4 w-4" /> +91 98969 59389
+            </a>
+            <a href="mailto:support@rpcoachup.com" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Mail className="h-4 w-4" /> support@rpcoachup.com
+            </a>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            © {mounted ? new Date().getFullYear() : '2025'} RP Coach-Up. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>

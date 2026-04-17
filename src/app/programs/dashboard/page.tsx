@@ -262,6 +262,14 @@ export default function ProgramsDashboard() {
               </div>
               <span className="font-headline font-bold text-primary">RP Coach-Up Platform</span>
             </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-6 text-sm font-medium">
+              <a href="tel:+919896959389" className="flex items-center gap-2 hover:text-primary transition-colors">
+                <Phone className="h-4 w-4" /> +91 98969 59389
+              </a>
+              <a href="mailto:support@rpcoachup.com" className="flex items-center gap-2 hover:text-primary transition-colors">
+                <Mail className="h-4 w-4" /> support@rpcoachup.com
+              </a>
+            </div>
             <p className="text-sm text-muted-foreground">
               © 2025 RP Coach-Up. Empowering local education through verified home tuition programs.
             </p>

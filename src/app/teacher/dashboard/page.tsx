@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -245,7 +246,11 @@ export default function TeacherDashboard() {
           </Button>
         </SheetClose>
       </nav>
-      <div className="p-4 border-t">
+      <div className="p-4 border-t space-y-4">
+        <div className="px-2 space-y-2 text-[10px] text-muted-foreground">
+          <p className="flex items-center gap-2"><Phone className="h-3 w-3" /> +91 98969 59389</p>
+          <p className="flex items-center gap-2"><Mail className="h-3 w-3" /> support@rpcoachup.com</p>
+        </div>
         <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
           <LogOut className="h-4 w-4 mr-2" /> Sign Out
         </Button>
@@ -294,7 +299,11 @@ export default function TeacherDashboard() {
               <MessageSquare className="h-4 w-4" /> Feedback
             </Button>
           </nav>
-          <div className="p-4 border-t">
+          <div className="p-4 border-t space-y-4">
+            <div className="px-2 space-y-2 text-[10px] text-muted-foreground">
+              <p className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer"><Phone className="h-3 w-3" /> +91 98969 59389</p>
+              <p className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer"><Mail className="h-3 w-3" /> support@rpcoachup.com</p>
+            </div>
             <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" /> Sign Out
             </Button>
@@ -302,8 +311,8 @@ export default function TeacherDashboard() {
         </div>
       </aside>
 
-      <main className="flex-1 lg:ml-64 p-4 lg:p-8">
-        <div className="max-w-4xl mx-auto space-y-8">
+      <main className="flex-1 lg:ml-64 p-4 lg:p-8 flex flex-col min-h-screen">
+        <div className="max-w-4xl mx-auto space-y-8 flex-1 w-full">
           <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-headline font-bold text-primary">Teacher Portal</h1>
@@ -557,6 +566,18 @@ export default function TeacherDashboard() {
             </TabsContent>
           </Tabs>
         </div>
+
+        <footer className="mt-auto pt-12 pb-8 border-t text-center text-muted-foreground">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-4 text-xs font-medium">
+            <a href="tel:+919896959389" className="flex items-center gap-1.5 hover:text-primary transition-colors">
+              <Phone className="h-3 w-3" /> +91 98969 59389
+            </a>
+            <a href="mailto:support@rpcoachup.com" className="flex items-center gap-1.5 hover:text-primary transition-colors">
+              <Mail className="h-3 w-3" /> support@rpcoachup.com
+            </a>
+          </div>
+          <p className="text-[10px]">© 2025 RP Coach-Up Platform. All rights reserved.</p>
+        </footer>
       </main>
 
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
