@@ -47,7 +47,8 @@ import {
   History,
   MessageSquare,
   Star,
-  Info
+  Info,
+  PlusCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
@@ -254,7 +255,7 @@ export default function StudentDashboard() {
       <nav className="flex-1 px-4 space-y-1">
         <SheetClose asChild>
           <Button variant={activeTab === 'interests' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('interests')}>
-            <LayoutDashboard className="h-4 w-4" /> Dashboard
+            <LayoutDashboard className="h-4 w-4" /> Inquiry Form
           </Button>
         </SheetClose>
         <SheetClose asChild>
@@ -308,7 +309,7 @@ export default function StudentDashboard() {
           </Link>
           <nav className="flex-1 px-4 space-y-1">
             <Button variant={activeTab === 'interests' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('interests')}>
-              <LayoutDashboard className="h-4 w-4" /> Dashboard
+              <LayoutDashboard className="h-4 w-4" /> Inquiry Form
             </Button>
             <Button variant={activeTab === 'history' ? 'secondary' : 'ghost'} className="w-full justify-start gap-3" onClick={() => setActiveTab('history')}>
               <History className="h-4 w-4" /> Inquiry History
@@ -463,8 +464,17 @@ export default function StudentDashboard() {
             <TabsContent value="history">
               <Card>
                 <CardHeader>
-                  <CardTitle>Inquiry History</CardTitle>
-                  <CardDescription>Detailed records of your submitted tuition requests.</CardDescription>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <CardTitle>Inquiry History</CardTitle>
+                      <CardDescription>Detailed records of your submitted tuition requests.</CardDescription>
+                    </div>
+                    {rawInterests && rawInterests.length > 0 && (
+                      <Button onClick={() => setActiveTab('interests')} className="gap-2 shrink-0">
+                        <PlusCircle className="h-4 w-4" /> Submit New Inquiry
+                      </Button>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {isLoadingInterests ? (
