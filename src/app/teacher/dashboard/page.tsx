@@ -322,9 +322,11 @@ export default function TeacherDashboard() {
                       <CardTitle>Professional Records</CardTitle>
                       <CardDescription>Detailed records of your submitted specialty profiles and application status.</CardDescription>
                     </div>
-                    <Button onClick={() => setActiveTab('profile')} className="gap-2">
-                      <PlusCircle className="h-4 w-4" /> New/Updated Profile
-                    </Button>
+                    {rawInterests && rawInterests.length > 0 && (
+                      <Button onClick={() => setActiveTab('profile')} className="gap-2">
+                        <PlusCircle className="h-4 w-4" /> New/Updated Profile
+                      </Button>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
