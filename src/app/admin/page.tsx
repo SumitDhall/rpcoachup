@@ -959,9 +959,10 @@ export default function AdminPortal() {
                             <div className="flex flex-col">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span>{u.firstName} {u.lastName}</span>
-                                {u.hasPending && <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge>}
+                                {/* Hierarchical Status Badges */}
                                 {u.hasInProgress && <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">IN-PROGRESS</Badge>}
-                                {u.hasCompleted && <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">COMPLETED</Badge>}
+                                {u.hasPending && !u.hasInProgress && <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge>}
+                                {u.hasCompleted && !u.hasPending && !u.hasInProgress && <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">COMPLETED</Badge>}
                               </div>
                               <span className="sm:hidden text-[10px] text-muted-foreground">{u.email}</span>
                             </div>
