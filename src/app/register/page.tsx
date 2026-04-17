@@ -90,7 +90,7 @@ export default function RegisterPage() {
       // Commit all Firestore operations
       await batch.commit();
 
-      // 4. Trigger simulated emails (Console Log)
+      // 4. Trigger simulated emails
       sendNotificationEmail({
         recipientType: 'admin',
         type: 'registration',
@@ -109,7 +109,7 @@ export default function RegisterPage() {
       let msg = "An error occurred during registration.";
       
       if (error.code === 'auth/email-already-in-use') {
-        msg = "This email is already registered in our system. Please try logging in instead. If you can't remember your password, use the Forgot Password link.";
+        msg = "This email is already in our identity system. If you don't have a profile, please check the 'Authentication' tab in Firebase Console to delete the entry or try logging in.";
       } else if (error.code === 'auth/weak-password') {
         msg = "Your password is too weak. Please use at least 6 characters.";
       } else if (error.code === 'auth/invalid-email') {
@@ -121,7 +121,6 @@ export default function RegisterPage() {
         title: "Registration Failed",
         description: msg,
       });
-      // Removed console.error to prevent runtime error overlay
     } finally {
       setIsLoading(false);
     }

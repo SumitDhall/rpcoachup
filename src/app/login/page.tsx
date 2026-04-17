@@ -2,8 +2,8 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -51,31 +51,27 @@ export default function LoginPage() {
         const role = (userData.userType || 'Student').toLowerCase();
         router.push(`/${role}/dashboard`);
       } else {
-        // Handle "Zombie Account" case (Auth exists but no Firestore profile)
+        // Handle "Zombie Account" case
         toast({
           variant: "destructive",
           title: "Profile Missing",
-          description: "Your account exists, but your profile details are missing from our database. This can happen if registration was interrupted. Please contact support at support@rpcoachup.com to reset your account.",
+          description: "Your authentication exists, but your database profile is missing. Please delete the entry in the 'Authentication' tab of Firebase Console or contact support.",
         });
-        // We sign out here to allow them to attempt a clean registration or contact support
         await signOut(auth);
         setIsRedirecting(false);
         setHasAttemptedRedirect(false);
       }
     } catch (e) {
-      // Redirection logic should be silent unless critical
       setIsRedirecting(false);
       setHasAttemptedRedirect(false);
     }
   };
 
-  // Automatically redirect if user is already logged in
   useEffect(() => {
     if (!isAuthCheckLoading && user && !isRedirecting && !hasAttemptedRedirect) {
       setHasAttemptedRedirect(true);
       handleRoleRedirect(user.uid);
     }
-    // If user logs out, reset the attempt tracker
     if (!isAuthCheckLoading && !user) {
       setHasAttemptedRedirect(false);
     }
@@ -88,8 +84,6 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
-    // Reset attempt tracker on new manual login attempt
     setHasAttemptedRedirect(false);
 
     signInWithEmailAndPassword(auth, formData.email, formData.password)
@@ -98,7 +92,6 @@ export default function LoginPage() {
           title: "Login Successful", 
           description: "Verifying your profile details..." 
         });
-        // Redirection is handled by the useEffect above
       })
       .catch((error: any) => {
         setIsLoading(false);
@@ -113,8 +106,6 @@ export default function LoginPage() {
           return;
         } else if (error.code === 'auth/invalid-credential') {
           errorMessage = "Invalid login credentials. Please check your email and password.";
-        } else if (error.code === 'auth/wrong-password') {
-          errorMessage = "Incorrect password.";
         } else if (error.code === 'auth/too-many-requests') {
           errorMessage = "Too many failed attempts. Please try again later.";
         }
