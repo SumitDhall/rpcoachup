@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -206,6 +207,11 @@ export default function RegisterPage() {
           </CardFooter>
         </form>
       </Card>
+      
+      <div className="mt-8 text-center text-sm text-muted-foreground space-y-2">
+        <p>© 2026 RP Coach-Up. All rights reserved.</p>
+        <p className="text-[10px] text-muted-foreground/30 italic">design and developed by 'SK group'</p>
+      </div>
     </div>
   );
 }

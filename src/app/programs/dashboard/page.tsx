@@ -35,7 +35,7 @@ export default function ProgramsDashboard() {
   const isLoggedIn = !!user;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col max-w-full overflow-x-hidden">
       {/* Header */}
       <header className="border-b bg-card sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -135,44 +135,44 @@ export default function ProgramsDashboard() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 lg:py-12">
+      <main className="container mx-auto px-4 py-8 lg:py-12 flex-1 max-w-full overflow-hidden">
         <div className="max-w-6xl mx-auto space-y-12">
           
           {/* Featured Program Section */}
-          <section className="grid lg:grid-cols-2 gap-8 items-center bg-primary/5 rounded-3xl p-8 lg:p-12 border border-primary/10 overflow-hidden relative">
+          <section className="grid lg:grid-cols-2 gap-8 items-center bg-primary/5 rounded-3xl p-6 sm:p-8 lg:p-12 border border-primary/10 overflow-hidden relative">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             
             <div className="space-y-6 relative z-10">
               <Badge className="bg-primary text-primary-foreground px-4 py-1 text-sm font-bold rounded-full">
                 ACTIVE PROGRAM
               </Badge>
-              <h1 className="text-4xl lg:text-6xl font-headline font-bold text-primary leading-tight">
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-headline font-bold text-primary leading-tight">
                 RP Coach-UP <br /> 
                 <span className="text-foreground">Home Tuition</span>
               </h1>
-              <p className="text-xl text-muted-foreground leading-relaxed">
+              <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
                 Applications are invited to provide premium home tuitions (one-to-one class) 
                 for all subjects from <span className="font-bold text-foreground">Classes I to XII</span>.
               </p>
               
               <div className="space-y-4 pt-4">
-                <div className="flex items-center gap-4 p-4 bg-background rounded-2xl shadow-sm border">
-                  <div className="bg-primary/10 p-3 rounded-xl">
+                <div className="flex items-center gap-4 p-4 bg-background rounded-2xl shadow-sm border overflow-hidden">
+                  <div className="bg-primary/10 p-3 rounded-xl shrink-0">
                     <Phone className="h-6 w-6 text-primary" />
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Call for Enquiry</p>
-                    <p className="text-xl font-bold">+91 98969 59389</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Call for Enquiry</p>
+                    <p className="text-lg sm:text-xl font-bold truncate">+91 98969 59389</p>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-4 p-4 bg-background rounded-2xl shadow-sm border">
-                  <div className="bg-accent/10 p-3 rounded-xl">
+                <div className="flex items-center gap-4 p-4 bg-background rounded-2xl shadow-sm border overflow-hidden">
+                  <div className="bg-accent/10 p-3 rounded-xl shrink-0">
                     <Mail className="h-6 w-6 text-accent" />
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Email Resume</p>
-                    <p className="text-xl font-bold">support@rpcoachup.com</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Email Resume</p>
+                    <p className="text-lg sm:text-xl font-bold truncate">support@rpcoachup.com</p>
                   </div>
                 </div>
               </div>
@@ -198,15 +198,14 @@ export default function ProgramsDashboard() {
               </div>
             </div>
 
-            <div className="relative group flex justify-center">
+            <div className="relative group flex justify-center w-full">
               <div className="absolute -inset-4 bg-primary/20 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative rounded-3xl overflow-hidden border-4 border-white shadow-2xl max-w-[450px]">
+              <div className="relative rounded-3xl overflow-hidden border-4 border-white shadow-2xl w-full max-w-[450px] aspect-[4/5]">
                 <Image 
                   src={onlineCourseImg?.imageUrl || "https://picsum.photos/seed/classroom3/800/1000"} 
                   alt="Home Tuition Program"
-                  width={800}
-                  height={1000}
-                  className="w-full h-auto object-cover transform transition-transform duration-500 group-hover:scale-105"
+                  fill
+                  className="object-cover transform transition-transform duration-500 group-hover:scale-105"
                   data-ai-hint="online classroom"
                   priority
                 />
@@ -253,34 +252,36 @@ export default function ProgramsDashboard() {
               </Card>
             ))}
           </section>
-
-          {/* Footer Info */}
-          <footer className="text-center py-12 border-t mt-12">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="bg-primary p-1 rounded-lg">
-                < BookOpen className="text-primary-foreground h-4 w-4" />
-              </div>
-              <span className="font-headline font-bold text-primary">RP Coach-Up Platform</span>
-            </div>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-6 text-sm font-medium">
-              <a href="tel:+919896959389" className="flex items-center gap-2 hover:text-primary transition-colors">
-                <Phone className="h-4 w-4" /> +91 98969 59389
-              </a>
-              <a href="mailto:support@rpcoachup.com" className="flex items-center gap-2 hover:text-primary transition-colors">
-                <Mail className="h-4 w-4" /> support@rpcoachup.com
-              </a>
-            </div>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                © 2026 RP Coach-Up. Empowering local education through verified home tuition programs.
-              </p>
-              <p className="text-[10px] text-muted-foreground/40 font-medium italic">
-                design and developed by 'SK group'
-              </p>
-            </div>
-          </footer>
         </div>
       </main>
+
+      {/* Footer Info */}
+      <footer className="bg-secondary/30 border-t py-12 mt-auto">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="bg-primary p-1 rounded-lg">
+              <BookOpen className="text-primary-foreground h-5 w-5" />
+            </div>
+            <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-8 text-sm font-medium">
+            <a href="tel:+919896959389" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Phone className="h-4 w-4" /> +91 98969 59389
+            </a>
+            <a href="mailto:support@rpcoachup.com" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Mail className="h-4 w-4" /> support@rpcoachup.com
+            </a>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              © 2026 RP Coach-Up. All rights reserved.
+            </p>
+            <p className="text-[10px] text-muted-foreground/40 font-medium italic">
+              design and developed by 'SK group'
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
