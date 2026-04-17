@@ -1,28 +1,31 @@
 
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { BookOpen, ArrowLeft, Loader2, User, GraduationCap } from 'lucide-react';
+import { BookOpen, ArrowLeft, Loader2, User, GraduationCap, Phone, Mail } from 'lucide-react';
 import { useAuth, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, collection, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { sendNotificationEmail } from '@/app/actions/notifications';
+import { cn } from '@/lib/utils';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const auth = useAuth();
   const db = useFirestore();
   const { toast } = useToast();
   
-  const [role, setRole] = useState('Student');
+  const roleParam = searchParams.get('role');
+  const [role, setRole] = useState(roleParam === 'teacher' ? 'Teacher' : 'Student');
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -30,6 +33,12 @@ export default function RegisterPage() {
     email: '',
     password: '',
   });
+
+  // Sync role if param changes (e.g. using browser back/forward)
+  useEffect(() => {
+    if (roleParam === 'teacher') setRole('Teacher');
+    else if (roleParam === 'student') setRole('Student');
+  }, [roleParam]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -109,7 +118,7 @@ export default function RegisterPage() {
       let msg = "An error occurred during registration.";
       
       if (error.code === 'auth/email-already-in-use') {
-        msg = "This email is already in our identity system. If you don't have a profile, please check the 'Authentication' tab in Firebase Console to delete the entry or try logging in.";
+        msg = "This email is already in our identity system. Please delete the entry in the 'Authentication' tab of Firebase Console or contact support.";
       } else if (error.code === 'auth/weak-password') {
         msg = "Your password is too weak. Please use at least 6 characters.";
       } else if (error.code === 'auth/invalid-email') {
@@ -146,30 +155,41 @@ export default function RegisterPage() {
         <form onSubmit={handleRegister}>
           <CardContent className="space-y-6">
             <div className="space-y-3">
-              <Label>I want to join as a...</Label>
-              <RadioGroup defaultValue="Student" onValueChange={setRole} className="grid grid-cols-2 gap-4 items-stretch">
-                <div className="h-full">
-                  <RadioGroupItem value="Student" id="Student" className="peer sr-only" />
-                  <Label
-                    htmlFor="Student"
-                    className="flex h-full flex-col items-center gap-2 justify-center rounded-xl border-2 border-muted bg-popover p-6 hover:bg-accent/5 cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary transition-all"
-                  >
-                    <User className="h-8 w-8 text-primary" />
-                    <span className="font-bold">Student</span>
-                    <span className="text-xs text-muted-foreground text-center">I want to learn new skills and subjects</span>
-                  </Label>
-                </div>
-                <div className="h-full">
-                  <RadioGroupItem value="Teacher" id="Teacher" className="peer sr-only" />
-                  <Label
-                    htmlFor="Teacher"
-                    className="flex h-full flex-col items-center gap-2 justify-center rounded-xl border-2 border-muted bg-popover p-6 hover:bg-accent/5 cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary transition-all"
-                  >
-                    <GraduationCap className="h-8 w-8 text-primary" />
-                    <span className="font-bold">Teacher</span>
-                    <span className="text-xs text-muted-foreground text-center">I want to share my expertise</span>
-                  </Label>
-                </div>
+              {!roleParam && <Label>I want to join as a...</Label>}
+              <RadioGroup 
+                value={role} 
+                onValueChange={setRole} 
+                className={cn(
+                  "grid gap-4 items-stretch",
+                  roleParam ? "grid-cols-1" : "grid-cols-2"
+                )}
+              >
+                {(!roleParam || roleParam === 'student') && (
+                  <div className="h-full">
+                    <RadioGroupItem value="Student" id="Student" className="peer sr-only" />
+                    <Label
+                      htmlFor="Student"
+                      className="flex h-full flex-col items-center gap-2 justify-center rounded-xl border-2 border-muted bg-popover p-6 hover:bg-accent/5 cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary transition-all"
+                    >
+                      <User className="h-8 w-8 text-primary" />
+                      <span className="font-bold">Student</span>
+                      <span className="text-xs text-muted-foreground text-center">I want to learn new skills and subjects</span>
+                    </Label>
+                  </div>
+                )}
+                {(!roleParam || roleParam === 'teacher') && (
+                  <div className="h-full">
+                    <RadioGroupItem value="Teacher" id="Teacher" className="peer sr-only" />
+                    <Label
+                      htmlFor="Teacher"
+                      className="flex h-full flex-col items-center gap-2 justify-center rounded-xl border-2 border-muted bg-popover p-6 hover:bg-accent/5 cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary transition-all"
+                    >
+                      <GraduationCap className="h-8 w-8 text-primary" />
+                      <span className="font-bold">Teacher</span>
+                      <span className="text-xs text-muted-foreground text-center">I want to share my expertise</span>
+                    </Label>
+                  </div>
+                )}
               </RadioGroup>
             </div>
 
@@ -207,10 +227,34 @@ export default function RegisterPage() {
         </form>
       </Card>
       
-      <div className="mt-8 text-center text-sm text-muted-foreground space-y-2">
-        <p>© 2026 RP Coach-Up. All rights reserved.</p>
-        <p className="text-[10px] text-muted-foreground/40 font-medium italic">design and developed by 'SK group'</p>
-      </div>
+      <footer className="mt-12 w-full max-w-4xl">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div>
+            <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-8 text-sm font-medium">
+            <a href="tel:+919896959389" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Phone className="h-4 w-4" /> +91 98969 59389
+            </a>
+            <a href="mailto:support@rpcoachup.com" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Mail className="h-4 w-4" /> support@rpcoachup.com
+            </a>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">© 2026 RP Coach-Up. All rights reserved.</p>
+            <p className="text-[10px] text-muted-foreground/40 font-medium italic">design and developed by 'SK group'</p>
+          </div>
+        </div>
+      </footer>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

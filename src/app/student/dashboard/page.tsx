@@ -54,6 +54,7 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth,
 import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { sendNotificationEmail } from '@/app/actions/notifications';
+import { cn } from '@/lib/utils';
 
 export default function StudentDashboard() {
   const { user, isUserLoading } = useUser();
@@ -594,9 +595,7 @@ export default function StudentDashboard() {
         <footer className="bg-secondary/30 border-t py-12 mt-auto">
           <div className="container mx-auto px-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-6">
-              <div className="bg-primary p-1 rounded-lg">
-                <BookOpen className="text-primary-foreground h-5 w-5" />
-              </div>
+              <div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div>
               <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-8 text-sm font-medium">
