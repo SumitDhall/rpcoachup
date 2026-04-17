@@ -56,7 +56,7 @@ import { sendNotificationEmail } from '@/app/actions/notifications';
 
 export default function TeacherDashboard() {
   const { user, isUserLoading } = useUser();
-  const auth = authInstance = useAuth();
+  const auth = useAuth();
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
