@@ -646,7 +646,7 @@ export default function StudentDashboard() {
             <AlertDialogDescription className="text-center text-base">
               Thank you for your enquiry. Our support team will contact you within 7 working days. 
               <br /><br />
-              You can track the progress of your request on Tutor Enquiry page.
+              You can track the progress of your request on Tutor Inquiry page.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-center mt-6">

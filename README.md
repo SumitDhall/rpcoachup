@@ -35,18 +35,42 @@ This app uses **Firebase App Hosting** for Next.js SSR support.
 
 ## 🛠 Troubleshooting Git & Deployment
 
-### 1. "Missing or invalid credentials" (Git Push Error)
-If you see `ECONNREFUSED` or credential errors during `git push`:
-1. **Set Identity**:
-   ```bash
-   git config --global user.email "you@example.com"
-   git config --global user.name "Your Name"
-   ```
-2. **Use Token**: Update your remote to include a GitHub Personal Access Token (PAT):
-   ```bash
-   git remote set-url origin https://YOUR_TOKEN@github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
-   git push
-   ```
+### 1. SSH Access Setup (Recommended)
+If you see "Missing or invalid credentials" or `ECONNREFUSED` errors, SSH is the most reliable way to push your code.
+
+1.  **Generate a new SSH key**:
+    In the terminal, run:
+    ```bash
+    ssh-keygen -t ed25519 -C "your_email@example.com"
+    ```
+    *(Press Enter for all prompts to use default settings)*
+
+2.  **Start the SSH agent and add your key**:
+    ```bash
+    eval "$(ssh-agent -s)"
+    ssh-add ~/.ssh/id_ed25519
+    ```
+
+3.  **Copy your public key**:
+    ```bash
+    cat ~/.ssh/id_ed25519.pub
+    ```
+    *Copy the long string starting with `ssh-ed25519`.*
+
+4.  **Add the key to GitHub**:
+    - Go to your GitHub **Settings**.
+    - Click **SSH and GPG keys** in the sidebar.
+    - Click **New SSH key**, give it a title (e.g., "Firebase Studio"), and paste your key.
+
+5.  **Change your Git remote to use SSH**:
+    ```bash
+    git remote set-url origin git@github.com:YOUR_USERNAME/YOUR_REPO_NAME.git
+    ```
+
+6.  **Push your code**:
+    ```bash
+    git push -u origin main
+    ```
 
 ### 2. Missing GEMINI_API_KEY
 This app uses AI for matching. You **must** add your API key in the Firebase Console:

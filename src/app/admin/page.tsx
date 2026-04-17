@@ -735,10 +735,16 @@ export default function AdminPortal() {
         })
         // Only include students with non-empty inquiries
         .filter(s => s.studentInterests.length > 0)
-        // Sort: Pending first, then by date (oldest first / first come first serve)
+        // Sort hierarchy: IN-PROGRESS first, then NEW (Pending), then COMPLETED only if all are completed
         .sort((a, b) => {
-          if (a.hasPending && !b.hasPending) return -1;
-          if (!a.hasPending && b.hasPending) return 1;
+          const score = (u: any) => {
+            if (u.hasInProgress) return 3;
+            if (u.hasPending) return 2;
+            if (u.hasCompleted) return 1;
+            return 0;
+          };
+          const scoreDiff = score(b) - score(a);
+          if (scoreDiff !== 0) return scoreDiff;
           return a.oldestInquiryDate - b.oldestInquiryDate;
         });
     }
@@ -764,10 +770,16 @@ export default function AdminPortal() {
         })
         // Only include teachers with non-empty profiles
         .filter(t => t.teacherInterests.length > 0)
-        // Sort: Pending first, then by date (oldest first / first come first serve)
+        // Sort hierarchy: IN-PROGRESS first, then NEW (Pending), then COMPLETED
         .sort((a, b) => {
-          if (a.hasPending && !b.hasPending) return -1;
-          if (!a.hasPending && b.hasPending) return 1;
+          const score = (u: any) => {
+            if (u.hasInProgress) return 3;
+            if (u.hasPending) return 2;
+            if (u.hasCompleted) return 1;
+            return 0;
+          };
+          const scoreDiff = score(b) - score(a);
+          if (scoreDiff !== 0) return scoreDiff;
           return a.oldestInquiryDate - b.oldestInquiryDate;
         });
     }
@@ -821,7 +833,11 @@ export default function AdminPortal() {
           </Button>
         </SheetClose>
       </nav>
-      <div className="p-4 border-t">
+      <div className="p-4 border-t space-y-4">
+        <div className="px-2 space-y-2 text-[10px] text-muted-foreground">
+          <p className="flex items-center gap-2"><Phone className="h-3 w-3" /> +91 98969 59389</p>
+          <p className="flex items-center gap-2"><Mail className="h-3 w-3" /> support@rpcoachup.com</p>
+        </div>
         <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
           <LogOut className="h-4 w-4 mr-2" /> Sign Out
         </Button>
@@ -878,7 +894,11 @@ export default function AdminPortal() {
               <Database className="h-4 w-4" /> Maintenance
             </Button>
           </nav>
-          <div className="p-4 border-t">
+          <div className="p-4 border-t space-y-4">
+            <div className="px-2 space-y-2 text-[10px] text-muted-foreground">
+              <p className="flex items-center gap-2"><Phone className="h-3 w-3" /> +91 98969 59389</p>
+              <p className="flex items-center gap-2"><Mail className="h-3 w-3" /> support@rpcoachup.com</p>
+            </div>
             <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" /> Sign Out
             </Button>
@@ -936,7 +956,7 @@ export default function AdminPortal() {
                   <div className="space-y-1">
                     <CardTitle>{activeTab === 'students' ? 'Student Inquiries' : 'Teacher Profiles'}</CardTitle>
                     <CardDescription className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-tight">
-                      <Clock className="h-3 w-3" /> Sorting: Pending first, oldest priority
+                      <Clock className="h-3 w-3" /> Sorting priority: In-Progress, then New, then Completed
                     </CardDescription>
                   </div>
                   <Badge variant="secondary">{filteredUsers.length} Found</Badge>
@@ -960,9 +980,13 @@ export default function AdminPortal() {
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span>{u.firstName} {u.lastName}</span>
                                 {/* Hierarchical Status Badges */}
-                                {u.hasInProgress && <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">IN-PROGRESS</Badge>}
-                                {u.hasPending && !u.hasInProgress && <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge>}
-                                {u.hasCompleted && !u.hasPending && !u.hasInProgress && <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">COMPLETED</Badge>}
+                                {u.hasInProgress ? (
+                                  <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">IN-PROGRESS</Badge>
+                                ) : u.hasPending ? (
+                                  <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge>
+                                ) : u.hasCompleted ? (
+                                  <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">COMPLETED</Badge>
+                                ) : null}
                               </div>
                               <span className="sm:hidden text-[10px] text-muted-foreground">{u.email}</span>
                             </div>
