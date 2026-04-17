@@ -1,15 +1,14 @@
-
 "use client"
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import {
   AlertDialog,
@@ -30,7 +29,6 @@ import {
 } from "@/components/ui/sheet";
 import { 
   BookOpen, 
-  LayoutDashboard, 
   Loader2, 
   LogOut, 
   History, 
