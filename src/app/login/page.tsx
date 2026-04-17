@@ -51,20 +51,19 @@ export default function LoginPage() {
         const role = (userData.userType || 'Student').toLowerCase();
         router.push(`/${role}/dashboard`);
       } else {
-        // Handle case where user auth exists but no Firestore profile yet
+        // Handle "Zombie Account" case (Auth exists but no Firestore profile)
         toast({
           variant: "destructive",
           title: "Profile Missing",
-          description: "Your login was successful, but your profile details are missing from our database. Please contact support or try registering again with a different email.",
+          description: "Your account exists, but your profile details are missing from our database. This can happen if registration was interrupted. Please contact support at support@rpcoachup.com to reset your account.",
         });
         // We sign out here to allow them to attempt a clean registration or contact support
         await signOut(auth);
         setIsRedirecting(false);
         setHasAttemptedRedirect(false);
-        // We don't automatically redirect to register to avoid the loop
       }
     } catch (e) {
-      console.error("Redirection error:", e);
+      // Redirection logic should be silent unless critical
       setIsRedirecting(false);
       setHasAttemptedRedirect(false);
     }
@@ -192,7 +191,7 @@ export default function LoginPage() {
       
       <div className="mt-8 text-center text-sm text-muted-foreground space-y-2">
         <p>© 2026 RP Coach-Up. All rights reserved.</p>
-        <p className="text-[10px] text-muted-foreground/30 italic">design and developed by 'SK group'</p>
+        <p className="text-[10px] text-muted-foreground/40 font-medium italic">design and developed by 'SK group'</p>
       </div>
     </div>
   );

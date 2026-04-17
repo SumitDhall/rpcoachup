@@ -121,7 +121,7 @@ export default function RegisterPage() {
         title: "Registration Failed",
         description: msg,
       });
-      console.error("Registration error:", error.code, error.message);
+      // Removed console.error to prevent runtime error overlay
     } finally {
       setIsLoading(false);
     }
@@ -210,7 +210,7 @@ export default function RegisterPage() {
       
       <div className="mt-8 text-center text-sm text-muted-foreground space-y-2">
         <p>© 2026 RP Coach-Up. All rights reserved.</p>
-        <p className="text-[10px] text-muted-foreground/30 italic">design and developed by 'SK group'</p>
+        <p className="text-[10px] text-muted-foreground/40 font-medium italic">design and developed by 'SK group'</p>
       </div>
     </div>
   );
