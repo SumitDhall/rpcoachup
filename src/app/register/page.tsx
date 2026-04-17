@@ -148,23 +148,23 @@ export default function RegisterPage() {
           <CardContent className="space-y-6">
             <div className="space-y-3">
               <Label>I want to join as a...</Label>
-              <RadioGroup defaultValue="Student" onValueChange={setRole} className="grid grid-cols-2 gap-4">
-                <div>
+              <RadioGroup defaultValue="Student" onValueChange={setRole} className="grid grid-cols-2 gap-4 items-stretch">
+                <div className="h-full">
                   <RadioGroupItem value="Student" id="Student" className="peer sr-only" />
                   <Label
                     htmlFor="Student"
-                    className="flex flex-col items-center gap-2 justify-center rounded-xl border-2 border-muted bg-popover p-6 hover:bg-accent/5 cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary"
+                    className="flex h-full flex-col items-center gap-2 justify-center rounded-xl border-2 border-muted bg-popover p-6 hover:bg-accent/5 cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary transition-all"
                   >
                     <User className="h-8 w-8 text-primary" />
                     <span className="font-bold">Student</span>
                     <span className="text-xs text-muted-foreground text-center">I want to learn new skills and subjects</span>
                   </Label>
                 </div>
-                <div>
+                <div className="h-full">
                   <RadioGroupItem value="Teacher" id="Teacher" className="peer sr-only" />
                   <Label
                     htmlFor="Teacher"
-                    className="flex flex-col items-center gap-2 justify-center rounded-xl border-2 border-muted bg-popover p-6 hover:bg-accent/5 cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary"
+                    className="flex h-full flex-col items-center gap-2 justify-center rounded-xl border-2 border-muted bg-popover p-6 hover:bg-accent/5 cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 [&:has([data-state=checked])]:border-primary transition-all"
                   >
                     <GraduationCap className="h-8 w-8 text-primary" />
                     <span className="font-bold">Teacher</span>
