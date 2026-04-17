@@ -38,6 +38,8 @@ export default function Home() {
     setMounted(true);
   }, []);
 
+  const isLoggedIn = !!user;
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Navbar */}
@@ -156,11 +158,22 @@ export default function Home() {
                   The smarter way to find tuition. We connect students with the perfect courses and teachers based on shared interests and goals.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                  <Button size="lg" className="h-14 px-8 text-lg rounded-xl" asChild>
-                    <Link href="/register?role=student">Find a Tutor</Link>
+                  <Button 
+                    size="lg" 
+                    className="h-14 px-8 text-lg rounded-xl" 
+                    disabled={isLoggedIn}
+                    asChild={!isLoggedIn}
+                  >
+                    {isLoggedIn ? <span>Find a Tutor</span> : <Link href="/register?role=student">Find a Tutor</Link>}
                   </Button>
-                  <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-xl border-2" asChild>
-                    <Link href="/register?role=teacher">Join as Teacher</Link>
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="h-14 px-8 text-lg rounded-xl border-2" 
+                    disabled={isLoggedIn}
+                    asChild={!isLoggedIn}
+                  >
+                    {isLoggedIn ? <span>Join as Teacher</span> : <Link href="/register?role=teacher">Join as Teacher</Link>}
                   </Button>
                 </div>
               </div>

@@ -48,6 +48,8 @@ export default function AboutPage() {
     setCurrentYear(new Date().getFullYear());
   }, []);
 
+  const isLoggedIn = !!user;
+
   // Fetch Feedback without complex orderBy in the query to avoid composite index requirement
   const studentFeedbackBaseQuery = useMemoFirebase(() => {
     if (!db) return null;
@@ -346,8 +348,23 @@ export default function AboutPage() {
           <div className="container mx-auto px-4">
             <h2 className="text-3xl sm:text-4xl font-headline font-bold mb-8">Ready to find your match?</h2>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="rounded-xl px-12 h-14 text-lg" asChild><Link href="/register">Join Us Today</Link></Button>
-              <Button variant="outline" size="lg" className="rounded-xl px-12 h-14 text-lg border-2" asChild><Link href="/login">Sign In</Link></Button>
+              <Button 
+                size="lg" 
+                className="rounded-xl px-12 h-14 text-lg" 
+                disabled={isLoggedIn}
+                asChild={!isLoggedIn}
+              >
+                {isLoggedIn ? <span>Join Us Today</span> : <Link href="/register">Join Us Today</Link>}
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="rounded-xl px-12 h-14 text-lg border-2" 
+                disabled={isLoggedIn}
+                asChild={!isLoggedIn}
+              >
+                {isLoggedIn ? <span>Sign In</span> : <Link href="/login">Sign In</Link>}
+              </Button>
             </div>
           </div>
         </section>

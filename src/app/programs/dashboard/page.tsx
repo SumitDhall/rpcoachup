@@ -32,6 +32,8 @@ export default function ProgramsDashboard() {
   const { user, isUserLoading } = useUser();
   const onlineCourseImg = PlaceHolderImages.find(img => img.id === 'online-course');
 
+  const isLoggedIn = !!user;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -176,11 +178,22 @@ export default function ProgramsDashboard() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                <Button size="lg" className="rounded-xl h-14 px-8 text-lg font-bold shadow-lg shadow-primary/20" asChild>
-                  <Link href="/register?role=teacher">Apply as Teacher</Link>
+                <Button 
+                  size="lg" 
+                  className="rounded-xl h-14 px-8 text-lg font-bold shadow-lg shadow-primary/20" 
+                  disabled={isLoggedIn}
+                  asChild={!isLoggedIn}
+                >
+                  {isLoggedIn ? <span>Apply as Teacher</span> : <Link href="/register?role=teacher">Apply as Teacher</Link>}
                 </Button>
-                <Button variant="outline" size="lg" className="rounded-xl h-14 px-8 text-lg font-bold border-2" asChild>
-                  <Link href="/register?role=student">Enroll Student</Link>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="rounded-xl h-14 px-8 text-lg font-bold border-2" 
+                  disabled={isLoggedIn}
+                  asChild={!isLoggedIn}
+                >
+                  {isLoggedIn ? <span>Enroll Student</span> : <Link href="/register?role=student">Enroll Student</Link>}
                 </Button>
               </div>
             </div>
