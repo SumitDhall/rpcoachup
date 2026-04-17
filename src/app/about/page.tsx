@@ -106,8 +106,8 @@ export default function AboutPage() {
               {isUserLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               ) : user ? (
-                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" asChild>
-                  <Link href="/login">Dashboard</Link>
+                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled>
+                  <span>Dashboard</span>
                 </Button>
               ) : (
                 <>
@@ -160,8 +160,8 @@ export default function AboutPage() {
                          <div className="flex justify-center py-2"><Loader2 className="h-5 w-5 animate-spin" /></div>
                       ) : user ? (
                         <SheetClose asChild>
-                          <Button className="w-full justify-start gap-2" asChild>
-                            <Link href="/login">Dashboard</Link>
+                          <Button className="w-full justify-start gap-2" disabled>
+                            Dashboard
                           </Button>
                         </SheetClose>
                       ) : (
