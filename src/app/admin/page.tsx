@@ -657,14 +657,20 @@ export default function AdminPortal() {
                   />
                   <PurgeCollectionButton 
                     collectionName="teacherInterests" 
-                    label="Clear Teacher Interests" 
-                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all teacher interests')} 
+                    label="Clear Teacher Profiles" 
+                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all teacher profiles')} 
                     isAdmin={isAdmin} 
                   />
                   <PurgeCollectionButton 
                     collectionName="matchProposals" 
                     label="Clear All Matches (Assignments)" 
                     onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all match proposals')} 
+                    isAdmin={isAdmin} 
+                  />
+                  <PurgeCollectionButton 
+                    collectionName="notifications" 
+                    label="Clear All Notifications" 
+                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all system notifications')} 
                     isAdmin={isAdmin} 
                   />
                 </div>
