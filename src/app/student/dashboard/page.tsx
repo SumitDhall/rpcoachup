@@ -533,7 +533,7 @@ export default function StudentDashboard() {
                   ) : (rawInterests && rawInterests.length > 0 ? [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
                     // Filter matches specifically for this enquiry
                     const enquiryMatches = matches?.filter(m => m.enquiryId === i.id);
-                    const assignedTeachers = enquiryMatches?.map(m => m.teacherName).join(', ');
+                    const assignedTeachers = enquiryMatches?.map(m => m.teacherName) || [];
                     
                     return (
                       <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
@@ -550,12 +550,16 @@ export default function StudentDashboard() {
                           </p>
                         </div>
 
-                        {(i.status === 'In-Progress' || i.status === 'Completed') && assignedTeachers && (
-                          <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-center gap-3">
-                             <div className="bg-primary/10 p-2 rounded-full"><Briefcase className="h-4 w-4 text-primary" /></div>
+                        {(i.status === 'In-Progress' || i.status === 'Completed') && assignedTeachers.length > 0 && (
+                          <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-start gap-3">
+                             <div className="bg-primary/10 p-2 rounded-full mt-1"><Briefcase className="h-4 w-4 text-primary" /></div>
                              <div>
-                               <p className="text-[10px] uppercase font-bold text-primary tracking-wider">Assigned Mentor(s)</p>
-                               <p className="text-sm font-semibold">{assignedTeachers}</p>
+                               <p className="text-[10px] uppercase font-bold text-primary tracking-wider mb-1">Assigned Mentor(s)</p>
+                               <ol className="list-decimal list-inside space-y-0.5">
+                                 {assignedTeachers.map((name, idx) => (
+                                   <li key={idx} className="text-sm font-semibold">{name}</li>
+                                 ))}
+                               </ol>
                              </div>
                           </div>
                         )}
@@ -704,7 +708,7 @@ export default function StudentDashboard() {
               </a>
             </div>
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">© 2026 RP Coach-Up. All rights reserved.</p>
+              <p className="text-sm text-muted-foreground">© 2026 RP Coach-Up. Empowering education through technology.</p>
               <p className="text-[10px] text-muted-foreground/40 font-medium italic">design and developed by 'SK group'</p>
             </div>
           </div>
