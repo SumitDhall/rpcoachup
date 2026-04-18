@@ -365,7 +365,7 @@ export default function TeacherDashboard() {
                   ) : (rawInterests && rawInterests.length > 0 ? (
                     [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
                       // Show students assigned to THIS teacher globally across any specialization
-                      const assignedStudents = matches?.map(m => `${m.studentName} (${m.subject})`).join(', ');
+                      const assignedStudents = matches?.map(m => m.studentName).join(', ');
                       
                       return (
                         <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
@@ -386,7 +386,7 @@ export default function TeacherDashboard() {
                             <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-center gap-3">
                               <div className="bg-primary/10 p-2 rounded-full"><Users className="h-4 w-4 text-primary" /></div>
                               <div>
-                                <p className="text-[10px] uppercase font-bold text-primary tracking-wider">Assigned Students & Subjects</p>
+                                <p className="text-[10px] uppercase font-bold text-primary tracking-wider">Assigned Students</p>
                                 <p className="text-sm font-semibold">{assignedStudents}</p>
                               </div>
                             </div>
