@@ -647,7 +647,28 @@ export default function AdminPortal() {
           {activeTab === 'maintenance' && (
             <Card>
               <CardHeader><div className="flex items-center gap-2"><Database className="h-5 w-5 text-primary" /><div><CardTitle>Database Maintenance</CardTitle><CardDescription>Purge test data and clear collections. Use with caution.</CardDescription></div></div></CardHeader>
-              <CardContent className="space-y-6"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><PurgeCollectionButton collectionName="studentInterests" label="Clear Student Enquiries" onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all student enquiries')} isAdmin={isAdmin} /><PurgeCollectionButton collectionName="teacherInterests" label="Clear Teacher Interests" onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all teacher interests')} isAdmin={isAdmin} /><PurgeCollectionButton collectionName="matchProposals" label="Clear All Matches" onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all match proposals')} isAdmin={isAdmin} /></div></CardContent>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <PurgeCollectionButton 
+                    collectionName="studentInterests" 
+                    label="Clear Student Enquiries" 
+                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all student enquiries')} 
+                    isAdmin={isAdmin} 
+                  />
+                  <PurgeCollectionButton 
+                    collectionName="teacherInterests" 
+                    label="Clear Teacher Interests" 
+                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all teacher interests')} 
+                    isAdmin={isAdmin} 
+                  />
+                  <PurgeCollectionButton 
+                    collectionName="matchProposals" 
+                    label="Clear All Matches (Assignments)" 
+                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all match proposals')} 
+                    isAdmin={isAdmin} 
+                  />
+                </div>
+              </CardContent>
             </Card>
           )}
         </div>
