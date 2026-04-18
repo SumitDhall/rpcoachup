@@ -47,14 +47,14 @@ import {
   MessageSquare,
   Star,
   Info,
-  PlusCircle
+  PlusCircle,
+  Briefcase
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { sendNotificationEmail } from '@/app/actions/notifications';
-import { cn } from '@/lib/utils';
 
 export default function StudentDashboard() {
   const { user, isUserLoading } = useUser();
@@ -142,13 +142,10 @@ export default function StudentDashboard() {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
     const digitsOnly = input.replace(/\D/g, '');
-    
-    // Strip leading 91 if it's there (handling the fixed prefix +91)
     let userNumber = digitsOnly;
     if (digitsOnly.startsWith('91')) {
       userNumber = digitsOnly.slice(2);
     }
-    
     const limited = userNumber.slice(0, 10);
     setPhoneValue(formatPhoneNumber(limited));
   };
@@ -160,7 +157,6 @@ export default function StudentDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     const digitsOnly = phoneValue.replace(/\D/g, '');
     const userNumber = digitsOnly.startsWith('91') ? digitsOnly.slice(2) : digitsOnly;
     
@@ -202,7 +198,7 @@ export default function StudentDashboard() {
       
       addDocumentNonBlocking(collection(db, 'notifications'), {
         type: 'interest',
-        subject: `Student Tuition Inquiry: ${subject}`,
+        subject: `Student Tuition Enquiry: ${subject}`,
         body: `Student ${studentName} requested tuition for ${subject}. Budget: ${affordableRange}.`,
         userEmail: email,
         userName: studentName,
@@ -216,7 +212,7 @@ export default function StudentDashboard() {
         userType: 'Student',
         userName: studentName,
         userEmail: email,
-        details: `Your inquiry for ${subject} has been submitted successfully.`
+        details: `Your enquiry for ${subject} has been submitted successfully.`
       });
 
       setShowSuccessDialog(true);
@@ -292,7 +288,7 @@ export default function StudentDashboard() {
 
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => {
     const navItems = [
-      { id: 'history', icon: History, label: 'Tutor Inquiry' },
+      { id: 'history', icon: History, label: 'Tutor Enquiry' },
       { id: 'interests', icon: PlusCircle, label: 'Submit Enquiry' },
       { id: 'feedback', icon: MessageSquare, label: 'Feedback' },
     ];
@@ -332,13 +328,17 @@ export default function StudentDashboard() {
           ))}
         </nav>
         <div className="p-4 border-t space-y-4">
-          <div className="px-2 space-y-2 text-[10px] text-muted-foreground">
+          <div className="px-2 mb-4 space-y-2 text-[10px] text-muted-foreground">
             <p className="flex items-center gap-2"><Phone className="h-3 w-3" /> +91 98969 59389</p>
             <p className="flex items-center gap-2"><Mail className="h-3 w-3" /> support@rpcoachup.com</p>
           </div>
           <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
             <LogOut className="h-4 w-4 mr-2" /> Sign Out
           </Button>
+          <div className="mt-4 pt-4 border-t text-center space-y-1">
+             <p className="text-[10px] text-muted-foreground">© 2026 RP Coach-Up</p>
+             <p className="text-[8px] text-muted-foreground/50 italic">design and developed by 'SK group'</p>
+          </div>
         </div>
       </div>
     );
@@ -517,12 +517,12 @@ export default function StudentDashboard() {
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <CardTitle>Tutor Inquiry</CardTitle>
-                      <CardDescription>Detailed records of your submitted tuition requests.</CardDescription>
+                      <CardTitle>Tutor Enquiry</CardTitle>
+                      <CardDescription>Detailed records of your submitted tuition enquiries.</CardDescription>
                     </div>
                     {rawInterests && rawInterests.length > 0 && (
                       <Button onClick={() => setActiveTab('interests')} className="gap-2 shrink-0">
-                        <PlusCircle className="h-4 w-4" /> Submit New Inquiry
+                        <PlusCircle className="h-4 w-4" /> Submit New Enquiry
                       </Button>
                     )}
                   </div>
@@ -530,77 +530,91 @@ export default function StudentDashboard() {
                 <CardContent className="space-y-6">
                   {isLoadingInterests ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
-                  ) : (rawInterests && rawInterests.length > 0 ? [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => (
-                    <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <p className="font-bold text-lg">{i.subject}</p>
-                          <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600 text-white' : i.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
-                            {i.status}
-                          </Badge>
+                  ) : (rawInterests && rawInterests.length > 0 ? [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
+                    const assignedTeachers = matches?.map(m => m.teacherName).join(', ');
+                    
+                    return (
+                      <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-lg">{i.subject}</p>
+                            <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600 text-white' : i.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
+                              {i.status}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}
+                          </p>
                         </div>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}
-                        </p>
+
+                        {(i.status === 'In-Progress' || i.status === 'Completed') && assignedTeachers && (
+                          <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-center gap-3">
+                             <div className="bg-primary/10 p-2 rounded-full"><Briefcase className="h-4 w-4 text-primary" /></div>
+                             <div>
+                               <p className="text-[10px] uppercase font-bold text-primary tracking-wider">Assigned Teacher(s)</p>
+                               <p className="text-sm font-semibold">{assignedTeachers}</p>
+                             </div>
+                          </div>
+                        )}
+                        
+                        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-sm border-t pt-4">
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                              <User className="h-4 w-4" /> Student & Academic
+                            </p>
+                            <div className="space-y-1">
+                              <p className="font-medium">{i.studentName}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><GraduationCap className="h-3.5 w-3.5" /> {i.gradeOrClass}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><School className="h-3.5 w-3.5" /> {i.school}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                              <Phone className="h-3 w-3" /> Contact Details
+                            </p>
+                            <div className="space-y-1">
+                              <p className="flex items-center gap-2 font-medium"><Phone className="h-3.5 w-3.5 text-primary" /> {i.phone}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /> {i.email}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                              <IndianRupee className="h-3 w-3" /> Budget & Timeline
+                            </p>
+                            <div className="space-y-1">
+                              <p className="flex items-center gap-2 text-accent font-bold"><IndianRupee className="h-3.5 w-3.5" /> {i.affordableRange}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-3.5 w-3.5" /> Starts: {i.intendedStartDate}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                               <MapPin className="h-3 w-3" /> Location
+                            </p>
+                            <p className="text-xs leading-relaxed text-muted-foreground bg-secondary/10 p-2 rounded-lg">{i.address}</p>
+                          </div>
+                        </div>
+
+                        {i.notes && (
+                          <div className="space-y-2 text-sm pt-2">
+                             <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-2">
+                               <Info className="h-3 w-3" /> Special Requirements
+                             </p>
+                             <p className="text-xs italic bg-accent/5 p-3 rounded-lg border-l-2 border-accent">"{i.notes}"</p>
+                          </div>
+                        )}
                       </div>
-                      
-                      <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-sm border-t pt-4">
-                        <div className="space-y-2">
-                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                            <User className="h-4 w-4" /> Student & Academic
-                          </p>
-                          <div className="space-y-1">
-                            <p className="font-medium">{i.studentName}</p>
-                            <p className="flex items-center gap-2 text-muted-foreground"><GraduationCap className="h-3.5 w-3.5" /> {i.gradeOrClass}</p>
-                            <p className="flex items-center gap-2 text-muted-foreground"><School className="h-3.5 w-3.5" /> {i.school}</p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                            <Phone className="h-3 w-3" /> Contact Details
-                          </p>
-                          <div className="space-y-1">
-                            <p className="flex items-center gap-2 font-medium"><Phone className="h-3.5 w-3.5 text-primary" /> {i.phone}</p>
-                            <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /> {i.email}</p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                            <IndianRupee className="h-3 w-3" /> Budget & Timeline
-                          </p>
-                          <div className="space-y-1">
-                            <p className="flex items-center gap-2 text-accent font-bold"><IndianRupee className="h-3.5 w-3.5" /> {i.affordableRange}</p>
-                            <p className="flex items-center gap-2 text-muted-foreground"><Calendar className="h-3.5 w-3.5" /> Starts: {i.intendedStartDate}</p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                             <MapPin className="h-3 w-3" /> Location
-                          </p>
-                          <p className="text-xs leading-relaxed text-muted-foreground bg-secondary/10 p-2 rounded-lg">{i.address}</p>
-                        </div>
-                      </div>
-
-                      {i.notes && (
-                        <div className="space-y-2 text-sm pt-2">
-                           <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-2">
-                             <Info className="h-3 w-3" /> Special Requirements
-                           </p>
-                           <p className="text-xs italic bg-accent/5 p-3 rounded-lg border-l-2 border-accent">"{i.notes}"</p>
-                        </div>
-                      )}
-                    </div>
-                  )) : (
+                    );
+                  }) : (
                     <div className="text-center py-16 border-2 border-dashed rounded-2xl bg-secondary/5">
                       <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto mb-4 text-primary">
                         <History className="h-8 w-8" />
                       </div>
-                      <p className="text-muted-foreground font-medium mb-4">No tuition requests found yet.</p>
-                      <Button onClick={() => setActiveTab('interests')}>Start your first request now</Button>
+                      <p className="text-muted-foreground font-medium mb-4">No tuition enquiries found yet.</p>
+                      <Button onClick={() => setActiveTab('interests')}>Start your first enquiry now</Button>
                     </div>
                   ))}
                 </CardContent>
@@ -705,7 +719,7 @@ export default function StudentDashboard() {
             <AlertDialogDescription className="text-center text-base">
               Thank you for your enquiry. Our support team will contact you within 7 working days. 
               <br /><br />
-              You can track the progress of your request on Tutor Inquiry page.
+              You can track the progress of your request on Tutor Enquiry page.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-center mt-6">

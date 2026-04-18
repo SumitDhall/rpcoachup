@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -48,7 +48,6 @@ import {
   LogOut,
   Phone,
   School,
-  MapPin,
   ChevronLeft,
   ChevronRight,
   UserPlus,
@@ -65,9 +64,8 @@ import {
   User,
   Mail,
   Menu,
-  Edit2,
-  MessageSquare,
-  Clock
+  MapPin,
+  PlusCircle
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
@@ -312,7 +310,7 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
     
     updateDocumentNonBlocking(interestRef, { status: newStatus });
     
-    logSystemEvent(db, adminUser, 'status_update', `Updated status to ${newStatus} for ${statusChangeTarget.userName}'s interest in ${statusChangeTarget.subject}`);
+    logSystemEvent(db, adminUser, 'status_update', `Updated status to ${newStatus} for ${statusChangeTarget.userName}'s enquiry in ${statusChangeTarget.subject}`);
 
     sendNotificationEmail({
       recipientType: 'user',
@@ -320,7 +318,7 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
       userType: user.userType,
       userName: statusChangeTarget.userName,
       userEmail: statusChangeTarget.userEmail,
-      details: `Your inquiry for "${statusChangeTarget.subject}" is now: ${newStatus}`
+      details: `Your enquiry for "${statusChangeTarget.subject}" is now: ${newStatus}`
     });
 
     setStatusChangeTarget(null);
@@ -524,13 +522,11 @@ export default function AdminPortal() {
         const hasPending = studentInterests.some(i => i.status === 'Pending');
         const hasInProgress = studentInterests.some(i => i.status === 'In-Progress');
         const hasCompleted = studentInterests.some(i => i.status === 'Completed');
-        const oldestInquiryDate = studentInterests.reduce((min, i) => Math.min(min, i.submissionDate?.toMillis?.() || Infinity), Infinity);
-        return { ...s, studentInterests, hasPending, hasInProgress, hasCompleted, oldestInquiryDate };
+        const oldestEnquiryDate = studentInterests.reduce((min, i) => Math.min(min, i.submissionDate?.toMillis?.() || Infinity), Infinity);
+        return { ...s, studentInterests, hasPending, hasInProgress, hasCompleted, oldestEnquiryDate };
       }).filter(s => s.studentInterests.length > 0).sort((a, b) => {
-        // Priority: Pending (3) > In-Progress (2) > Completed (1)
         const score = (u: any) => u.hasPending ? 3 : u.hasInProgress ? 2 : u.hasCompleted ? 1 : 0;
-        // Sort by status priority desc, then by date asc (first come first served)
-        return (score(b) - score(a)) || (a.oldestInquiryDate - b.oldestInquiryDate);
+        return (score(b) - score(a)) || (a.oldestEnquiryDate - b.oldestEnquiryDate);
       });
     }
     if (activeTab === 'teachers') {
@@ -541,13 +537,11 @@ export default function AdminPortal() {
         const hasPending = teacherInterests.some(i => i.status === 'Pending');
         const hasInProgress = teacherInterests.some(i => i.status === 'In-Progress');
         const hasCompleted = teacherInterests.some(i => i.status === 'Completed');
-        const oldestInquiryDate = teacherInterests.reduce((min, i) => Math.min(min, i.submissionDate?.toMillis?.() || Infinity), Infinity);
-        return { ...t, teacherInterests, hasPending, hasInProgress, hasCompleted, oldestInquiryDate };
+        const oldestEnquiryDate = teacherInterests.reduce((min, i) => Math.min(min, i.submissionDate?.toMillis?.() || Infinity), Infinity);
+        return { ...t, teacherInterests, hasPending, hasInProgress, hasCompleted, oldestEnquiryDate };
       }).filter(t => t.teacherInterests.length > 0).sort((a, b) => {
-        // Priority: Pending (3) > In-Progress (2) > Completed (1)
         const score = (u: any) => u.hasPending ? 3 : u.hasInProgress ? 2 : u.hasCompleted ? 1 : 0;
-        // Sort by status priority desc, then by date asc (first come first served)
-        return (score(b) - score(a)) || (a.oldestInquiryDate - b.oldestInquiryDate);
+        return (score(b) - score(a)) || (a.oldestEnquiryDate - b.oldestEnquiryDate);
       });
     }
     return [];
@@ -586,9 +580,13 @@ export default function AdminPortal() {
           <NavButton id="settings" icon={History} label="Activity Logs" />
           <NavButton id="maintenance" icon={Database} label="Maintenance" />
         </nav>
-        <div className="p-4 border-t space-y-4">
-          <div className="px-2 space-y-2 text-[10px] text-muted-foreground"><p className="flex items-center gap-2"><Phone className="h-3 w-3" /> +91 98969 59389</p><p className="flex items-center gap-2"><Mail className="h-3 w-3" /> support@rpcoachup.com</p></div>
+        <div className="p-4 border-t mt-auto">
+          <div className="px-2 mb-4 space-y-2 text-[10px] text-muted-foreground"><p className="flex items-center gap-2"><Phone className="h-3 w-3" /> +91 98969 59389</p><p className="flex items-center gap-2"><Mail className="h-3 w-3" /> support@rpcoachup.com</p></div>
           <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}><LogOut className="h-4 w-4 mr-2" />Sign Out</Button>
+          <div className="mt-4 pt-4 border-t text-center space-y-1">
+             <p className="text-[10px] text-muted-foreground">© 2026 RP Coach-Up</p>
+             <p className="text-[8px] text-muted-foreground/50 italic">design and developed by 'SK group'</p>
+          </div>
         </div>
       </div>
     );
@@ -596,7 +594,6 @@ export default function AdminPortal() {
 
   return (
     <div className="flex min-h-screen bg-background flex-col lg:flex-row">
-      {/* Mobile Header */}
       <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card sticky top-0 z-40">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="bg-primary p-1.5 rounded-lg">
@@ -617,7 +614,6 @@ export default function AdminPortal() {
         </Sheet>
       </header>
 
-      {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-64 flex-col fixed inset-y-0 border-r bg-card z-50">
         <SidebarContent isMobile={false} />
       </aside>
@@ -642,9 +638,9 @@ export default function AdminPortal() {
 
           {(activeTab === 'students' || activeTab === 'teachers') && (
             <Card>
-              <CardHeader><div className="flex items-center justify-between"><div><CardTitle>{activeTab === 'students' ? 'Student Inquiries' : 'Teacher Profiles'}</CardTitle></div><Badge variant="secondary">{filteredUsers.length} Found</Badge></div></CardHeader>
+              <CardHeader><div className="flex items-center justify-between"><div><CardTitle>{activeTab === 'students' ? 'Student Enquiries' : 'Teacher Profiles'}</CardTitle></div><Badge variant="secondary">{filteredUsers.length} Found</Badge></div></CardHeader>
               <CardContent>
-                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Details</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">IN-PROGRESS</Badge> : u.hasCompleted ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">COMPLETED</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View {activeTab === 'students' ? 'Requests' : 'Profile'}</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No results found.</TableCell></TableRow>}</TableBody></Table></div>
+                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Details</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">IN-PROGRESS</Badge> : u.hasCompleted ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">COMPLETED</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View {activeTab === 'students' ? 'Enquiries' : 'Profile'}</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No results found.</TableCell></TableRow>}</TableBody></Table></div>
                 {totalPages > 1 && <div className="flex justify-center gap-2 mt-4"><Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button><span className="text-xs self-center font-medium">Page {currentPage} of {totalPages}</span><Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button></div>}
               </CardContent>
             </Card>
@@ -655,7 +651,7 @@ export default function AdminPortal() {
           {activeTab === 'maintenance' && (
             <Card>
               <CardHeader><div className="flex items-center gap-2"><Database className="h-5 w-5 text-primary" /><div><CardTitle>Database Maintenance</CardTitle><CardDescription>Purge test data and clear collections. Use with caution.</CardDescription></div></div></CardHeader>
-              <CardContent className="space-y-6"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><PurgeCollectionButton collectionName="studentInterests" label="Clear Student Interests" onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all student interests')} isAdmin={isAdmin} /><PurgeCollectionButton collectionName="teacherInterests" label="Clear Teacher Interests" onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all teacher interests')} isAdmin={isAdmin} /><PurgeCollectionButton collectionName="matchProposals" label="Clear All Matches" onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all match proposals')} isAdmin={isAdmin} /></div></CardContent>
+              <CardContent className="space-y-6"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><PurgeCollectionButton collectionName="studentInterests" label="Clear Student Enquiries" onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all student enquiries')} isAdmin={isAdmin} /><PurgeCollectionButton collectionName="teacherInterests" label="Clear Teacher Interests" onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all teacher interests')} isAdmin={isAdmin} /><PurgeCollectionButton collectionName="matchProposals" label="Clear All Matches" onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all match proposals')} isAdmin={isAdmin} /></div></CardContent>
             </Card>
           )}
         </div>
@@ -681,6 +677,13 @@ export default function AdminPortal() {
           {selectedUser && <UserDetailsContent user={selectedUser} isAdmin={isAdmin} />}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!notificationToDelete} onOpenChange={(open) => !open && setNotificationToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader><AlertDialogTitle>Delete Notification?</AlertDialogTitle><AlertDialogDescription>This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteNotification} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

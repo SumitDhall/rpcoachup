@@ -53,7 +53,6 @@ import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth,
 import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { sendNotificationEmail } from '@/app/actions/notifications';
-import { cn } from '@/lib/utils';
 
 export default function TeacherDashboard() {
   const { user, isUserLoading } = useUser();
@@ -121,12 +120,10 @@ export default function TeacherDashboard() {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
     const digitsOnly = input.replace(/\D/g, '');
-    
     let userNumber = digitsOnly;
     if (digitsOnly.startsWith('91')) {
       userNumber = digitsOnly.slice(2);
     }
-    
     const limited = userNumber.slice(0, 10);
     setPhoneValue(formatPhoneNumber(limited));
   };
@@ -148,7 +145,6 @@ export default function TeacherDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     const digitsOnly = phoneValue.replace(/\D/g, '');
     const userNumber = digitsOnly.startsWith('91') ? digitsOnly.slice(2) : digitsOnly;
     
@@ -294,13 +290,17 @@ export default function TeacherDashboard() {
           ))}
         </nav>
         <div className="p-4 border-t space-y-4">
-          <div className="px-2 space-y-2 text-[10px] text-muted-foreground">
+          <div className="px-2 mb-4 space-y-2 text-[10px] text-muted-foreground">
             <p className="flex items-center gap-2"><Phone className="h-3 w-3" /> +91 98969 59389</p>
             <p className="flex items-center gap-2"><Mail className="h-3 w-3" /> support@rpcoachup.com</p>
           </div>
           <Button variant="ghost" className="w-full justify-start text-destructive" onClick={handleSignOut}>
             <LogOut className="h-4 w-4 mr-2" /> Sign Out
           </Button>
+          <div className="mt-4 pt-4 border-t text-center space-y-1">
+             <p className="text-[10px] text-muted-foreground">© 2026 RP Coach-Up</p>
+             <p className="text-[8px] text-muted-foreground/50 italic">design and developed by 'SK group'</p>
+          </div>
         </div>
       </div>
     );
@@ -311,7 +311,7 @@ export default function TeacherDashboard() {
       <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card sticky top-0 z-40">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="bg-primary p-1.5 rounded-lg">
-            <BookOpen className="text-primary-foreground h-6 w-6" />
+            <BookOpen className="text-primary-foreground h-5 w-5" />
           </div>
           <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
         </Link>
