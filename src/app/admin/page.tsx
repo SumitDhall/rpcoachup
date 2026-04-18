@@ -65,7 +65,8 @@ import {
   Mail,
   Menu,
   MapPin,
-  PlusCircle
+  PlusCircle,
+  Briefcase
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
@@ -97,7 +98,7 @@ function createAdminNotification(db: any, type: 'registration' | 'interest' | 'a
   });
 }
 
-function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { studentId: string; studentName: string; isAdmin: boolean }) {
+function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, isAdmin }: { studentId: string; studentName: string; enquiryId: string; subject: string; isAdmin: boolean }) {
   const db = useFirestore();
   const { user: adminUser } = useUser();
   const { toast } = useToast();
@@ -116,9 +117,9 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
   const { data: completedInterests, isLoading: isLoadingInterests } = useCollection(completedInterestsQuery);
 
   const matchesQuery = useMemoFirebase(() => {
-    if (!db || !isAdmin || !studentId) return null;
-    return query(collection(db, 'matchProposals'), where('studentId', '==', studentId));
-  }, [db, isAdmin, studentId]);
+    if (!db || !isAdmin || !enquiryId) return null;
+    return query(collection(db, 'matchProposals'), where('enquiryId', '==', enquiryId));
+  }, [db, isAdmin, enquiryId]);
   const { data: currentMatches, isLoading: isLoadingMatches } = useCollection(matchesQuery);
 
   const matchedTeacherIds = useMemo(() => {
@@ -134,6 +135,8 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
     const matchData = {
       studentId,
       studentName,
+      enquiryId,
+      subject,
       teacherId: teacher.id,
       teacherName: teacherFullName,
       assignedAt: serverTimestamp(),
@@ -141,13 +144,13 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
     };
     
     addDocumentNonBlocking(collection(db, 'matchProposals'), matchData);
-    logSystemEvent(db, adminUser, 'assignment', `Assigned Teacher: ${teacherFullName} to Student: ${studentName}`);
+    logSystemEvent(db, adminUser, 'assignment', `Assigned Teacher: ${teacherFullName} to Student: ${studentName} for ${subject}`);
 
     createAdminNotification(
       db, 
       'assignment', 
       'New Teacher Assignment', 
-      `Teacher ${teacherFullName} has been assigned to student ${studentName}.`,
+      `Teacher ${teacherFullName} assigned to ${studentName} for ${subject}.`,
       teacher.email,
       teacherFullName
     );
@@ -158,12 +161,12 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
       userType: 'Teacher',
       userName: teacherFullName,
       userEmail: teacher.email,
-      details: `You have been assigned to student ${studentName}.`
+      details: `You have been assigned to student ${studentName} for ${subject}.`
     });
 
     toast({
       title: "Teacher Assigned",
-      description: `Successfully matched ${teacher.firstName} with ${studentName}.`,
+      description: `Successfully matched ${teacher.firstName} with ${studentName} for ${subject}.`,
     });
   };
 
@@ -171,11 +174,11 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
     const matchToDelete = currentMatches?.find(m => m.teacherId === teacherId);
     if (matchToDelete) {
       deleteDocumentNonBlocking(doc(db, 'matchProposals', matchToDelete.id));
-      logSystemEvent(db, adminUser, 'unassignment', `Removed Teacher: ${matchToDelete.teacherName} from Student: ${studentName}`);
+      logSystemEvent(db, adminUser, 'unassignment', `Removed Teacher: ${matchToDelete.teacherName} from ${studentName} for ${subject}`);
 
       toast({
         title: "Teacher Unassigned",
-        description: "The match has been removed.",
+        description: "The assignment has been removed.",
       });
     }
   };
@@ -192,63 +195,59 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
 
   if (!isAdmin) return null;
   if (isLoadingTeachers || isLoadingMatches || isLoadingInterests) {
-    return <div className="flex justify-center p-4"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+    return <div className="flex justify-center p-4"><Loader2 className="h-4 w-4 animate-spin text-primary" /></div>;
   }
 
   return (
-    <div className="space-y-4 pt-6 border-t mt-6">
+    <div className="space-y-3 pt-3 border-t mt-3">
       <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-            <UserPlus className="h-4 w-4" />
-            Assign Teachers
-          </h4>
-          <p className="text-[10px] text-muted-foreground italic">Only showing verified/completed teachers</p>
-        </div>
-        <Badge variant="secondary" className="font-normal">
-          {matchedTeacherIds.size} Assigned
+        <h5 className="text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-1">
+          <UserPlus className="h-3 w-3" /> Assign Mentor for {subject}
+        </h5>
+        <Badge variant="secondary" className="text-[8px] font-bold h-4">
+          {matchedTeacherIds.size} Active
         </Badge>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
         <Input 
-          placeholder="Search verified teachers..." 
-          className="pl-9 h-9 text-xs"
+          placeholder="Find verified teachers..." 
+          className="pl-7 h-7 text-[10px]"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-      <div className="max-h-[250px] overflow-y-auto space-y-2 pr-2">
+      <div className="max-h-[150px] overflow-y-auto space-y-1 pr-1">
         {filteredTeachers.length > 0 ? (
           filteredTeachers.map((teacher) => {
             const isAssigned = matchedTeacherIds.has(teacher.id);
             return (
-              <div key={teacher.id} className="flex items-center justify-between p-2 rounded-lg border bg-secondary/5">
+              <div key={teacher.id} className="flex items-center justify-between p-1.5 rounded-md border bg-secondary/5">
                 <div className="flex items-center gap-2">
-                  <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${isAssigned ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                  <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold ${isAssigned ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
                     {teacher.firstName[0]}{teacher.lastName[0]}
                   </div>
                   <div>
-                    <p className="text-xs font-medium">{teacher.firstName} {teacher.lastName}</p>
-                    <p className="text-[10px] text-muted-foreground">{teacher.email}</p>
+                    <p className="text-[10px] font-medium leading-none">{teacher.firstName} {teacher.lastName}</p>
+                    <p className="text-[8px] text-muted-foreground">{teacher.email}</p>
                   </div>
                 </div>
                 {isAssigned ? (
                   <Button 
-                    size="sm" 
+                    size="icon" 
                     variant="ghost" 
-                    className="h-8 text-destructive"
+                    className="h-6 w-6 text-destructive"
                     onClick={() => handleUnassignTeacher(teacher.id)}
                   >
                     <UserMinus className="h-3 w-3" />
                   </Button>
                 ) : (
                   <Button 
-                    size="sm" 
+                    size="icon" 
                     variant="outline" 
-                    className="h-8 text-primary"
+                    className="h-6 w-6 text-primary"
                     onClick={() => handleAssignTeacher(teacher)}
                   >
                     <UserPlus className="h-3 w-3" />
@@ -258,7 +257,7 @@ function TeacherAssignmentManager({ studentId, studentName, isAdmin }: { student
             );
           })
         ) : (
-          <p className="text-center py-4 text-xs text-muted-foreground italic">No verified teachers found.</p>
+          <p className="text-center py-2 text-[10px] text-muted-foreground italic">No verified teachers found.</p>
         )}
       </div>
     </div>
@@ -271,17 +270,6 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
   const { toast } = useToast();
   const [statusChangeTarget, setStatusChangeTarget] = useState<{id: string, currentStatus: string, collection: string, subject: string, userName: string, userEmail: string} | null>(null);
   
-  const profilePath = user.userType === 'Student' 
-    ? `users/${user.id}/studentProfile/studentProfile` 
-    : `users/${user.id}/teacherProfile/teacherProfile`;
-
-  const docRef = useMemoFirebase(() => {
-    if (!db || !isAdmin) return null;
-    return doc(db, profilePath);
-  }, [db, profilePath, isAdmin]);
-
-  const { data: details, isLoading: isLoadingProfile } = useDoc(docRef);
-
   const interestCollection = user.userType === 'Student' ? 'studentInterests' : 'teacherInterests';
   const interestField = user.userType === 'Student' ? 'studentId' : 'teacherId';
   
@@ -338,7 +326,7 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
   };
 
   if (!isAdmin) return null;
-  if (isLoadingProfile || isLoadingInterests) {
+  if (isLoadingInterests) {
     return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
@@ -347,10 +335,10 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
       <div className="space-y-4 pt-4 border-t">
         <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
-           {user.userType === 'Student' ? 'Tuition Requirements' : 'Professional Specializations'}
+           {user.userType === 'Student' ? 'Tuition Enquiries' : 'Professional Specializations'}
         </h4>
         {interests && interests.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {[...interests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map((int: any) => (
               <div key={int.id} className="p-4 border rounded-xl bg-card shadow-sm space-y-3">
                 <div className="flex justify-between items-center pb-2 border-b">
@@ -375,13 +363,21 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
                   )}
                   {(int.affordableRange || int.expectedSalary) && <div className="flex items-center gap-2 text-accent mt-1"><IndianRupee className="h-3 w-3" /><span className="text-xs font-bold">{int.affordableRange || int.expectedSalary}</span></div>}
                 </div>
+
+                {user.userType === 'Student' && (
+                  <TeacherAssignmentManager 
+                    studentId={user.id} 
+                    studentName={`${user.firstName} ${user.lastName}`} 
+                    enquiryId={int.id}
+                    subject={int.subject}
+                    isAdmin={isAdmin} 
+                  />
+                )}
               </div>
             ))}
           </div>
         ) : <p className="text-xs text-muted-foreground italic text-center py-4">No submissions found.</p>}
       </div>
-
-      {user.userType === 'Student' && <TeacherAssignmentManager studentId={user.id} studentName={`${user.firstName} ${user.lastName}`} isAdmin={isAdmin} />}
 
       <AlertDialog open={!!statusChangeTarget} onOpenChange={(open) => !open && setStatusChangeTarget(null)}>
         <AlertDialogContent>

@@ -531,7 +531,9 @@ export default function StudentDashboard() {
                   {isLoadingInterests ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
                   ) : (rawInterests && rawInterests.length > 0 ? [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
-                    const assignedTeachers = matches?.map(m => m.teacherName).join(', ');
+                    // Filter matches specifically for this enquiry
+                    const enquiryMatches = matches?.filter(m => m.enquiryId === i.id);
+                    const assignedTeachers = enquiryMatches?.map(m => m.teacherName).join(', ');
                     
                     return (
                       <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
@@ -552,7 +554,7 @@ export default function StudentDashboard() {
                           <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-center gap-3">
                              <div className="bg-primary/10 p-2 rounded-full"><Briefcase className="h-4 w-4 text-primary" /></div>
                              <div>
-                               <p className="text-[10px] uppercase font-bold text-primary tracking-wider">Assigned Teacher(s)</p>
+                               <p className="text-[10px] uppercase font-bold text-primary tracking-wider">Assigned Mentor(s)</p>
                                <p className="text-sm font-semibold">{assignedTeachers}</p>
                              </div>
                           </div>

@@ -83,7 +83,7 @@ export default function TeacherDashboard() {
     return query(
       collection(db, 'matchProposals'),
       where('teacherId', '==', user.uid),
-      limit(50)
+      limit(100)
     );
   }, [db, user?.uid]);
   const { data: matches } = useCollection(matchesQuery);
@@ -364,7 +364,9 @@ export default function TeacherDashboard() {
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
                   ) : (rawInterests && rawInterests.length > 0 ? (
                     [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
-                      const assignedStudents = matches?.map(m => m.studentName).join(', ');
+                      // Show students assigned to THIS teacher globally across any specialization
+                      const assignedStudents = matches?.map(m => `${m.studentName} (${m.subject})`).join(', ');
+                      
                       return (
                         <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -384,7 +386,7 @@ export default function TeacherDashboard() {
                             <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-center gap-3">
                               <div className="bg-primary/10 p-2 rounded-full"><Users className="h-4 w-4 text-primary" /></div>
                               <div>
-                                <p className="text-[10px] uppercase font-bold text-primary tracking-wider">Assigned Student(s)</p>
+                                <p className="text-[10px] uppercase font-bold text-primary tracking-wider">Assigned Students & Subjects</p>
                                 <p className="text-sm font-semibold">{assignedStudents}</p>
                               </div>
                             </div>
@@ -655,4 +657,3 @@ export default function TeacherDashboard() {
     </div>
   );
 }
-

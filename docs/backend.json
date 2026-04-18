@@ -41,10 +41,11 @@
     },
     "MatchProposal": {
       "title": "MatchProposal",
-      "description": "Matching record between student and teacher.",
+      "description": "Matching record between student enquiry and teacher.",
       "type": "object",
       "properties": {
         "studentId": { "type": "string" },
+        "enquiryId": { "type": "string" },
         "teacherId": { "type": "string" },
         "status": { "type": "string" }
       }
