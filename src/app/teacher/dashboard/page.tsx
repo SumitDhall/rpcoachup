@@ -46,7 +46,8 @@ import {
   Info,
   Calendar,
   IndianRupee,
-  PlusCircle
+  PlusCircle,
+  Users
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
@@ -76,6 +77,16 @@ export default function TeacherDashboard() {
     );
   }, [db, user?.uid]);
   const { data: rawInterests, isLoading: isLoadingInterests } = useCollection(teacherInterestsQuery);
+
+  const matchesQuery = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return query(
+      collection(db, 'matchProposals'),
+      where('teacherId', '==', user.uid),
+      limit(50)
+    );
+  }, [db, user?.uid]);
+  const { data: matches } = useCollection(matchesQuery);
 
   const [activeTab, setActiveTab] = useState('history');
   
@@ -228,7 +239,7 @@ export default function TeacherDashboard() {
 
       sendNotificationEmail({
         recipientType: 'admin',
-        type: 'interest',
+        type: 'status_update',
         userType: 'Teacher',
         userName: `${profile?.firstName} ${profile?.lastName}`,
         userEmail: profile?.email || '',
@@ -264,19 +275,8 @@ export default function TeacherDashboard() {
           <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
         </Link>
         <nav className="flex-1 px-4 space-y-1">
-          {navItems.map((item) => (
-            isMobile ? (
-              <SheetClose asChild key={item.id}>
-                <Button 
-                  variant={activeTab === item.id ? 'secondary' : 'ghost'} 
-                  className="w-full justify-start gap-3" 
-                  onClick={() => setActiveTab(item.id)}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Button>
-              </SheetClose>
-            ) : (
+          {navItems.map((item) => {
+            const btn = (
               <Button 
                 key={item.id}
                 variant={activeTab === item.id ? 'secondary' : 'ghost'} 
@@ -286,8 +286,9 @@ export default function TeacherDashboard() {
                 <item.icon className="h-4 w-4" />
                 {item.label}
               </Button>
-            )
-          ))}
+            );
+            return isMobile ? <SheetClose asChild key={item.id}>{btn}</SheetClose> : btn;
+          })}
         </nav>
         <div className="p-4 border-t space-y-4">
           <div className="px-2 mb-4 space-y-2 text-[10px] text-muted-foreground">
@@ -311,7 +312,7 @@ export default function TeacherDashboard() {
       <header className="lg:hidden flex items-center justify-between p-4 border-b bg-card sticky top-0 z-40">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="bg-primary p-1.5 rounded-lg">
-            <BookOpen className="text-primary-foreground h-5 w-5" />
+            <BookOpen className="text-primary-foreground h-6 w-6" />
           </div>
           <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
         </Link>
@@ -362,71 +363,84 @@ export default function TeacherDashboard() {
                   {isLoadingInterests ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
                   ) : (rawInterests && rawInterests.length > 0 ? (
-                    [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => (
-                      <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <p className="font-bold text-lg">{i.subjects}</p>
-                            <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600 text-white' : i.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
-                              {i.status}
-                            </Badge>
+                    [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
+                      const assignedStudents = matches?.map(m => m.studentName).join(', ');
+                      return (
+                        <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <p className="font-bold text-lg">{i.subjects}</p>
+                              <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600 text-white' : i.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
+                                {i.status}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}
+                            </p>
                           </div>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}
-                          </p>
+
+                          {(i.status === 'In-Progress' || i.status === 'Completed') && assignedStudents && (
+                            <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-center gap-3">
+                              <div className="bg-primary/10 p-2 rounded-full"><Users className="h-4 w-4 text-primary" /></div>
+                              <div>
+                                <p className="text-[10px] uppercase font-bold text-primary tracking-wider">Assigned Student(s)</p>
+                                <p className="text-sm font-semibold">{assignedStudents}</p>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-sm border-t pt-4">
+                            <div className="space-y-2">
+                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                                <User className="h-4 w-4" /> Teacher Details
+                              </p>
+                              <div className="space-y-1">
+                                <p className="font-medium">{i.teacherName}</p>
+                                <p className="flex items-center gap-2 text-muted-foreground"><GraduationCap className="h-3.5 w-3.5" /> {i.qualifications}</p>
+                                <p className="flex items-center gap-2 text-muted-foreground"><Briefcase className="h-3.5 w-3.5" /> {i.experienceYears} Years Experience</p>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                                <Phone className="h-3 w-3" /> Contact Details
+                              </p>
+                              <div className="space-y-1">
+                                <p className="flex items-center gap-2 font-medium"><Phone className="h-3.5 w-3.5 text-primary" /> {i.phone}</p>
+                                <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /> {i.email}</p>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                                <IndianRupee className="h-3 w-3" /> Salary Expectation
+                              </p>
+                              <div className="space-y-1">
+                                <p className="flex items-center gap-2 text-accent font-bold"><IndianRupee className="h-3.5 w-3.5" /> {i.expectedSalary}</p>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                                 <FileText className="h-3 w-3" /> Supporting Docs
+                              </p>
+                              <div className="flex items-center gap-2 text-xs text-primary bg-primary/5 p-2 rounded-lg w-fit">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Resume: {i.resumeName}
+                              </div>
+                            </div>
+
+                            <div className="col-span-full space-y-2">
+                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                                 <BookOpen className="h-3.5 w-3.5" /> Subjects Specialisation in
+                              </p>
+                              <p className="text-xs bg-secondary/10 p-2 rounded-lg leading-relaxed">{i.subjects}</p>
+                            </div>
+                          </div>
                         </div>
-                        
-                        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-sm border-t pt-4">
-                          <div className="space-y-2">
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                              <User className="h-4 w-4" /> Teacher Details
-                            </p>
-                            <div className="space-y-1">
-                              <p className="font-medium">{i.teacherName}</p>
-                              <p className="flex items-center gap-2 text-muted-foreground"><GraduationCap className="h-3.5 w-3.5" /> {i.qualifications}</p>
-                              <p className="flex items-center gap-2 text-muted-foreground"><Briefcase className="h-3.5 w-3.5" /> {i.experienceYears} Years Experience</p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                              <Phone className="h-3 w-3" /> Contact Details
-                            </p>
-                            <div className="space-y-1">
-                              <p className="flex items-center gap-2 font-medium"><Phone className="h-3.5 w-3.5 text-primary" /> {i.phone}</p>
-                              <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /> {i.email}</p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                              <IndianRupee className="h-3 w-3" /> Salary Expectation
-                            </p>
-                            <div className="space-y-1">
-                              <p className="flex items-center gap-2 text-accent font-bold"><IndianRupee className="h-3.5 w-3.5" /> {i.expectedSalary}</p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                               <FileText className="h-3 w-3" /> Supporting Docs
-                            </p>
-                            <div className="flex items-center gap-2 text-xs text-primary bg-primary/5 p-2 rounded-lg w-fit">
-                              <CheckCircle2 className="h-3 w-3" />
-                              Resume: {i.resumeName}
-                            </div>
-                          </div>
-
-                          <div className="col-span-full space-y-2">
-                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                               <BookOpen className="h-3.5 w-3.5" /> Subjects Specialisation in
-                            </p>
-                            <p className="text-xs bg-secondary/10 p-2 rounded-lg leading-relaxed">{i.subjects}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))
+                      )
+                    })
                   ) : (
                     <div className="text-center py-16 border-2 border-dashed rounded-2xl bg-secondary/5">
                       <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto mb-4 text-primary">
@@ -641,3 +655,4 @@ export default function TeacherDashboard() {
     </div>
   );
 }
+
