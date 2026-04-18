@@ -91,7 +91,7 @@ export default function StudentDashboard() {
 
   const [activeTab, setActiveTab] = useState('history');
   const [studentName, setStudentName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phoneValue, setPhoneValue] = useState('');
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [school, setSchool] = useState('');
@@ -117,13 +117,37 @@ export default function StudentDashboard() {
   }, [profile]);
 
   useEffect(() => {
-    // Set minimum date to today for the start date picker
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
     setMinDate(`${year}-${month}-${day}`);
   }, []);
+
+  const formatPhoneNumber = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 10);
+    let formatted = '+91 ';
+    if (digits.length > 0) {
+      formatted += digits.slice(0, 4);
+    }
+    if (digits.length > 4) {
+      formatted += '-' + digits.slice(4, 7);
+    }
+    if (digits.length > 7) {
+      formatted += '-' + digits.slice(7, 10);
+    }
+    return formatted;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    const digitsOnly = input.replace(/\D/g, '');
+    const cleanDigits = digitsOnly.startsWith('91') && digitsOnly.length > 10 
+      ? digitsOnly.slice(2) 
+      : digitsOnly;
+    
+    setPhoneValue(formatPhoneNumber(cleanDigits.slice(0, 10)));
+  };
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -132,12 +156,20 @@ export default function StudentDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject || !studentName || !phone || !email || !school || !gradeLevel || !address || !affordableRange) {
-      toast({ variant: "destructive", title: "Required Fields Missing", description: "Please complete all mandatory fields, including address and budget." });
+    
+    const digitsOnly = phoneValue.replace(/\D/g, '').replace(/^91/, '');
+    
+    if (!subject || !studentName || digitsOnly.length !== 10 || !email || !school || !gradeLevel || !address || !affordableRange) {
+      toast({ 
+        variant: "destructive", 
+        title: "Validation Error", 
+        description: digitsOnly.length !== 10 
+          ? "Please enter a valid 10-digit phone number." 
+          : "Please complete all mandatory fields." 
+      });
       return; 
     }
     
-    // Additional validation for intended start date
     if (intendedStartDate && minDate && intendedStartDate < minDate) {
       toast({ variant: "destructive", title: "Invalid Date", description: "The intended start date cannot be in the past." });
       return;
@@ -148,7 +180,7 @@ export default function StudentDashboard() {
       const submissionData = {
         studentId: user?.uid,
         studentName,
-        phone,
+        phone: phoneValue,
         email,
         subject,
         school,
@@ -183,7 +215,7 @@ export default function StudentDashboard() {
       });
 
       setShowSuccessDialog(true);
-      setSubject(''); setSchool(''); setGradeLevel(''); setAddress(''); setNotes(''); setPhone(''); setAffordableRange(''); setIntendedStartDate('');
+      setSubject(''); setSchool(''); setGradeLevel(''); setAddress(''); setNotes(''); setPhoneValue(''); setAffordableRange(''); setIntendedStartDate('');
     } catch (error) {
     } finally {
       setIsSubmitting(false);
@@ -382,8 +414,14 @@ export default function StudentDashboard() {
                       </div>
                       <div className="grid sm:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="phone">Contact Phone *</Label>
-                          <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} required placeholder="+91" />
+                          <Label htmlFor="phone">Contact Phone (10-digit) *</Label>
+                          <Input 
+                            id="phone" 
+                            value={phoneValue} 
+                            onChange={handlePhoneChange} 
+                            required 
+                            placeholder="+91 XXXX-XXX-XXX" 
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="email">Contact Email *</Label>

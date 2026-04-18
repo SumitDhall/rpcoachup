@@ -81,7 +81,7 @@ export default function TeacherDashboard() {
   const [activeTab, setActiveTab] = useState('history');
   
   const [teacherName, setTeacherName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phoneValue, setPhoneValue] = useState('');
   const [email, setEmail] = useState('');
   const [qualifications, setQualifications] = useState('');
   const [experienceYears, setExperienceYears] = useState('');
@@ -103,6 +103,31 @@ export default function TeacherDashboard() {
     }
   }, [profile]);
 
+  const formatPhoneNumber = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 10);
+    let formatted = '+91 ';
+    if (digits.length > 0) {
+      formatted += digits.slice(0, 4);
+    }
+    if (digits.length > 4) {
+      formatted += '-' + digits.slice(4, 7);
+    }
+    if (digits.length > 7) {
+      formatted += '-' + digits.slice(7, 10);
+    }
+    return formatted;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    const digitsOnly = input.replace(/\D/g, '');
+    const cleanDigits = digitsOnly.startsWith('91') && digitsOnly.length > 10 
+      ? digitsOnly.slice(2) 
+      : digitsOnly;
+    
+    setPhoneValue(formatPhoneNumber(cleanDigits.slice(0, 10)));
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -120,8 +145,17 @@ export default function TeacherDashboard() {
 
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!teacherName || !subjects || !phone || !email || !resumeName || !qualifications || !experienceYears) {
-      toast({ variant: "destructive", title: "Missing Information", description: "Please complete all mandatory fields, including your resume." });
+    
+    const digitsOnly = phoneValue.replace(/\D/g, '').replace(/^91/, '');
+    
+    if (!teacherName || !subjects || digitsOnly.length !== 10 || !email || !resumeName || !qualifications || !experienceYears) {
+      toast({ 
+        variant: "destructive", 
+        title: "Validation Error", 
+        description: digitsOnly.length !== 10 
+          ? "Please enter a valid 10-digit phone number." 
+          : "Please complete all mandatory fields, including your resume." 
+      });
       return;
     }
     setIsSubmitting(true);
@@ -129,7 +163,7 @@ export default function TeacherDashboard() {
       await addDoc(collection(db, 'teacherInterests'), {
         teacherId: user?.uid,
         teacherName,
-        phone,
+        phone: phoneValue,
         email,
         qualifications,
         experienceYears,
@@ -157,7 +191,7 @@ export default function TeacherDashboard() {
       setSubjects(''); 
       setResumeName(''); 
       setResumeData(''); 
-      setPhone('');
+      setPhoneValue('');
       setExpectedSalary('');
     } catch (error) {
     } finally {
@@ -411,8 +445,14 @@ export default function TeacherDashboard() {
                           <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="phone">Phone / WhatsApp *</Label>
-                          <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} required placeholder="+91" />
+                          <Label htmlFor="phone">Phone / WhatsApp (10-digit) *</Label>
+                          <Input 
+                            id="phone" 
+                            value={phoneValue} 
+                            onChange={handlePhoneChange} 
+                            required 
+                            placeholder="+91 XXXX-XXX-XXX" 
+                          />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="salary">Expected Monthly Salary (Optional)</Label>
