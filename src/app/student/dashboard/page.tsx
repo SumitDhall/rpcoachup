@@ -100,6 +100,7 @@ export default function StudentDashboard() {
   const [notes, setNotes] = useState('');
   const [affordableRange, setAffordableRange] = useState('');
   const [intendedStartDate, setIntendedStartDate] = useState('');
+  const [minDate, setMinDate] = useState('');
   
   const [feedbackRating, setFeedbackRating] = useState('5');
   const [feedbackComment, setFeedbackComment] = useState('');
@@ -115,6 +116,15 @@ export default function StudentDashboard() {
     }
   }, [profile]);
 
+  useEffect(() => {
+    // Set minimum date to today for the start date picker
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    setMinDate(`${year}-${month}-${day}`);
+  }, []);
+
   const handleSignOut = async () => {
     await signOut(auth);
     router.push('/');
@@ -126,6 +136,13 @@ export default function StudentDashboard() {
       toast({ variant: "destructive", title: "Required Fields Missing", description: "Please complete all mandatory fields, including address and budget." });
       return; 
     }
+    
+    // Additional validation for intended start date
+    if (intendedStartDate && minDate && intendedStartDate < minDate) {
+      toast({ variant: "destructive", title: "Invalid Date", description: "The intended start date cannot be in the past." });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const submissionData = {
@@ -222,12 +239,12 @@ export default function StudentDashboard() {
   const gradeOptions = Array.from({ length: 12 }, (_, i) => `Class ${i + 1}`);
   
   const budgetRanges = [
-    "Below ₹2,000",
-    "₹2,000 - ₹5,000",
-    "₹5,000 - ₹10,000",
+    "₹5,000 - ₹7,500",
+    "₹7,500 - ₹10,000",
     "₹10,000 - ₹15,000",
     "₹15,000 - ₹20,000",
-    "Above ₹20,000",
+    "₹20,000 - ₹25,000",
+    "Above ₹25,000",
     "Per Session Basis",
     "Negotiable"
   ];
@@ -402,7 +419,13 @@ export default function StudentDashboard() {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="startDate">Intended Start Date</Label>
-                          <Input id="startDate" type="date" value={intendedStartDate} onChange={e => setIntendedStartDate(e.target.value)} />
+                          <Input 
+                            id="startDate" 
+                            type="date" 
+                            value={intendedStartDate} 
+                            onChange={e => setIntendedStartDate(e.target.value)} 
+                            min={minDate}
+                          />
                         </div>
                       </div>
                     </div>
