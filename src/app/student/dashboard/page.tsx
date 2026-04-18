@@ -124,8 +124,8 @@ export default function StudentDashboard() {
     setMinDate(`${year}-${month}-${day}`);
   }, []);
 
-  const formatPhoneNumber = (value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, 10);
+  const formatPhoneNumber = (digits: string) => {
+    if (digits.length === 0) return '';
     let formatted = '+91 ';
     if (digits.length > 0) {
       formatted += digits.slice(0, 4);
@@ -142,11 +142,15 @@ export default function StudentDashboard() {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
     const digitsOnly = input.replace(/\D/g, '');
-    const cleanDigits = digitsOnly.startsWith('91') && digitsOnly.length > 10 
-      ? digitsOnly.slice(2) 
-      : digitsOnly;
     
-    setPhoneValue(formatPhoneNumber(cleanDigits.slice(0, 10)));
+    // Strip leading 91 if it's there (handling the fixed prefix +91)
+    let userNumber = digitsOnly;
+    if (digitsOnly.startsWith('91')) {
+      userNumber = digitsOnly.slice(2);
+    }
+    
+    const limited = userNumber.slice(0, 10);
+    setPhoneValue(formatPhoneNumber(limited));
   };
 
   const handleSignOut = async () => {
@@ -157,13 +161,14 @@ export default function StudentDashboard() {
   const handleSubmitInterest = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const digitsOnly = phoneValue.replace(/\D/g, '').replace(/^91/, '');
+    const digitsOnly = phoneValue.replace(/\D/g, '');
+    const userNumber = digitsOnly.startsWith('91') ? digitsOnly.slice(2) : digitsOnly;
     
-    if (!subject || !studentName || digitsOnly.length !== 10 || !email || !school || !gradeLevel || !address || !affordableRange) {
+    if (!subject || !studentName || userNumber.length !== 10 || !email || !school || !gradeLevel || !address || !affordableRange) {
       toast({ 
         variant: "destructive", 
         title: "Validation Error", 
-        description: digitsOnly.length !== 10 
+        description: userNumber.length !== 10 
           ? "Please enter a valid 10-digit phone number." 
           : "Please complete all mandatory fields." 
       });
@@ -286,19 +291,11 @@ export default function StudentDashboard() {
   }
 
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => {
-    const NavButton = ({ id, icon: Icon, label }: { id: string, icon: any, label: string }) => {
-      const btn = (
-        <Button 
-          variant={activeTab === id ? 'secondary' : 'ghost'} 
-          className="w-full justify-start gap-3" 
-          onClick={() => setActiveTab(id)}
-        >
-          <Icon className="h-4 w-4" />
-          {label}
-        </Button>
-      );
-      return isMobile ? <SheetClose asChild>{btn}</SheetClose> : btn;
-    };
+    const navItems = [
+      { id: 'history', icon: History, label: 'Tutor Inquiry' },
+      { id: 'interests', icon: PlusCircle, label: 'Submit Enquiry' },
+      { id: 'feedback', icon: MessageSquare, label: 'Feedback' },
+    ];
 
     return (
       <div className="flex flex-col h-full">
@@ -309,9 +306,30 @@ export default function StudentDashboard() {
           <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
         </Link>
         <nav className="flex-1 px-4 space-y-1">
-          <NavButton id="history" icon={History} label="Tutor Inquiry" />
-          <NavButton id="interests" icon={PlusCircle} label="Submit Enquiry" />
-          <NavButton id="feedback" icon={MessageSquare} label="Feedback" />
+          {navItems.map((item) => (
+            isMobile ? (
+              <SheetClose asChild key={item.id}>
+                <Button 
+                  variant={activeTab === item.id ? 'secondary' : 'ghost'} 
+                  className="w-full justify-start gap-3" 
+                  onClick={() => setActiveTab(item.id)}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Button>
+              </SheetClose>
+            ) : (
+              <Button 
+                key={item.id}
+                variant={activeTab === item.id ? 'secondary' : 'ghost'} 
+                className="w-full justify-start gap-3" 
+                onClick={() => setActiveTab(item.id)}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </Button>
+            )
+          ))}
         </nav>
         <div className="p-4 border-t space-y-4">
           <div className="px-2 space-y-2 text-[10px] text-muted-foreground">
@@ -656,7 +674,9 @@ export default function StudentDashboard() {
         <footer className="bg-secondary/30 border-t py-12 mt-auto">
           <div className="container mx-auto px-4 text-center">
             <div className="flex items-center justify-center gap-2 mb-6">
-              <div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div>
+              <div className="bg-primary p-1 rounded-lg">
+                <BookOpen className="text-primary-foreground h-5 w-5" />
+              </div>
               <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-8 text-sm font-medium">
