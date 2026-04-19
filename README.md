@@ -3,6 +3,12 @@
 
 This is a Next.js 15 application powered by Firebase Studio, using AI to match students with teachers and courses.
 
+## 📧 How to Update Email Templates (Password Reset, etc.)
+If you encounter errors when updating templates in the Firebase Console:
+1. **Set Public Name**: Go to **Project Settings > General** and set the **Public-facing name** to "RP Coach-Up". This updates the "App Name" in all emails.
+2. **Verify Domain**: Ensure your custom domain is verified in **Firebase Hosting**.
+3. **Template Settings**: In **Authentication > Templates**, the "From" address must be a verified sender. If you get a "Contact Support" error, ensure your project has a valid billing account or wait 24 hours after domain verification for security checks to clear.
+
 ## 🖼 How to use your own images
 1.  **Prepare your images**: Rename your downloaded images to `hero-education.jpg`, `teacher-mentoring.jpg`, and `online-course.jpg`.
 2.  **Upload to Project**: Place the files in the `public/images` directory.

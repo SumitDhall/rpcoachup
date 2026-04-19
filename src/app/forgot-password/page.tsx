@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { BookOpen, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
+import { BookOpen, ArrowLeft, Loader2, CheckCircle2, Phone, Mail } from 'lucide-react';
 import { useAuth } from '@/firebase';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -26,11 +26,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      // We remove the explicit actionCodeSettings here. 
-      // Firebase will use the default redirect behavior configured in the Firebase Console.
-      // This avoids "Unauthorized Domain" errors if the current window origin hasn't been whitelisted.
       await sendPasswordResetEmail(auth, email);
-      
       setIsSent(true);
       toast({
         title: "Reset Link Sent",
@@ -46,8 +42,6 @@ export default function ForgotPasswordPage() {
         message = "Please enter a valid email address.";
       } else if (error.code === 'auth/too-many-requests') {
         message = "Too many requests. Please try again later.";
-      } else if (error.code === 'auth/unauthorized-continue-uri') {
-        message = "The redirect URL is not authorized in Firebase Console.";
       }
       
       toast({
@@ -74,7 +68,7 @@ export default function ForgotPasswordPage() {
               <BookOpen className="text-primary-foreground h-8 w-8" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-headline font-bold">Reset Password</CardTitle>
+          <CardTitle className="text-3xl font-headline font-bold text-primary">Reset Password</CardTitle>
           <CardDescription>
             {isSent 
               ? "Instructions have been sent to your email." 
@@ -123,10 +117,26 @@ export default function ForgotPasswordPage() {
         )}
       </Card>
       
-      <div className="mt-8 text-center text-sm text-muted-foreground space-y-2">
-        <div>Need help? Contact <a href="mailto:support@rpcoachup.com" className="text-primary hover:underline">support@rpcoachup.com</a></div>
-        <div className="text-[10px] text-muted-foreground/30 italic">© 2026 RP Coach-Up | design and developed by 'SK group'</div>
-      </div>
+      <footer className="mt-12 w-full max-w-4xl">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div>
+            <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-8 text-sm font-medium">
+            <a href="tel:+919896959389" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Phone className="h-4 w-4" /> +91 98969 59389
+            </a>
+            <a href="mailto:support@rpcoachup.com" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Mail className="h-4 w-4" /> support@rpcoachup.com
+            </a>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">© 2026 RP Coach-Up. All rights reserved.</p>
+            <p className="text-[10px] text-muted-foreground/40 font-medium italic">design and developed by 'SK group'</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

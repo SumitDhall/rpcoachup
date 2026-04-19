@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { BookOpen, ArrowLeft, Loader2 } from 'lucide-react';
+import { BookOpen, ArrowLeft, Loader2, Phone, Mail } from 'lucide-react';
 import { useAuth, useFirestore, useUser } from '@/firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -34,7 +34,6 @@ export default function LoginPage() {
     setIsRedirecting(true);
     
     try {
-      // 1. Check Admin status
       const adminDocRef = doc(db, 'roles_admin', uid);
       const adminDoc = await getDoc(adminDocRef);
       if (adminDoc.exists()) {
@@ -42,7 +41,6 @@ export default function LoginPage() {
         return;
       }
 
-      // 2. Check Standard User status
       const userDocRef = doc(db, 'users', uid);
       const userDoc = await getDoc(userDocRef);
       
@@ -51,11 +49,10 @@ export default function LoginPage() {
         const role = (userData.userType || 'Student').toLowerCase();
         router.push(`/${role}/dashboard`);
       } else {
-        // Handle "Zombie Account" case
         toast({
           variant: "destructive",
           title: "Profile Missing",
-          description: "Your authentication exists, but your database profile is missing. Please delete the entry in the 'Authentication' tab of Firebase Console or contact support.",
+          description: "Your authentication exists, but your database profile is missing.",
         });
         await signOut(auth);
         setIsRedirecting(false);
@@ -101,7 +98,7 @@ export default function LoginPage() {
           toast({
             variant: "destructive",
             title: "User Not Registered",
-            description: "We couldn't find an account with this email. Please register for a new account.",
+            description: "We couldn't find an account with this email.",
           });
           return;
         } else if (error.code === 'auth/invalid-credential') {
@@ -143,7 +140,7 @@ export default function LoginPage() {
               <BookOpen className="text-primary-foreground h-8 w-8" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-headline">Welcome Back</CardTitle>
+          <CardTitle className="text-3xl font-headline text-primary">Welcome Back</CardTitle>
           <CardDescription>
             Login to your account to continue
           </CardDescription>
@@ -180,10 +177,26 @@ export default function LoginPage() {
         </form>
       </Card>
       
-      <div className="mt-8 text-center text-sm text-muted-foreground space-y-2">
-        <p>© 2026 RP Coach-Up. All rights reserved.</p>
-        <p className="text-[10px] text-muted-foreground/40 font-medium italic">design and developed by 'SK group'</p>
-      </div>
+      <footer className="mt-12 w-full max-w-4xl">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div>
+            <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-8 text-sm font-medium">
+            <a href="tel:+919896959389" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Phone className="h-4 w-4" /> +91 98969 59389
+            </a>
+            <a href="mailto:support@rpcoachup.com" className="flex items-center gap-2 hover:text-primary transition-colors">
+              <Mail className="h-4 w-4" /> support@rpcoachup.com
+            </a>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">© 2026 RP Coach-Up. All rights reserved.</p>
+            <p className="text-[10px] text-muted-foreground/40 font-medium italic">design and developed by 'SK group'</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
