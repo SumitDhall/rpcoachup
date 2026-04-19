@@ -112,9 +112,9 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
 
   const completedInterestsQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
-    return query(collection(db, 'teacherInterests'), where('status', '==', 'Completed'), limit(500));
+    return query(collection(db, 'teacherInterests'), where('status', '==', 'Hired'), limit(500));
   }, [db, isAdmin]);
-  const { data: completedInterests, isLoading: isLoadingInterests } = useCollection(completedInterestsQuery);
+  const { data: hiredInterests, isLoading: isLoadingInterests } = useCollection(completedInterestsQuery);
 
   const matchesQuery = useMemoFirebase(() => {
     if (!db || !isAdmin || !enquiryId) return null;
@@ -126,9 +126,9 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
     return new Set(currentMatches?.map(m => m.teacherId) || []);
   }, [currentMatches]);
 
-  const completedTeacherIds = useMemo(() => {
-    return new Set(completedInterests?.map(i => i.teacherId) || []);
-  }, [completedInterests]);
+  const hiredTeacherIds = useMemo(() => {
+    return new Set(hiredInterests?.map(i => i.teacherId) || []);
+  }, [hiredInterests]);
 
   const handleAssignTeacher = (teacher: any) => {
     const teacherFullName = `${teacher.firstName} ${teacher.lastName}`;
@@ -186,12 +186,12 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
   const filteredTeachers = useMemo(() => {
     if (!teachers) return [];
     return teachers.filter(t => 
-      completedTeacherIds.has(t.id) && (
+      hiredTeacherIds.has(t.id) && (
         `${t.firstName} ${t.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
         t.email.toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
-  }, [teachers, searchTerm, completedTeacherIds]);
+  }, [teachers, searchTerm, hiredTeacherIds]);
 
   if (!isAdmin) return null;
   if (isLoadingTeachers || isLoadingMatches || isLoadingInterests) {
@@ -212,7 +212,7 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
       <div className="relative">
         <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
         <Input 
-          placeholder="Find verified teachers..." 
+          placeholder="Find hired teachers..." 
           className="pl-7 h-7 text-[10px]"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -257,7 +257,7 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
             );
           })
         ) : (
-          <p className="text-center py-2 text-[10px] text-muted-foreground italic">No verified teachers found.</p>
+          <p className="text-center py-2 text-[10px] text-muted-foreground italic">No hired teachers found.</p>
         )}
       </div>
     </div>
@@ -285,9 +285,15 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
   const { data: interests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
 
   const getNextStatus = (current: string) => {
-    if (current === 'Pending') return 'In-Progress';
-    if (current === 'In-Progress') return 'Completed';
-    return 'Pending';
+    if (user.userType === 'Student') {
+      if (current === 'Pending') return 'Enrolled';
+      if (current === 'Enrolled') return 'Course Complete';
+      return 'Pending';
+    } else {
+      if (current === 'Pending') return 'In-Progress';
+      if (current === 'In-Progress') return 'Hired';
+      return 'Pending';
+    }
   };
 
   const handleStatusToggle = () => {
@@ -344,7 +350,7 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
                 <div className="flex justify-between items-center pb-2 border-b">
                   <span className="font-bold text-primary">{int.subject || int.subjects}</span>
                   <button onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: interestCollection, subject: int.subject || int.subjects, userName: int.studentName || int.teacherName, userEmail: int.email || user.email })} className="focus:outline-none">
-                    <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className={`text-[10px] cursor-pointer ${int.status === 'Completed' ? 'bg-green-600 text-white' : int.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}`}>
+                    <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className={`text-[10px] cursor-pointer ${int.status === 'Course Complete' || int.status === 'Hired' ? 'bg-green-600 text-white' : int.status === 'Enrolled' || int.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}`}>
                       {int.status}
                     </Badge>
                   </button>
@@ -516,8 +522,8 @@ export default function AdminPortal() {
       return baseStudents.map(s => {
         const studentInterests = allStudentInterests.filter(i => i.studentId === s.id);
         const hasPending = studentInterests.some(i => i.status === 'Pending');
-        const hasInProgress = studentInterests.some(i => i.status === 'In-Progress');
-        const hasCompleted = studentInterests.some(i => i.status === 'Completed');
+        const hasInProgress = studentInterests.some(i => i.status === 'Enrolled');
+        const hasCompleted = studentInterests.some(i => i.status === 'Course Complete');
         const oldestEnquiryDate = studentInterests.reduce((min, i) => Math.min(min, i.submissionDate?.toMillis?.() || Infinity), Infinity);
         return { ...s, studentInterests, hasPending, hasInProgress, hasCompleted, oldestEnquiryDate };
       }).filter(s => s.studentInterests.length > 0).sort((a, b) => {
@@ -532,7 +538,7 @@ export default function AdminPortal() {
         const teacherInterests = allTeacherInterests.filter(i => i.teacherId === t.id);
         const hasPending = teacherInterests.some(i => i.status === 'Pending');
         const hasInProgress = teacherInterests.some(i => i.status === 'In-Progress');
-        const hasCompleted = teacherInterests.some(i => i.status === 'Completed');
+        const hasCompleted = teacherInterests.some(i => i.status === 'Hired');
         const oldestEnquiryDate = teacherInterests.reduce((min, i) => Math.min(min, i.submissionDate?.toMillis?.() || Infinity), Infinity);
         return { ...t, teacherInterests, hasPending, hasInProgress, hasCompleted, oldestEnquiryDate };
       }).filter(t => t.teacherInterests.length > 0).sort((a, b) => {
@@ -636,7 +642,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader><div className="flex items-center justify-between"><div><CardTitle>{activeTab === 'students' ? 'Student Enquiries' : 'Teacher Profiles'}</CardTitle></div><Badge variant="secondary">{filteredUsers.length} Found</Badge></div></CardHeader>
               <CardContent>
-                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Details</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">IN-PROGRESS</Badge> : u.hasCompleted ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">COMPLETED</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View {activeTab === 'students' ? 'Enquiries' : 'Profile'}</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No results found.</TableCell></TableRow>}</TableBody></Table></div>
+                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Details</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'ENROLLED' : 'IN-PROGRESS'}</Badge> : u.hasCompleted ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'COURSE COMPLETE' : 'HIRED'}</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View {activeTab === 'students' ? 'Enquiries' : 'Profile'}</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No results found.</TableCell></TableRow>}</TableBody></Table></div>
                 {totalPages > 1 && <div className="flex justify-center gap-2 mt-4"><Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button><span className="text-xs self-center font-medium">Page {currentPage} of {totalPages}</span><Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button></div>}
               </CardContent>
             </Card>

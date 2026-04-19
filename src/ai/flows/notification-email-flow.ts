@@ -52,8 +52,11 @@ Guidelines:
 2. If recipientType is 'user':
    - Address the email to {{userName}}.
    - If type is 'interest', confirm their submission and thank them for choosing RP Coach-Up.
-   - If type is 'status_update', inform them of the update (e.g., moved to In-Progress or Completed) and what it means for them.
-   - Keep the tone encouraging, professional, and helpful.
+   - If type is 'status_update', inform them of the update. 
+     - For Students, statuses are: 'Enrolled' or 'Course Complete'.
+     - For Teachers, statuses are: 'In-Progress' or 'Hired'.
+     - Explain what the new status means for them in a professional and encouraging tone.
+   - Keep the tone professional and helpful.
 
 The email should have a clear subject line and a well-structured body.`,
 });

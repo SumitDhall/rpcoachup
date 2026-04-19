@@ -372,7 +372,7 @@ export default function TeacherDashboard() {
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div className="flex items-center gap-2">
                               <p className="font-bold text-lg">{i.subjects}</p>
-                              <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Completed' ? 'bg-green-600 text-white' : i.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
+                              <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Hired' ? 'bg-green-600 text-white' : i.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
                                 {i.status}
                               </Badge>
                             </div>
@@ -382,7 +382,7 @@ export default function TeacherDashboard() {
                             </p>
                           </div>
 
-                          {(i.status === 'In-Progress' || i.status === 'Completed') && assignedStudents.length > 0 && (
+                          {(i.status === 'In-Progress' || i.status === 'Hired') && assignedStudents.length > 0 && (
                             <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-start gap-3">
                               <div className="bg-primary/10 p-2 rounded-full mt-1"><Users className="h-4 w-4 text-primary" /></div>
                               <div>
