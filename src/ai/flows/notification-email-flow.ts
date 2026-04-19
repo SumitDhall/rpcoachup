@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A Genkit flow to generate professional notification emails for admins and users.
@@ -47,14 +46,15 @@ User Email: {{userEmail}}
 Guidelines:
 1. If recipientType is 'admin':
    - Address the email to the Platform Administrator.
-   - Summarize the user's action (registration, interest submission, etc.).
+   - Summarize the user's action (registration, enquiry submission, etc.).
    - Provide context for administrative follow-up.
 2. If recipientType is 'user':
    - Address the email to {{userName}}.
-   - If type is 'interest', confirm their submission and thank them for choosing RP Coach-Up.
+   - If type is 'registration', welcome them to RP Coach-Up and confirm their account creation.
+   - If type is 'interest', confirm their enquiry submission for a specific subject and thank them for choosing RP Coach-Up.
    - If type is 'status_update', inform them of the update. 
-     - For Students, statuses are: 'Enrolled' or 'Course Complete'.
-     - For Teachers, statuses are: 'In-Progress' or 'Hired'.
+     - For Students, relevant statuses are: 'Enrolled' or 'Course Complete'.
+     - For Teachers, relevant statuses are: 'In-Progress' or 'Hired'.
      - Explain what the new status means for them in a professional and encouraging tone.
    - Keep the tone professional and helpful.
 

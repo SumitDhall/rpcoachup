@@ -3,11 +3,17 @@
 
 This is a Next.js 15 application powered by Firebase Studio, using AI to match students with teachers and courses.
 
-## 📧 How to Update Email Templates (Password Reset, etc.)
-If you encounter errors when updating templates in the Firebase Console:
-1. **Set Public Name**: Go to **Project Settings > General** and set the **Public-facing name** to "RP Coach-Up". This updates the "App Name" in all emails.
-2. **Verify Domain**: Ensure your custom domain is verified in **Firebase Hosting**.
-3. **Template Settings**: In **Authentication > Templates**, the "From" address must be a verified sender. If you get a "Contact Support" error, ensure your project has a valid billing account or wait 24 hours after domain verification for security checks to clear.
+## 📧 Email Notifications Guide
+
+### 1. Firebase Auth Emails (Password Reset, etc.)
+These emails are handled automatically by Firebase. 
+- **Set Public Name**: Go to **Project Settings > General** and set the **Public-facing name** to "RP Coach-Up". This updates the "App Name" in all reset emails.
+- **Troubleshooting**: If you get a "Contact Support" error when editing templates, ensure your project domain is verified in **Firebase Hosting**.
+
+### 2. Custom Platform Notifications (Status Updates, Assignments)
+Currently, notifications for status changes (e.g., "Enrolled", "Hired") and new registrations are **simulated** for safety and development speed.
+- **Where to see them?** During development, look at your **Server Logs** (Terminal) to see the full content of the generated emails.
+- **Production Setup**: To send real emails, you should install the **"Trigger Email from Firestore"** extension in the Firebase Console. This will allow the platform to send real emails via SMTP or SendGrid whenever a new entry is added to the `notifications` collection.
 
 ## 🖼 How to use your own images
 1.  **Prepare your images**: Rename your downloaded images to `hero-education.jpg`, `teacher-mentoring.jpg`, and `online-course.jpg`.
@@ -53,32 +59,6 @@ If your build fails, it is likely because the environment variable is missing.
 3. Add `GEMINI_API_KEY` with your key from Google AI Studio.
 4. **Important**: Ensure availability is checked for both **Build** and **Runtime**.
 5. Trigger a new rollout.
-
-### 2. "Not Secure" Warning (SSL/HTTPS)
-If your browser shows a "Not Secure" warning:
-- **Custom Domains**: Firebase automatically provisions SSL certificates for custom domains, but it can take **24-48 hours** after you update your DNS records.
-- **Force HTTPS**: Firebase App Hosting handles the redirect from `http` to `https` automatically. If the certificate is still "Provisioning", you will see a warning. Please wait for the status to show "Active" in the Firebase Console under Hosting.
-
-### 3. SSH Access Setup (For Git Push Errors)
-If you see "Missing or invalid credentials" or `ECONNREFUSED` errors when pushing code:
-
-1.  **Generate a new SSH key**:
-    ```bash
-    ssh-keygen -t ed25519 -C "your_email@example.com"
-    ```
-2.  **Start the SSH agent**:
-    ```bash
-    eval "$(ssh-agent -s)"
-    ssh-add ~/.ssh/id_ed25519
-    ```
-3.  **Add public key to GitHub**:
-    - Run `cat ~/.ssh/id_ed25519.pub` and copy the output.
-    - Go to GitHub **Settings > SSH and GPG keys** and add it.
-4.  **Update Git remote**:
-    ```bash
-    git remote set-url origin git@github.com:YOUR_USERNAME/YOUR_REPO_NAME.git
-    git push -u origin main
-    ```
 
 ---
 

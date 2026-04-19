@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, Suspense } from 'react';
@@ -34,7 +33,6 @@ function RegisterForm() {
     password: '',
   });
 
-  // Sync role if param changes (e.g. using browser back/forward)
   useEffect(() => {
     if (roleParam === 'teacher') setRole('Teacher');
     else if (roleParam === 'student') setRole('Student');
@@ -54,7 +52,6 @@ function RegisterForm() {
 
       const batch = writeBatch(db);
 
-      // 1. Create Base User Profile
       const userProfileRef = doc(db, 'users', user.uid);
       batch.set(userProfileRef, {
         id: user.uid,
@@ -66,7 +63,6 @@ function RegisterForm() {
         updatedAt: serverTimestamp(),
       });
 
-      // 2. Create Role-Specific Profile Placeholder
       if (role === 'Student') {
         const studentProfileRef = doc(db, 'users', user.uid, 'studentProfile', 'studentProfile');
         batch.set(studentProfileRef, {
@@ -84,7 +80,6 @@ function RegisterForm() {
         });
       }
 
-      // 3. Create Notification for Admin
       const notificationRef = doc(collection(db, 'notifications'));
       batch.set(notificationRef, {
         type: 'registration',
@@ -96,16 +91,24 @@ function RegisterForm() {
         read: false
       });
 
-      // Commit all Firestore operations
       await batch.commit();
 
-      // 4. Trigger simulated emails
+      // Trigger simulated emails for BOTH admin and the user
       sendNotificationEmail({
         recipientType: 'admin',
         type: 'registration',
         userType: role,
         userName: `${formData.firstName} ${formData.lastName}`,
         userEmail: formData.email
+      });
+
+      sendNotificationEmail({
+        recipientType: 'user',
+        type: 'registration',
+        userType: role,
+        userName: `${formData.firstName} ${formData.lastName}`,
+        userEmail: formData.email,
+        details: `Welcome to RP Coach-Up! Your account as a ${role} has been created.`
       });
 
       toast({
@@ -116,13 +119,10 @@ function RegisterForm() {
       router.push(`/${role.toLowerCase()}/dashboard`);
     } catch (error: any) {
       let msg = "An error occurred during registration.";
-      
       if (error.code === 'auth/email-already-in-use') {
-        msg = "This email is already in our identity system. Please delete the entry in the 'Authentication' tab of Firebase Console or contact support.";
+        msg = "This email is already in use.";
       } else if (error.code === 'auth/weak-password') {
-        msg = "Your password is too weak. Please use at least 6 characters.";
-      } else if (error.code === 'auth/invalid-email') {
-        msg = "Please enter a valid email address.";
+        msg = "Your password is too weak.";
       }
       
       toast({
@@ -173,7 +173,7 @@ function RegisterForm() {
                     >
                       <User className="h-8 w-8 text-primary" />
                       <span className="font-bold">Student</span>
-                      <span className="text-xs text-muted-foreground text-center">I want to learn new skills and subjects</span>
+                      <span className="text-xs text-muted-foreground text-center">I want to find a tutor</span>
                     </Label>
                   </div>
                 )}
@@ -227,7 +227,7 @@ function RegisterForm() {
         </form>
       </Card>
       
-      <footer className="mt-12 w-full max-w-4xl">
+      <footer className="bg-secondary/30 border-t py-12 mt-12 w-full max-w-4xl rounded-2xl">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
             <div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div>
