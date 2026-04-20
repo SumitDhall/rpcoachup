@@ -72,7 +72,7 @@ export default function StudentDashboard() {
   const enquiriesQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
     return query(
-      collection(db, 'studentInterests'),
+      collection(db, 'studentEnquiries'),
       where('studentId', '==', user.uid),
       limit(100)
     );
@@ -194,7 +194,7 @@ export default function StudentDashboard() {
         notes: notes || ''
       };
       
-      await addDoc(collection(db, 'studentInterests'), submissionData);
+      await addDoc(collection(db, 'studentEnquiries'), submissionData);
       
       const aiResult = await sendNotificationEmail({
         recipientType: 'user',
@@ -208,10 +208,21 @@ export default function StudentDashboard() {
       if (aiResult.success && aiResult.email) {
         addDocumentNonBlocking(collection(db, 'notifications'), {
           to: aiResult.email.recipientEmail,
+          from: "RP Coach-Up <support@rpcoachup.com>",
           message: {
             subject: aiResult.email.subject,
             text: aiResult.email.body,
-            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${aiResult.email.body.replace(/\n/g, '<br>')}</div>`
+            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+              <div style="background-color: #266EDB; padding: 20px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">RP Coach-Up</h1>
+              </div>
+              <div style="padding: 30px; background-color: white;">
+                ${aiResult.email.body.replace(/\n/g, '<br>')}
+              </div>
+              <div style="padding: 20px; background-color: #f9f9f9; text-align: center; font-size: 12px; color: #777;">
+                © 2026 RP Coach-Up | Enquiry Confirmation
+              </div>
+            </div>`
           },
           type: 'interest',
           userName: studentName,
@@ -249,10 +260,21 @@ export default function StudentDashboard() {
       if (aiResult.success && aiResult.email) {
         addDocumentNonBlocking(collection(db, 'notifications'), {
           to: aiResult.email.recipientEmail,
+          from: "RP Coach-Up <support@rpcoachup.com>",
           message: {
             subject: aiResult.email.subject,
             text: aiResult.email.body,
-            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${aiResult.email.body.replace(/\n/g, '<br>')}</div>`
+            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+              <div style="background-color: #266EDB; padding: 20px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">RP Coach-Up</h1>
+              </div>
+              <div style="padding: 30px; background-color: white;">
+                ${aiResult.email.body.replace(/\n/g, '<br>')}
+              </div>
+              <div style="padding: 20px; background-color: #f9f9f9; text-align: center; font-size: 12px; color: #777;">
+                © 2026 RP Coach-Up | Feedback Received
+              </div>
+            </div>`
           },
           type: 'feedback',
           userName: `${profile?.firstName} ${profile?.lastName}`,
@@ -300,7 +322,7 @@ export default function StudentDashboard() {
 
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => {
     const navItems = [
-      { id: 'history', icon: History, label: 'Tutor Enquiry' },
+      { id: 'history', icon: History, label: 'Enquiry History' },
       { id: 'enquiries', icon: PlusCircle, label: 'Submit Enquiry' },
       { id: 'feedback', icon: MessageSquare, label: 'Feedback' },
     ];
@@ -529,7 +551,7 @@ export default function StudentDashboard() {
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <CardTitle>Tutor Enquiry</CardTitle>
+                      <CardTitle>Enquiry History</CardTitle>
                       <CardDescription>Detailed records of your submitted tuition enquiries.</CardDescription>
                     </div>
                     {rawEnquiries && rawEnquiries.length > 0 && (
@@ -736,7 +758,7 @@ export default function StudentDashboard() {
             <AlertDialogDescription className="text-center text-base">
               Thank you for your enquiry. Our support team will contact you within 7 working days. 
               <br /><br />
-              You can track the progress of your request on Tutor Enquiry page.
+              You can track the progress of your request on Enquiry History page.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-center mt-6">

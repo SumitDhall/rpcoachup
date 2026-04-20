@@ -102,10 +102,21 @@ function RegisterForm() {
         const adminNotifRef = doc(collection(db, 'notifications'));
         batch.set(adminNotifRef, {
           to: adminEmailContent.email.recipientEmail,
+          from: "RP Coach-Up <support@rpcoachup.com>",
           message: {
             subject: adminEmailContent.email.subject,
             text: adminEmailContent.email.body,
-            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${adminEmailContent.email.body.replace(/\n/g, '<br>')}</div>`
+            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+              <div style="background-color: #266EDB; padding: 20px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">RP Coach-Up</h1>
+              </div>
+              <div style="padding: 30px; background-color: white;">
+                ${adminEmailContent.email.body.replace(/\n/g, '<br>')}
+              </div>
+              <div style="padding: 20px; background-color: #f9f9f9; text-align: center; font-size: 12px; color: #777;">
+                © 2026 RP Coach-Up | Admin Notification
+              </div>
+            </div>`
           },
           type: 'registration',
           userName: `${formData.firstName} ${formData.lastName}`,
@@ -119,10 +130,21 @@ function RegisterForm() {
         const userNotifRef = doc(collection(db, 'notifications'));
         batch.set(userNotifRef, {
           to: userEmailContent.email.recipientEmail,
+          from: "RP Coach-Up <support@rpcoachup.com>",
           message: {
             subject: userEmailContent.email.subject,
             text: userEmailContent.email.body,
-            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${userEmailContent.email.body.replace(/\n/g, '<br>')}</div>`
+            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+              <div style="background-color: #266EDB; padding: 20px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">RP Coach-Up</h1>
+              </div>
+              <div style="padding: 30px; background-color: white;">
+                ${userEmailContent.email.body.replace(/\n/g, '<br>')}
+              </div>
+              <div style="padding: 20px; background-color: #f9f9f9; text-align: center; font-size: 12px; color: #777;">
+                © 2026 RP Coach-Up | Welcome to the Community
+              </div>
+            </div>`
           },
           type: 'registration',
           userName: `${formData.firstName} ${formData.lastName}`,

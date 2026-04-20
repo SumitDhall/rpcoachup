@@ -71,7 +71,7 @@ export default function TeacherDashboard() {
   const teacherEnquiriesQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
     return query(
-      collection(db, 'teacherInterests'),
+      collection(db, 'teacherEnquiries'),
       where('teacherId', '==', user.uid),
       limit(100)
     );
@@ -171,7 +171,7 @@ export default function TeacherDashboard() {
     }
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, 'teacherInterests'), {
+      await addDoc(collection(db, 'teacherEnquiries'), {
         teacherId: user?.uid,
         teacherName,
         phone: phoneValue,
@@ -198,10 +198,21 @@ export default function TeacherDashboard() {
       if (aiResult.success && aiResult.email) {
         addDocumentNonBlocking(collection(db, 'notifications'), {
           to: aiResult.email.recipientEmail,
+          from: "RP Coach-Up <support@rpcoachup.com>",
           message: {
             subject: aiResult.email.subject,
             text: aiResult.email.body,
-            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${aiResult.email.body.replace(/\n/g, '<br>')}</div>`
+            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+              <div style="background-color: #266EDB; padding: 20px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">RP Coach-Up</h1>
+              </div>
+              <div style="padding: 30px; background-color: white;">
+                ${aiResult.email.body.replace(/\n/g, '<br>')}
+              </div>
+              <div style="padding: 20px; background-color: #f9f9f9; text-align: center; font-size: 12px; color: #777;">
+                © 2026 RP Coach-Up | Profile Confirmation
+              </div>
+            </div>`
           },
           type: 'interest',
           userName: teacherName,
@@ -245,10 +256,21 @@ export default function TeacherDashboard() {
       if (aiResult.success && aiResult.email) {
         addDocumentNonBlocking(collection(db, 'notifications'), {
           to: aiResult.email.recipientEmail,
+          from: "RP Coach-Up <support@rpcoachup.com>",
           message: {
             subject: aiResult.email.subject,
             text: aiResult.email.body,
-            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${aiResult.email.body.replace(/\n/g, '<br>')}</div>`
+            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+              <div style="background-color: #266EDB; padding: 20px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">RP Coach-Up</h1>
+              </div>
+              <div style="padding: 30px; background-color: white;">
+                ${aiResult.email.body.replace(/\n/g, '<br>')}
+              </div>
+              <div style="padding: 20px; background-color: #f9f9f9; text-align: center; font-size: 12px; color: #777;">
+                © 2026 RP Coach-Up | Feedback Received
+              </div>
+            </div>`
           },
           type: 'feedback',
           userName: `${profile?.firstName} ${profile?.lastName}`,

@@ -89,10 +89,21 @@ function logSystemEvent(db: any, admin: any, type: string, description: string) 
 function writeEmailNotification(db: any, recipientEmail: string, subject: string, body: string, type: string, userName?: string) {
   addDocumentNonBlocking(collection(db, 'notifications'), {
     to: recipientEmail,
+    from: "RP Coach-Up <support@rpcoachup.com>",
     message: {
       subject: subject,
       text: body,
-      html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${body.replace(/\n/g, '<br>')}</div>`
+      html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; overflow: hidden;">
+        <div style="background-color: #266EDB; padding: 20px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">RP Coach-Up</h1>
+        </div>
+        <div style="padding: 30px; background-color: white;">
+          ${body.replace(/\n/g, '<br>')}
+        </div>
+        <div style="padding: 20px; background-color: #f9f9f9; text-align: center; font-size: 12px; color: #777;">
+          © 2026 RP Coach-Up | Empowering Learning
+        </div>
+      </div>`
     },
     type,
     userName: userName || 'System',
@@ -115,7 +126,7 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
 
   const completedEnquiriesQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
-    return query(collection(db, 'teacherInterests'), where('status', '==', 'Hired'), limit(500));
+    return query(collection(db, 'teacherEnquiries'), where('status', '==', 'Hired'), limit(500));
   }, [db, isAdmin]);
   const { data: hiredEnquiries, isLoading: isLoadingEnquiries } = useCollection(completedEnquiriesQuery);
 
@@ -268,7 +279,7 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
   const { toast } = useToast();
   const [statusChangeTarget, setStatusChangeTarget] = useState<{id: string, currentStatus: string, collection: string, subject: string, userName: string, userEmail: string} | null>(null);
   
-  const enquiryCollection = user.userType === 'Student' ? 'studentInterests' : 'teacherInterests';
+  const enquiryCollection = user.userType === 'Student' ? 'studentEnquiries' : 'teacherEnquiries';
   const enquiryField = user.userType === 'Student' ? 'studentId' : 'teacherId';
   
   const enquiriesQuery = useMemoFirebase(() => {
@@ -477,13 +488,13 @@ export default function AdminPortal() {
 
   const studentEnquiriesQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
-    return query(collection(db, 'studentInterests'), limit(500));
+    return query(collection(db, 'studentEnquiries'), limit(500));
   }, [db, isAdmin]);
   const { data: allStudentEnquiries } = useCollection(studentEnquiriesQuery);
 
   const teacherEnquiriesQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
-    return query(collection(db, 'teacherInterests'), limit(500));
+    return query(collection(db, 'teacherEnquiries'), limit(500));
   }, [db, isAdmin]);
   const { data: allTeacherEnquiries } = useCollection(teacherEnquiriesQuery);
 
@@ -667,13 +678,13 @@ export default function AdminPortal() {
               <CardContent className="space-y-6">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <PurgeCollectionButton 
-                    collectionName="studentInterests" 
+                    collectionName="studentEnquiries" 
                     label="Clear Student Enquiries" 
                     onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all student enquiries')} 
                     isAdmin={isAdmin} 
                   />
                   <PurgeCollectionButton 
-                    collectionName="teacherInterests" 
+                    collectionName="teacherEnquiries" 
                     label="Clear Teacher Profiles" 
                     onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all teacher profiles')} 
                     isAdmin={isAdmin} 

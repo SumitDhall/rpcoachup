@@ -12,11 +12,22 @@ These emails are handled automatically by Firebase.
 
 ### 2. Custom Platform Notifications (Status Updates, Assignments)
 This app is integrated with the **"Trigger Email from Firestore"** extension.
-- **CRITICAL CONFIGURATION**:
-  - In the Firebase Extension settings, ensure the **"Email documents collection"** parameter is set exactly to `notifications`.
-  - The extension defaults to `mail`. You MUST update it to `notifications` for emails to be sent automatically.
-- **Recipient Verification**: Check that your SMTP/SendGrid configuration in the extension is active and that your sender email matches your verified domain.
-- **Where to see them?** All generated emails are recorded in the `notifications` collection and visible in the Admin Portal.
+
+#### CRITICAL CONFIGURATION STEPS:
+1.  **Collection Name**: In the Extension settings, ensure the **"Email documents collection"** parameter is set exactly to `notifications`.
+2.  **Sender Address**: Ensure the **"Default FROM address"** in the extension settings is set to `support@rpcoachup.com` or matches your SMTP account exactly.
+3.  **SMTP URI**: Your URI should look like `smtps://support@rpcoachup.com:YOUR_PASSWORD@mail.privateemail.com:465`.
+
+#### 🛠 How to see why emails are failing:
+If notifications appear in the Admin Portal but you don't receive emails:
+1.  Go to the **Firebase Console**.
+2.  Select **Extensions** from the left sidebar.
+3.  Find **Trigger Email from Firestore** and click **Manage**.
+4.  Click **View extension logs** in the bottom right.
+5.  Search for "Error" in the logs. Common errors include:
+    - `Invalid login`: Your SMTP password or URI is incorrect.
+    - `Mail command failed: 550 Sender address rejected`: You must add `from: "support@rpcoachup.com"` to the email document (this is already handled in the latest code update).
+    - `Connection timeout`: Ensure you are using port **465** for `smtps` or **587** for `smtp`.
 
 ## 🖼 How to use your own images
 1.  **Prepare your images**: Rename your downloaded images to `hero-education.jpg`, `teacher-mentoring.jpg`, and `online-course.jpg`.
