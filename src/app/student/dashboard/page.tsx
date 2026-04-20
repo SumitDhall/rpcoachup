@@ -72,7 +72,7 @@ export default function StudentDashboard() {
   const enquiriesQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
     return query(
-      collection(db, 'studentEnquiries'),
+      collection(db, 'studentInterests'),
       where('studentId', '==', user.uid),
       limit(100)
     );
@@ -194,7 +194,7 @@ export default function StudentDashboard() {
         notes: notes || ''
       };
       
-      await addDoc(collection(db, 'studentEnquiries'), submissionData);
+      await addDoc(collection(db, 'studentInterests'), submissionData);
       
       const aiResult = await sendNotificationEmail({
         recipientType: 'user',
@@ -235,7 +235,7 @@ export default function StudentDashboard() {
       setShowSuccessDialog(true);
       setSubject(''); setSchool(''); setGradeLevel(''); setAddress(''); setNotes(''); setPhoneValue(''); setAffordableRange(''); setIntendedStartDate('');
     } catch (error) {
-      // Error is handled by global listener
+      // Handled globally
     } finally {
       setIsSubmitting(false);
     }
@@ -299,7 +299,7 @@ export default function StudentDashboard() {
       setFeedbackComment('');
       setFeedbackRating('5');
     } catch (error) {
-      // Error handled by global listener
+      // Handled globally
     } finally {
       setIsSubmitting(false);
     }

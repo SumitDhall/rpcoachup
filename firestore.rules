@@ -1,15 +1,11 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
      * RP Coach-Up Security Rules
-     * 
-     * Core Philosophy:
-     * Robust, role-based access control for students, teachers, and admins.
      */
-
-    // --- Helper Functions ---
 
     function isSignedIn() {
       return request.auth != null;
@@ -30,8 +26,6 @@ service cloud.firestore {
     function isImmutable(fieldName) {
       return request.resource.data[fieldName] == resource.data[fieldName];
     }
-
-    // --- Collection Rules ---
 
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
@@ -55,14 +49,14 @@ service cloud.firestore {
       }
     }
 
-    match /studentEnquiries/{enquiryId} {
+    match /studentInterests/{enquiryId} {
       allow get, list: if (isSignedIn() && (resource == null || request.auth.uid == resource.data.studentId)) || isAdmin();
       allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
       allow update: if isAdmin() || (isExistingOwner(resource.data.studentId) && isImmutable('studentId'));
       allow delete: if isExistingOwner(resource.data.studentId) || isAdmin();
     }
 
-    match /teacherEnquiries/{enquiryId} {
+    match /teacherInterests/{enquiryId} {
       allow get, list: if (isSignedIn() && (resource == null || request.auth.uid == resource.data.teacherId)) || isAdmin();
       allow create: if isSignedIn() && request.resource.data.teacherId == request.auth.uid;
       allow update: if isAdmin() || (isExistingOwner(resource.data.teacherId) && isImmutable('teacherId'));
@@ -89,7 +83,6 @@ service cloud.firestore {
     }
 
     match /feedback/{feedbackId} {
-      // Feedback is readable by everyone to showcase on the About page
       allow get, list: if true; 
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update: if isExistingOwner(resource.data.userId) && isImmutable('userId');

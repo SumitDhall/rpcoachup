@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -14,8 +15,8 @@
         "updatedAt": { "type": "string", "format": "date-time" }
       }
     },
-    "StudentEnquiry": {
-      "title": "StudentEnquiry",
+    "StudentInterest": {
+      "title": "StudentInterest",
       "description": "Student's tuition enquiry.",
       "type": "object",
       "properties": {
@@ -27,8 +28,8 @@
         "status": { "type": "string" }
       }
     },
-    "TeacherEnquiry": {
-      "title": "TeacherEnquiry",
+    "TeacherInterest": {
+      "title": "TeacherInterest",
       "description": "Teacher's specialty profile.",
       "type": "object",
       "properties": {
@@ -69,12 +70,12 @@
       "schema": { "$ref": "#/backend/entities/User" },
       "description": "User profiles."
     },
-    "/studentEnquiries/{enquiryId}": {
-      "schema": { "$ref": "#/backend/entities/StudentEnquiry" },
+    "/studentInterests/{interestId}": {
+      "schema": { "$ref": "#/backend/entities/StudentInterest" },
       "description": "Student tuition enquiries."
     },
-    "/teacherEnquiries/{enquiryId}": {
-      "schema": { "$ref": "#/backend/entities/TeacherEnquiry" },
+    "/teacherInterests/{interestId}": {
+      "schema": { "$ref": "#/backend/entities/TeacherInterest" },
       "description": "Teacher specialty profiles."
     },
     "/matchProposals/{matchId}": {

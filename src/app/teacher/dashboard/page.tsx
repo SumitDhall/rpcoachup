@@ -69,17 +69,17 @@ export default function TeacherDashboard() {
   }, [db, user?.uid]);
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
-  const teacherEnquiriesQuery = useMemoFirebase(() => {
+  const teacherInterestsQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
     return query(
-      collection(db, 'teacherEnquiries'),
+      collection(db, 'teacherInterests'),
       where('teacherId', '==', user.uid),
       limit(1)
     );
   }, [db, user?.uid]);
-  const { data: rawEnquiries, isLoading: isLoadingEnquiries } = useCollection(teacherEnquiriesQuery);
+  const { data: rawInterests, isLoading: isLoadingInterests } = useCollection(teacherInterestsQuery);
 
-  const existingEnquiry = useMemo(() => rawEnquiries?.[0] || null, [rawEnquiries]);
+  const existingInterest = useMemo(() => rawInterests?.[0] || null, [rawInterests]);
 
   const matchesQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -109,7 +109,6 @@ export default function TeacherDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
-  // Sync basic user profile data
   useEffect(() => {
     if (profile) {
       setTeacherName(`${profile.firstName} ${profile.lastName}`);
@@ -117,20 +116,19 @@ export default function TeacherDashboard() {
     }
   }, [profile]);
 
-  // Sync existing enquiry data for editing
   useEffect(() => {
-    if (existingEnquiry) {
-      setTeacherName(existingEnquiry.teacherName || '');
-      setPhoneValue(existingEnquiry.phone || '');
-      setEmail(existingEnquiry.email || '');
-      setQualifications(existingEnquiry.qualifications || '');
-      setExperienceYears(existingEnquiry.experienceYears || '');
-      setSubjects(existingEnquiry.subjects || '');
-      setExpectedSalary(existingEnquiry.expectedSalary || '');
-      setResumeName(existingEnquiry.resumeName || '');
-      setResumeData(existingEnquiry.resumeData || '');
+    if (existingInterest) {
+      setTeacherName(existingInterest.teacherName || '');
+      setPhoneValue(existingInterest.phone || '');
+      setEmail(existingInterest.email || '');
+      setQualifications(existingInterest.qualifications || '');
+      setExperienceYears(existingInterest.experienceYears || '');
+      setSubjects(existingInterest.subjects || '');
+      setExpectedSalary(existingInterest.expectedSalary || '');
+      setResumeName(existingInterest.resumeName || '');
+      setResumeData(existingInterest.resumeData || '');
     }
-  }, [existingEnquiry]);
+  }, [existingInterest]);
 
   const formatPhoneNumber = (digits: string) => {
     if (digits.length === 0) return '';
@@ -161,7 +159,7 @@ export default function TeacherDashboard() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 1024 * 500) { // Limit to 500KB for Base64 Firestore storage
+      if (file.size > 1024 * 500) {
         toast({ variant: "destructive", title: "File too large", description: "Please upload a resume smaller than 500KB." });
         return;
       }
@@ -188,7 +186,7 @@ export default function TeacherDashboard() {
         title: "Validation Error", 
         description: userNumber.length !== 10 
           ? "Please enter a valid 10-digit phone number." 
-          : "Please complete all mandatory fields, including your resume." 
+          : "Please complete all mandatory fields." 
       });
       return;
     }
@@ -208,12 +206,12 @@ export default function TeacherDashboard() {
         updatedAt: serverTimestamp(),
       };
 
-      if (existingEnquiry) {
-        updateDocumentNonBlocking(doc(db, 'teacherEnquiries', existingEnquiry.id), payload);
+      if (existingInterest) {
+        updateDocumentNonBlocking(doc(db, 'teacherInterests', existingInterest.id), payload);
         toast({ title: "Profile Updated", description: "Your professional record has been updated successfully." });
         setActiveTab('history');
       } else {
-        await addDoc(collection(db, 'teacherEnquiries'), {
+        await addDoc(collection(db, 'teacherInterests'), {
           ...payload,
           submissionDate: serverTimestamp(),
           status: 'Pending'
@@ -227,7 +225,7 @@ export default function TeacherDashboard() {
         userType: 'Teacher',
         userName: teacherName,
         userEmail: email,
-        details: `${teacherName} ${existingEnquiry ? 'updated' : 'submitted'} a specialty profile for ${subjects}. Experience: ${experienceYears} years.`
+        details: `${teacherName} ${existingInterest ? 'updated' : 'submitted'} a specialty profile for ${subjects}. Experience: ${experienceYears} years.`
       });
 
       if (aiResult.success && aiResult.email) {
@@ -245,7 +243,7 @@ export default function TeacherDashboard() {
                 ${aiResult.email.body.replace(/\n/g, '<br>')}
               </div>
               <div style="padding: 20px; background-color: #f9f9f9; text-align: center; font-size: 12px; color: #777;">
-                © 2026 RP Coach-Up | Profile ${existingEnquiry ? 'Updated' : 'Confirmation'}
+                © 2026 RP Coach-Up | Profile ${existingInterest ? 'Updated' : 'Confirmation'}
               </div>
             </div>`
           },
@@ -258,7 +256,7 @@ export default function TeacherDashboard() {
       }
 
     } catch (error) {
-      // Error handled by global listener
+      // Handled globally
     } finally {
       setIsSubmitting(false);
     }
@@ -321,7 +319,7 @@ export default function TeacherDashboard() {
       setFeedbackComment('');
       setFeedbackRating('5');
     } catch (error) {
-      // Error handled by global listener
+      // Handled globally
     } finally {
       setIsSubmitting(false);
     }
@@ -330,7 +328,7 @@ export default function TeacherDashboard() {
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => {
     const navItems = [
       { id: 'history', icon: History, label: 'Professional Records' },
-      { id: 'profile', icon: existingEnquiry ? Edit : PlusCircle, label: existingEnquiry ? 'Update Profile' : 'Submit Profile' },
+      { id: 'profile', icon: existingInterest ? Edit : PlusCircle, label: existingInterest ? 'Update Profile' : 'Submit Profile' },
       { id: 'feedback', icon: MessageSquare, label: 'Feedback' },
     ];
 
@@ -343,8 +341,19 @@ export default function TeacherDashboard() {
           <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
         </Link>
         <nav className="flex-1 px-4 space-y-1">
-          {navItems.map((item) => {
-            const btn = (
+          {navItems.map((item) => (
+            isMobile ? (
+              <SheetClose asChild key={item.id}>
+                <Button 
+                  variant={activeTab === item.id ? 'secondary' : 'ghost'} 
+                  className="w-full justify-start gap-3" 
+                  onClick={() => setActiveTab(item.id)}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Button>
+              </SheetClose>
+            ) : (
               <Button 
                 key={item.id}
                 variant={activeTab === item.id ? 'secondary' : 'ghost'} 
@@ -354,9 +363,8 @@ export default function TeacherDashboard() {
                 <item.icon className="h-4 w-4" />
                 {item.label}
               </Button>
-            );
-            return isMobile ? <SheetClose asChild key={item.id}>{btn}</SheetClose> : btn;
-          })}
+            )
+          ))}
         </nav>
         <div className="p-4 border-t space-y-4">
           <div className="px-2 mb-4 space-y-2 text-[10px] text-muted-foreground">
@@ -421,27 +429,27 @@ export default function TeacherDashboard() {
                       <CardDescription>Records of your professional profile and current assignments.</CardDescription>
                     </div>
                     <Button onClick={() => setActiveTab('profile')} className="gap-2">
-                      {existingEnquiry ? <Edit className="h-4 w-4" /> : <PlusCircle className="h-4 w-4" />}
-                      {existingEnquiry ? 'Update Professional Record' : 'Submit Profile'}
+                      {existingInterest ? <Edit className="h-4 w-4" /> : <PlusCircle className="h-4 w-4" />}
+                      {existingInterest ? 'Update Professional Record' : 'Submit Profile'}
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {isLoadingEnquiries ? (
+                  {isLoadingInterests ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
-                  ) : (existingEnquiry ? (
+                  ) : (existingInterest ? (
                     <div className="space-y-6">
-                      <div key={existingEnquiry.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
+                      <div key={existingInterest.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
-                            <p className="font-bold text-lg">{existingEnquiry.subjects}</p>
-                            <Badge variant={existingEnquiry.status === 'Pending' ? 'outline' : 'default'} className={existingEnquiry.status === 'Hired' ? 'bg-green-600 text-white' : existingEnquiry.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
-                              {existingEnquiry.status}
+                            <p className="font-bold text-lg">{existingInterest.subjects}</p>
+                            <Badge variant={existingInterest.status === 'Pending' ? 'outline' : 'default'} className={existingInterest.status === 'Hired' ? 'bg-green-600 text-white' : existingInterest.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
+                              {existingInterest.status}
                             </Badge>
                           </div>
                           <p className="text-xs text-muted-foreground flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            Submited: {existingEnquiry.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}
+                            Submited: {existingInterest.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}
                           </p>
                         </div>
 
@@ -465,9 +473,9 @@ export default function TeacherDashboard() {
                               <User className="h-4 w-4" /> Teacher Details
                             </p>
                             <div className="space-y-1">
-                              <p className="font-medium">{existingEnquiry.teacherName}</p>
-                              <p className="flex items-center gap-2 text-muted-foreground"><GraduationCap className="h-3.5 w-3.5" /> {existingEnquiry.qualifications}</p>
-                              <p className="flex items-center gap-2 text-muted-foreground"><Briefcase className="h-3.5 w-3.5" /> {existingEnquiry.experienceYears} Years Experience</p>
+                              <p className="font-medium">{existingInterest.teacherName}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><GraduationCap className="h-3.5 w-3.5" /> {existingInterest.qualifications}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><Briefcase className="h-3.5 w-3.5" /> {existingInterest.experienceYears} Years Experience</p>
                             </div>
                           </div>
 
@@ -476,8 +484,8 @@ export default function TeacherDashboard() {
                               <Phone className="h-3 w-3" /> Contact Details
                             </p>
                             <div className="space-y-1">
-                              <p className="flex items-center gap-2 font-medium"><Phone className="h-3.5 w-3.5 text-primary" /> {existingEnquiry.phone}</p>
-                              <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /> {existingEnquiry.email}</p>
+                              <p className="flex items-center gap-2 font-medium"><Phone className="h-3.5 w-3.5 text-primary" /> {existingInterest.phone}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /> {existingInterest.email}</p>
                             </div>
                           </div>
 
@@ -486,7 +494,7 @@ export default function TeacherDashboard() {
                               <IndianRupee className="h-3 w-3" /> Salary Expectation
                             </p>
                             <div className="space-y-1">
-                              <p className="flex items-center gap-2 text-accent font-bold"><IndianRupee className="h-3.5 w-3.5" /> {existingEnquiry.expectedSalary}</p>
+                              <p className="flex items-center gap-2 text-accent font-bold"><IndianRupee className="h-3.5 w-3.5" /> {existingInterest.expectedSalary}</p>
                             </div>
                           </div>
 
@@ -496,7 +504,7 @@ export default function TeacherDashboard() {
                             </p>
                             <div className="flex items-center gap-2 text-xs text-primary bg-primary/5 p-2 rounded-lg w-fit">
                               <CheckCircle2 className="h-3 w-3" />
-                              Resume: {existingEnquiry.resumeName}
+                              Resume: {existingInterest.resumeName}
                             </div>
                           </div>
                         </div>
@@ -521,9 +529,9 @@ export default function TeacherDashboard() {
             <TabsContent value="profile">
               <Card className="shadow-2xl border-primary/10 overflow-hidden">
                 <CardHeader className="bg-primary/5 border-b">
-                  <CardTitle>{existingEnquiry ? 'Update Professional Record' : 'Submit Profile'}</CardTitle>
+                  <CardTitle>{existingInterest ? 'Update Professional Record' : 'Submit Profile'}</CardTitle>
                   <CardDescription>
-                    {existingEnquiry 
+                    {existingInterest 
                       ? "Make changes to your existing professional record below." 
                       : "Submit your teaching subjects, qualifications, and background."}
                   </CardDescription>
@@ -593,13 +601,13 @@ export default function TeacherDashboard() {
                       </div>
                       <div className="p-6 border-2 border-dashed rounded-xl bg-secondary/5 space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="resume" className="text-base">{existingEnquiry ? 'Replace Professional Resume (Optional)' : 'Upload Professional Resume / CV *'}</Label>
+                          <Label htmlFor="resume" className="text-base">{existingInterest ? 'Replace Professional Resume (Optional)' : 'Upload Professional Resume / CV *'}</Label>
                           <Input 
                             id="resume" 
                             type="file" 
                             accept=".pdf,.doc,.docx" 
                             onChange={handleFileChange} 
-                            required={!existingEnquiry}
+                            required={!existingInterest}
                             className="h-12 pt-2 cursor-pointer bg-background"
                           />
                           <p className="text-[10px] text-muted-foreground">Accepted formats: PDF, DOC, DOCX. Max size: 500KB.</p>
@@ -616,7 +624,7 @@ export default function TeacherDashboard() {
                   <CardFooter className="border-t bg-secondary/5 pt-6 pb-8">
                     <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-14 text-xl shadow-lg shadow-primary/20">
                       {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                      {existingEnquiry ? 'Update Professional Record' : 'Submit Professional Profile'}
+                      {existingInterest ? 'Update Professional Record' : 'Submit Professional Profile'}
                     </Button>
                   </CardFooter>
                 </form>

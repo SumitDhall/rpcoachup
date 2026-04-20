@@ -124,11 +124,11 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
   }, [db, isAdmin]);
   const { data: teachers, isLoading: isLoadingTeachers } = useCollection(teachersQuery);
 
-  const completedEnquiriesQuery = useMemoFirebase(() => {
+  const completedInterestsQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
-    return query(collection(db, 'teacherEnquiries'), where('status', '==', 'Hired'), limit(500));
+    return query(collection(db, 'teacherInterests'), where('status', '==', 'Hired'), limit(500));
   }, [db, isAdmin]);
-  const { data: hiredEnquiries, isLoading: isLoadingEnquiries } = useCollection(completedEnquiriesQuery);
+  const { data: hiredInterests, isLoading: isLoadingInterests } = useCollection(completedInterestsQuery);
 
   const matchesQuery = useMemoFirebase(() => {
     if (!db || !isAdmin || !enquiryId) return null;
@@ -141,8 +141,8 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
   }, [currentMatches]);
 
   const hiredTeacherIds = useMemo(() => {
-    return new Set(hiredEnquiries?.map(i => i.teacherId) || []);
-  }, [hiredEnquiries]);
+    return new Set(hiredInterests?.map(i => i.teacherId) || []);
+  }, [hiredInterests]);
 
   const handleAssignTeacher = async (teacher: any) => {
     const teacherFullName = `${teacher.firstName} ${teacher.lastName}`;
@@ -203,7 +203,7 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
   }, [teachers, searchTerm, hiredTeacherIds]);
 
   if (!isAdmin) return null;
-  if (isLoadingTeachers || isLoadingMatches || isLoadingEnquiries) {
+  if (isLoadingTeachers || isLoadingMatches || isLoadingInterests) {
     return <div className="flex justify-center p-4"><Loader2 className="h-4 w-4 animate-spin text-primary" /></div>;
   }
 
@@ -279,19 +279,19 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
   const { toast } = useToast();
   const [statusChangeTarget, setStatusChangeTarget] = useState<{id: string, currentStatus: string, collection: string, subject: string, userName: string, userEmail: string} | null>(null);
   
-  const enquiryCollection = user.userType === 'Student' ? 'studentEnquiries' : 'teacherEnquiries';
-  const enquiryField = user.userType === 'Student' ? 'studentId' : 'teacherId';
+  const interestCollection = user.userType === 'Student' ? 'studentInterests' : 'teacherInterests';
+  const interestField = user.userType === 'Student' ? 'studentId' : 'teacherId';
   
-  const enquiriesQuery = useMemoFirebase(() => {
+  const interestsQuery = useMemoFirebase(() => {
     if (!db || !isAdmin || !user.id) return null;
     return query(
-      collection(db, enquiryCollection), 
-      where(enquiryField, '==', user.id),
+      collection(db, interestCollection), 
+      where(interestField, '==', user.id),
       limit(50)
     );
-  }, [db, user.id, enquiryCollection, enquiryField, isAdmin]);
+  }, [db, user.id, interestCollection, interestField, isAdmin]);
 
-  const { data: enquiries, isLoading: isLoadingEnquiries } = useCollection(enquiriesQuery);
+  const { data: interests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
 
   const getNextStatus = (current: string) => {
     if (user.userType === 'Student') {
@@ -309,11 +309,11 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
     if (!statusChangeTarget) return;
     
     const newStatus = getNextStatus(statusChangeTarget.currentStatus);
-    const enquiryRef = doc(db, statusChangeTarget.collection, statusChangeTarget.id);
+    const interestRef = doc(db, statusChangeTarget.collection, statusChangeTarget.id);
     
-    updateDocumentNonBlocking(enquiryRef, { status: newStatus });
+    updateDocumentNonBlocking(interestRef, { status: newStatus });
     
-    logSystemEvent(db, adminUser, 'status_update', `Updated status to ${newStatus} for ${statusChangeTarget.userName}'s enquiry in ${statusChangeTarget.subject}`);
+    logSystemEvent(db, adminUser, 'status_update', `Updated status to ${newStatus} for ${statusChangeTarget.userName}'s interest in ${statusChangeTarget.subject}`);
 
     const aiResult = await sendNotificationEmail({
       recipientType: 'user',
@@ -345,7 +345,7 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
   };
 
   if (!isAdmin) return null;
-  if (isLoadingEnquiries) {
+  if (isLoadingInterests) {
     return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
@@ -356,13 +356,13 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
           <ClipboardList className="h-4 w-4" />
            {user.userType === 'Student' ? 'Tuition Enquiries' : 'Professional Specializations'}
         </h4>
-        {enquiries && enquiries.length > 0 ? (
+        {interests && interests.length > 0 ? (
           <div className="space-y-4">
-            {[...enquiries].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map((int: any) => (
+            {[...interests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map((int: any) => (
               <div key={int.id} className="p-4 border rounded-xl bg-card shadow-sm space-y-3">
                 <div className="flex justify-between items-center pb-2 border-b">
                   <span className="font-bold text-primary">{int.subject || int.subjects}</span>
-                  <button onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: enquiryCollection, subject: int.subject || int.subjects, userName: int.studentName || int.teacherName, userEmail: int.email || user.email })} className="focus:outline-none">
+                  <button onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: interestCollection, subject: int.subject || int.subjects, userName: int.studentName || int.teacherName, userEmail: int.email || user.email })} className="focus:outline-none">
                     <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className={`text-[10px] cursor-pointer ${int.status === 'Course Complete' || int.status === 'Hired' ? 'bg-green-600 text-white' : int.status === 'Enrolled' || int.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}`}>
                       {int.status}
                     </Badge>
@@ -486,17 +486,17 @@ export default function AdminPortal() {
 
   const isAdmin = !!adminDoc;
 
-  const studentEnquiriesQuery = useMemoFirebase(() => {
+  const studentInterestsQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
-    return query(collection(db, 'studentEnquiries'), limit(500));
+    return query(collection(db, 'studentInterests'), limit(500));
   }, [db, isAdmin]);
-  const { data: allStudentEnquiries } = useCollection(studentEnquiriesQuery);
+  const { data: allStudentInterests } = useCollection(studentInterestsQuery);
 
-  const teacherEnquiriesQuery = useMemoFirebase(() => {
+  const teacherInterestsQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
-    return query(collection(db, 'teacherEnquiries'), limit(500));
+    return query(collection(db, 'teacherInterests'), limit(500));
   }, [db, isAdmin]);
-  const { data: allTeacherEnquiries } = useCollection(teacherEnquiriesQuery);
+  const { data: allTeacherInterests } = useCollection(teacherInterestsQuery);
 
   const usersQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
@@ -532,25 +532,25 @@ export default function AdminPortal() {
     if (activeTab === 'students') {
       const baseStudents = users.filter(u => u.userType === 'Student');
       return baseStudents.map(s => {
-        const studentEnquiries = (allStudentEnquiries || []).filter(i => i.studentId === s.id);
-        const hasPending = studentEnquiries.some(i => i.status === 'Pending');
-        const hasEnrolled = studentEnquiries.some(i => i.status === 'Enrolled');
-        const hasCompleted = studentEnquiries.some(i => i.status === 'Course Complete');
-        return { ...s, studentEnquiries, hasPending, hasEnrolled, hasCompleted };
-      }).filter(s => s.studentEnquiries.length > 0);
+        const studentInterests = (allStudentInterests || []).filter(i => i.studentId === s.id);
+        const hasPending = studentInterests.some(i => i.status === 'Pending');
+        const hasEnrolled = studentInterests.some(i => i.status === 'Enrolled');
+        const hasCompleted = studentInterests.some(i => i.status === 'Course Complete');
+        return { ...s, studentInterests, hasPending, hasEnrolled, hasCompleted };
+      }).filter(s => s.studentInterests.length > 0);
     }
     if (activeTab === 'teachers') {
       const baseTeachers = users.filter(u => u.userType === 'Teacher');
       return baseTeachers.map(t => {
-        const teacherEnquiries = (allTeacherEnquiries || []).filter(i => i.teacherId === t.id);
-        const hasPending = teacherEnquiries.some(i => i.status === 'Pending');
-        const hasInProgress = teacherEnquiries.some(i => i.status === 'In-Progress');
-        const hasHired = teacherEnquiries.some(i => i.status === 'Hired');
-        return { ...t, teacherEnquiries, hasPending, hasInProgress, hasHired };
-      }).filter(t => t.teacherEnquiries.length > 0);
+        const teacherInterests = (allTeacherInterests || []).filter(i => i.teacherId === t.id);
+        const hasPending = teacherInterests.some(i => i.status === 'Pending');
+        const hasInProgress = teacherInterests.some(i => i.status === 'In-Progress');
+        const hasHired = teacherInterests.some(i => i.status === 'Hired');
+        return { ...t, teacherInterests, hasPending, hasInProgress, hasHired };
+      }).filter(t => t.teacherInterests.length > 0);
     }
     return [];
-  }, [users, allStudentEnquiries, allTeacherEnquiries, activeTab]);
+  }, [users, allStudentInterests, allTeacherInterests, activeTab]);
 
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
@@ -668,15 +668,15 @@ export default function AdminPortal() {
               <CardContent className="space-y-6">
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   <PurgeCollectionButton 
-                    collectionName="studentEnquiries" 
+                    collectionName="studentInterests" 
                     label="Clear Student Enquiries" 
-                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all student enquiries')} 
+                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all student interests')} 
                     isAdmin={isAdmin} 
                   />
                   <PurgeCollectionButton 
-                    collectionName="teacherEnquiries" 
+                    collectionName="teacherInterests" 
                     label="Clear Teacher Profiles" 
-                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all teacher profiles')} 
+                    onPurge={() => logSystemEvent(db, user, 'maintenance', 'Purged all teacher interests')} 
                     isAdmin={isAdmin} 
                   />
                   <PurgeCollectionButton 
