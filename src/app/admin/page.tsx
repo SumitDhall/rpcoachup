@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,7 @@ import {
   SheetTitle,
   SheetClose
 } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   BookOpen, 
   Loader2,
@@ -65,7 +66,9 @@ import {
   Mail,
   Menu,
   PlusCircle,
-  Briefcase
+  Briefcase,
+  Star,
+  Zap
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
@@ -356,46 +359,48 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
           <ClipboardList className="h-4 w-4" />
            {user.userType === 'Student' ? 'Tuition Enquiries' : 'Professional Specializations'}
         </h4>
-        {interests && interests.length > 0 ? (
-          <div className="space-y-4">
-            {[...interests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map((int: any) => (
-              <div key={int.id} className="p-4 border rounded-xl bg-card shadow-sm space-y-3">
-                <div className="flex justify-between items-center pb-2 border-b">
-                  <span className="font-bold text-primary">{int.subject || int.subjects}</span>
-                  <button onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: interestCollection, subject: int.subject || int.subjects, userName: int.studentName || int.teacherName, userEmail: int.email || user.email })} className="focus:outline-none">
-                    <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className={`text-[10px] cursor-pointer ${int.status === 'Course Complete' || int.status === 'Hired' ? 'bg-green-600 text-white' : int.status === 'Enrolled' || int.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}`}>
-                      {int.status}
-                    </Badge>
-                  </button>
-                </div>
-                
-                <div className="grid grid-cols-1 gap-2 text-sm">
-                  <div className="flex items-center gap-2"><User className="h-3 w-3 text-muted-foreground" /><span className="text-xs">For: {int.studentName || int.teacherName}</span></div>
-                  {int.phone && <div className="flex items-center gap-2"><Phone className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.phone}</span></div>}
-                  {int.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.email}</span></div>}
-                  {user.userType === 'Student' && int.school && <div className="flex items-center gap-2"><School className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.school} ({int.gradeOrClass})</span></div>}
-                  {user.userType === 'Teacher' && int.resumeName && (
-                    <div className="mt-2 p-2 bg-green-50 rounded-lg border border-green-200 flex items-center justify-between">
-                      <div className="flex items-center gap-2"><FileText className="h-3 w-3 text-green-600" /><span className="text-xs text-green-800 font-medium truncate max-w-[150px]">{int.resumeName}</span></div>
-                      <Button size="icon" variant="ghost" className="h-6 w-6 text-green-700" onClick={() => handleDownloadResume(int.resumeName, int.resumeData)}><Download className="h-3 w-3" /></Button>
-                    </div>
-                  )}
-                  {(int.affordableRange || int.expectedSalary) && <div className="flex items-center gap-2 text-accent mt-1"><IndianRupee className="h-3 w-3" /><span className="text-xs font-bold">{int.affordableRange || int.expectedSalary}</span></div>}
-                </div>
+        <ScrollArea className="max-h-[500px] pr-4">
+          {interests && interests.length > 0 ? (
+            <div className="space-y-4">
+              {[...interests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map((int: any) => (
+                <div key={int.id} className="p-4 border rounded-xl bg-card shadow-sm space-y-3">
+                  <div className="flex justify-between items-center pb-2 border-b">
+                    <span className="font-bold text-primary">{int.subject || int.subjects}</span>
+                    <button onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: interestCollection, subject: int.subject || int.subjects, userName: int.studentName || int.teacherName, userEmail: int.email || user.email })} className="focus:outline-none">
+                      <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className={`text-[10px] cursor-pointer ${int.status === 'Course Complete' || int.status === 'Hired' ? 'bg-green-600 text-white' : int.status === 'Enrolled' || int.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}`}>
+                        {int.status}
+                      </Badge>
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-2 text-sm">
+                    <div className="flex items-center gap-2"><User className="h-3 w-3 text-muted-foreground" /><span className="text-xs">For: {int.studentName || int.teacherName}</span></div>
+                    {int.phone && <div className="flex items-center gap-2"><Phone className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.phone}</span></div>}
+                    {int.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.email}</span></div>}
+                    {user.userType === 'Student' && int.school && <div className="flex items-center gap-2"><School className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.school} ({int.gradeOrClass})</span></div>}
+                    {user.userType === 'Teacher' && int.resumeName && (
+                      <div className="mt-2 p-2 bg-green-50 rounded-lg border border-green-200 flex items-center justify-between">
+                        <div className="flex items-center gap-2"><FileText className="h-3 w-3 text-green-600" /><span className="text-xs text-green-800 font-medium truncate max-w-[150px]">{int.resumeName}</span></div>
+                        <Button size="icon" variant="ghost" className="h-6 w-6 text-green-700" onClick={() => handleDownloadResume(int.resumeName, int.resumeData)}><Download className="h-3 w-3" /></Button>
+                      </div>
+                    )}
+                    {(int.affordableRange || int.expectedSalary) && <div className="flex items-center gap-2 text-accent mt-1"><IndianRupee className="h-3 w-3" /><span className="text-xs font-bold">{int.affordableRange || int.expectedSalary}</span></div>}
+                  </div>
 
-                {user.userType === 'Student' && (
-                  <TeacherAssignmentManager 
-                    studentId={user.id} 
-                    studentName={`${user.firstName} ${user.lastName}`} 
-                    enquiryId={int.id}
-                    subject={int.subject}
-                    isAdmin={isAdmin} 
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-        ) : <p className="text-xs text-muted-foreground italic text-center py-4">No submissions found.</p>}
+                  {user.userType === 'Student' && (
+                    <TeacherAssignmentManager 
+                      studentId={user.id} 
+                      studentName={`${user.firstName} ${user.lastName}`} 
+                      enquiryId={int.id}
+                      subject={int.subject}
+                      isAdmin={isAdmin} 
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : <p className="text-xs text-muted-foreground italic text-center py-4">No submissions found.</p>}
+        </ScrollArea>
       </div>
 
       <AlertDialog open={!!statusChangeTarget} onOpenChange={(open) => !open && setStatusChangeTarget(null)}>
@@ -465,6 +470,47 @@ function SystemSettingsLogs({ isAdmin }: { isAdmin: boolean }) {
   );
 }
 
+function UserFeedbackList({ isAdmin }: { isAdmin: boolean }) {
+  const db = useFirestore();
+  const feedbackQuery = useMemoFirebase(() => {
+    if (!db || !isAdmin) return null;
+    return query(collection(db, 'feedback'), orderBy('createdAt', 'desc'), limit(100));
+  }, [db, isAdmin]);
+  const { data: feedback, isLoading } = useCollection(feedbackQuery);
+
+  if (!isAdmin) return null;
+  if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+
+  return (
+    <Card>
+      <CardHeader><div className="flex items-center gap-2"><Star className="h-5 w-5 text-accent" /><div><CardTitle>User Feedback</CardTitle><CardDescription>Direct testimonials and suggestions from users.</CardDescription></div></div></CardHeader>
+      <CardContent>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {feedback && feedback.length > 0 ? feedback.map((fb) => (
+            <Card key={fb.id} className="border-none shadow-sm bg-secondary/5">
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`h-3 w-3 ${i < fb.rating ? 'fill-accent text-accent' : 'text-muted'}`} />
+                    ))}
+                  </div>
+                  <Badge variant="outline" className="text-[8px]">{fb.userType}</Badge>
+                </div>
+                <p className="text-xs italic text-muted-foreground mb-4">"{fb.comment}"</p>
+                <div className="flex justify-between items-center border-t pt-2 mt-auto">
+                  <span className="text-[10px] font-bold">{fb.userName}</span>
+                  <span className="text-[8px] text-muted-foreground">{fb.createdAt?.toDate?.()?.toLocaleDateString()}</span>
+                </div>
+              </CardContent>
+            </Card>
+          )) : <p className="text-center py-12 text-muted-foreground italic col-span-2">No feedback received yet.</p>}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function AdminPortal() {
   const db = useFirestore();
   const auth = useAuth();
@@ -485,6 +531,14 @@ export default function AdminPortal() {
   const { data: adminDoc, isLoading: isAdminLoading } = useDoc(adminDocRef);
 
   const isAdmin = !!adminDoc;
+
+  useEffect(() => {
+    if (!isUserLoading && !isAdminLoading) {
+      if (!user || !adminDoc) {
+        router.push('/');
+      }
+    }
+  }, [user, adminDoc, isUserLoading, isAdminLoading, router]);
 
   const studentInterestsQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
@@ -529,6 +583,14 @@ export default function AdminPortal() {
 
   const filteredUsers = useMemo(() => {
     if (!users) return [];
+    
+    const getStatusWeight = (u: any) => {
+      if (u.hasPending) return 0;
+      if (u.hasEnrolled || u.hasInProgress) return 1;
+      if (u.hasCompleted || u.hasHired) return 2;
+      return 3;
+    };
+
     if (activeTab === 'students') {
       const baseStudents = users.filter(u => u.userType === 'Student');
       return baseStudents.map(s => {
@@ -537,8 +599,11 @@ export default function AdminPortal() {
         const hasEnrolled = studentInterests.some(i => i.status === 'Enrolled');
         const hasCompleted = studentInterests.some(i => i.status === 'Course Complete');
         return { ...s, studentInterests, hasPending, hasEnrolled, hasCompleted };
-      }).filter(s => s.studentInterests.length > 0);
+      })
+      .filter(s => s.studentInterests.length > 0)
+      .sort((a, b) => getStatusWeight(a) - getStatusWeight(b));
     }
+
     if (activeTab === 'teachers') {
       const baseTeachers = users.filter(u => u.userType === 'Teacher');
       return baseTeachers.map(t => {
@@ -547,7 +612,9 @@ export default function AdminPortal() {
         const hasInProgress = teacherInterests.some(i => i.status === 'In-Progress');
         const hasHired = teacherInterests.some(i => i.status === 'Hired');
         return { ...t, teacherInterests, hasPending, hasInProgress, hasHired };
-      }).filter(t => t.teacherInterests.length > 0);
+      })
+      .filter(t => t.teacherInterests.length > 0)
+      .sort((a, b) => getStatusWeight(a) - getStatusWeight(b));
     }
     return [];
   }, [users, allStudentInterests, allTeacherInterests, activeTab]);
@@ -555,7 +622,7 @@ export default function AdminPortal() {
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
 
-  if (isUserLoading || isAdminLoading || !user) return <div className="flex h-screen items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
+  if (isUserLoading || isAdminLoading || !user || !adminDoc) return <div className="flex h-screen items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
 
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => {
     const NavButton = ({ id, icon: Icon, label }: { id: string, icon: any, label: string }) => {
@@ -563,7 +630,7 @@ export default function AdminPortal() {
         <Button 
           variant={activeTab === id ? 'secondary' : 'ghost'} 
           className="w-full justify-start gap-3" 
-          onClick={() => setActiveTab(id)}
+          onClick={() => { setActiveTab(id); setCurrentPage(1); }}
         >
           <Icon className="h-4 w-4" />
           {label}
@@ -582,6 +649,7 @@ export default function AdminPortal() {
           <NavButton id="notifications" icon={Bell} label="Notifications" />
           <NavButton id="students" icon={UserCheck} label="Students" />
           <NavButton id="teachers" icon={GraduationCap} label="Teachers" />
+          <NavButton id="feedback" icon={Star} label="User Feedback" />
           <NavButton id="settings" icon={History} label="Activity Logs" />
           <NavButton id="maintenance" icon={Database} label="Maintenance" />
         </nav>
@@ -654,11 +722,13 @@ export default function AdminPortal() {
             <Card>
               <CardHeader><div className="flex items-center justify-between"><div><CardTitle>{activeTab === 'students' ? 'Students' : 'Teachers'}</CardTitle></div><Badge variant="secondary">{filteredUsers.length} Active</Badge></div></CardHeader>
               <CardContent>
-                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Contact</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasEnrolled || u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'ENROLLED' : 'IN-PROGRESS'}</Badge> : u.hasCompleted || u.hasHired ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'COURSE COMPLETE' : 'HIRED'}</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View Details</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No users with submissions found.</TableCell></TableRow>}</TableBody></Table></div>
+                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name & Status</TableHead><TableHead className="hidden sm:table-cell">Contact</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasEnrolled || u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'ENROLLED' : 'IN-PROGRESS'}</Badge> : u.hasCompleted || u.hasHired ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'COURSE COMPLETE' : 'HIRED'}</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View Details</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No users with submissions found.</TableCell></TableRow>}</TableBody></Table></div>
                 {totalPages > 1 && <div className="flex justify-center gap-2 mt-4"><Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button><span className="text-xs self-center font-medium">Page {currentPage} of {totalPages}</span><Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button></div>}
               </CardContent>
             </Card>
           )}
+
+          {activeTab === 'feedback' && <UserFeedbackList isAdmin={isAdmin} />}
 
           {activeTab === 'settings' && <SystemSettingsLogs isAdmin={isAdmin} />}
 
@@ -713,9 +783,13 @@ export default function AdminPortal() {
       </main>
 
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle className="flex items-center gap-3"><div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{(selectedUser?.firstName || '?')[0]}{(selectedUser?.lastName || '?')[0]}</div><div><p>{selectedUser?.firstName} {selectedUser?.lastName}</p><p className="text-xs font-normal text-muted-foreground">{selectedUser?.email}</p></div></DialogTitle></DialogHeader>
-          {selectedUser && <UserDetailsContent user={selectedUser} isAdmin={isAdmin} />}
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] p-0 overflow-hidden">
+          <div className="p-6 pb-0">
+            <DialogHeader><DialogTitle className="flex items-center gap-3"><div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{(selectedUser?.firstName || '?')[0]}{(selectedUser?.lastName || '?')[0]}</div><div><p>{selectedUser?.firstName} {selectedUser?.lastName}</p><p className="text-xs font-normal text-muted-foreground">{selectedUser?.email}</p></div></DialogTitle></DialogHeader>
+          </div>
+          <div className="p-6 pt-0">
+            {selectedUser && <UserDetailsContent user={selectedUser} isAdmin={isAdmin} />}
+          </div>
         </DialogContent>
       </Dialog>
 
