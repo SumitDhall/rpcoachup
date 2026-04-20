@@ -68,7 +68,9 @@ import {
   PlusCircle,
   Briefcase,
   Star,
-  Zap
+  Zap,
+  RefreshCcw,
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
@@ -104,7 +106,7 @@ function writeEmailNotification(db: any, recipientEmail: string, subject: string
           ${body.replace(/\n/g, '<br>')}
         </div>
         <div style="padding: 20px; background-color: #f9f9f9; text-align: center; font-size: 12px; color: #777;">
-          © 2026 RP Coach-Up | Empowering Learning
+          © 2026 RP Coach-Up | Platform Event
         </div>
       </div>`
     },
@@ -174,6 +176,8 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
 
     if (aiResult.success && aiResult.email) {
       writeEmailNotification(db, aiResult.email.recipientEmail, aiResult.email.subject, aiResult.email.body, 'assignment', teacherFullName);
+      // Admin copy
+      writeEmailNotification(db, 'admin@rpcoachup.com', `Assignment Complete: ${teacherFullName}`, `Teacher ${teacherFullName} has been assigned to ${studentName} for ${subject}.`, 'assignment', teacherFullName);
     }
 
     toast({
@@ -187,6 +191,7 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
     if (matchToDelete) {
       deleteDocumentNonBlocking(doc(db, 'matchProposals', matchToDelete.id));
       logSystemEvent(db, adminUser, 'unassignment', `Removed Teacher: ${matchToDelete.teacherName} from ${studentName} for ${subject}`);
+      writeEmailNotification(db, 'admin@rpcoachup.com', `Assignment Removed`, `Teacher ${matchToDelete.teacherName} was unassigned from ${studentName} for ${subject}.`, 'assignment');
 
       toast({
         title: "Teacher Unassigned",
@@ -329,6 +334,8 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
 
     if (aiResult.success && aiResult.email) {
       writeEmailNotification(db, aiResult.email.recipientEmail, aiResult.email.subject, aiResult.email.body, 'status_update', statusChangeTarget.userName);
+      // Admin copy
+      writeEmailNotification(db, 'admin@rpcoachup.com', `Status Updated: ${statusChangeTarget.userName}`, `Status changed to ${newStatus} for ${statusChangeTarget.userName} (${statusChangeTarget.subject}).`, 'status_update', statusChangeTarget.userName);
     }
 
     setStatusChangeTarget(null);
@@ -558,14 +565,13 @@ export default function AdminPortal() {
 
   const notificationsQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
-    // Added orderBy to ensure newest notifications show first
     return query(collection(db, 'notifications'), orderBy('timestamp', 'desc'), limit(50));
   }, [db, isAdmin]);
   const { data: rawNotifications, isLoading: isLoadingNotifications } = useCollection(notificationsQuery);
 
   const notifications = useMemo(() => {
     if (!rawNotifications) return [];
-    return [...rawNotifications]; // Already sorted by query
+    return [...rawNotifications];
   }, [rawNotifications]);
 
   const handleDeleteNotification = async () => {
@@ -696,25 +702,32 @@ export default function AdminPortal() {
 
           {activeTab === 'notifications' && (
             <Card>
-              <CardHeader><CardTitle>Notifications</CardTitle></CardHeader>
+              <CardHeader><div className="flex items-center justify-between"><div><CardTitle>Platform Notifications</CardTitle><CardDescription>Real-time updates on registrations and enquiries.</CardDescription></div><Button variant="outline" size="sm" onClick={() => window.location.reload()}><RefreshCcw className="h-4 w-4 mr-2" />Refresh</Button></div></CardHeader>
               <CardContent className="space-y-4">
                 {isLoadingNotifications ? (
                   <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
                 ) : (notifications.length > 0 ? notifications.map(n => (
-                  <div key={n.id} className="flex items-start justify-between p-4 border rounded-xl bg-card shadow-sm">
+                  <div key={n.id} className="flex items-start justify-between p-4 border rounded-xl bg-card shadow-sm hover:border-primary/30 transition-colors">
                     <div className="flex gap-3">
                       <div className="bg-primary/10 p-2 rounded-lg h-fit">
-                        {n.type === 'registration' ? <UserCheck className="h-5 w-5 text-primary" /> : <ClipboardList className="h-5 w-5 text-accent" />}
+                        {n.type === 'registration' ? <UserPlus className="h-5 w-5 text-primary" /> : 
+                         n.type === 'interest' ? <ClipboardList className="h-5 w-5 text-accent" /> :
+                         n.type === 'status_update' ? <RefreshCcw className="h-5 w-5 text-blue-500" /> :
+                         n.type === 'assignment' ? <UserCheck className="h-5 w-5 text-green-500" /> :
+                         <Bell className="h-5 w-5 text-muted-foreground" />}
                       </div>
                       <div>
-                        <h4 className="font-bold text-sm">{(n.message?.subject) || n.subject || "Platform Notification"}</h4>
+                        <div className="flex items-center gap-2">
+                           <h4 className="font-bold text-sm">{(n.message?.subject) || n.subject || "Platform Notification"}</h4>
+                           <Badge variant="outline" className="text-[8px] uppercase">{n.type || 'System'}</Badge>
+                        </div>
                         <p className="text-xs text-muted-foreground mt-1">{(n.message?.text) || n.body || "No message content available."}</p>
                         <p className="text-[10px] text-muted-foreground mt-2">{n.timestamp?.toDate?.()?.toLocaleString() || 'Synced recently'}</p>
                       </div>
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => setNotificationToDelete(n.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
-                )) : <p className="text-center py-8 text-muted-foreground italic">No notifications found.</p>)}
+                )) : <div className="text-center py-16 border-2 border-dashed rounded-xl"><Bell className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-20" /><p className="text-muted-foreground italic">No recent notifications found.</p></div>)}
               </CardContent>
             </Card>
           )}
@@ -785,7 +798,7 @@ export default function AdminPortal() {
 
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] p-0 flex flex-col overflow-hidden">
-          <div className="p-6 pb-0 border-b bg-card z-10">
+          <div className="p-6 pb-0 border-b bg-card">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{(selectedUser?.firstName || '?')[0]}{(selectedUser?.lastName || '?')[0]}</div>
