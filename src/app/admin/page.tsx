@@ -359,48 +359,46 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
           <ClipboardList className="h-4 w-4" />
            {user.userType === 'Student' ? 'Tuition Enquiries' : 'Professional Specializations'}
         </h4>
-        <ScrollArea className="max-h-[500px] pr-4">
+        <div className="space-y-4">
           {interests && interests.length > 0 ? (
-            <div className="space-y-4">
-              {[...interests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map((int: any) => (
-                <div key={int.id} className="p-4 border rounded-xl bg-card shadow-sm space-y-3">
-                  <div className="flex justify-between items-center pb-2 border-b">
-                    <span className="font-bold text-primary">{int.subject || int.subjects}</span>
-                    <button onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: interestCollection, subject: int.subject || int.subjects, userName: int.studentName || int.teacherName, userEmail: int.email || user.email })} className="focus:outline-none">
-                      <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className={`text-[10px] cursor-pointer ${int.status === 'Course Complete' || int.status === 'Hired' ? 'bg-green-600 text-white' : int.status === 'Enrolled' || int.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}`}>
-                        {int.status}
-                      </Badge>
-                    </button>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 gap-2 text-sm">
-                    <div className="flex items-center gap-2"><User className="h-3 w-3 text-muted-foreground" /><span className="text-xs">For: {int.studentName || int.teacherName}</span></div>
-                    {int.phone && <div className="flex items-center gap-2"><Phone className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.phone}</span></div>}
-                    {int.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.email}</span></div>}
-                    {user.userType === 'Student' && int.school && <div className="flex items-center gap-2"><School className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.school} ({int.gradeOrClass})</span></div>}
-                    {user.userType === 'Teacher' && int.resumeName && (
-                      <div className="mt-2 p-2 bg-green-50 rounded-lg border border-green-200 flex items-center justify-between">
-                        <div className="flex items-center gap-2"><FileText className="h-3 w-3 text-green-600" /><span className="text-xs text-green-800 font-medium truncate max-w-[150px]">{int.resumeName}</span></div>
-                        <Button size="icon" variant="ghost" className="h-6 w-6 text-green-700" onClick={() => handleDownloadResume(int.resumeName, int.resumeData)}><Download className="h-3 w-3" /></Button>
-                      </div>
-                    )}
-                    {(int.affordableRange || int.expectedSalary) && <div className="flex items-center gap-2 text-accent mt-1"><IndianRupee className="h-3 w-3" /><span className="text-xs font-bold">{int.affordableRange || int.expectedSalary}</span></div>}
-                  </div>
-
-                  {user.userType === 'Student' && (
-                    <TeacherAssignmentManager 
-                      studentId={user.id} 
-                      studentName={`${user.firstName} ${user.lastName}`} 
-                      enquiryId={int.id}
-                      subject={int.subject}
-                      isAdmin={isAdmin} 
-                    />
-                  )}
+            interests.map((int: any) => (
+              <div key={int.id} className="p-4 border rounded-xl bg-card shadow-sm space-y-3">
+                <div className="flex justify-between items-center pb-2 border-b">
+                  <span className="font-bold text-primary">{int.subject || int.subjects}</span>
+                  <button onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: interestCollection, subject: int.subject || int.subjects, userName: int.studentName || int.teacherName, userEmail: int.email || user.email })} className="focus:outline-none">
+                    <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className={`text-[10px] cursor-pointer ${int.status === 'Course Complete' || int.status === 'Hired' ? 'bg-green-600 text-white' : int.status === 'Enrolled' || int.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}`}>
+                      {int.status}
+                    </Badge>
+                  </button>
                 </div>
-              ))}
-            </div>
+                
+                <div className="grid grid-cols-1 gap-2 text-sm">
+                  <div className="flex items-center gap-2"><User className="h-3 w-3 text-muted-foreground" /><span className="text-xs">For: {int.studentName || int.teacherName}</span></div>
+                  {int.phone && <div className="flex items-center gap-2"><Phone className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.phone}</span></div>}
+                  {int.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.email}</span></div>}
+                  {user.userType === 'Student' && int.school && <div className="flex items-center gap-2"><School className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.school} ({int.gradeOrClass})</span></div>}
+                  {user.userType === 'Teacher' && int.resumeName && (
+                    <div className="mt-2 p-2 bg-green-50 rounded-lg border border-green-200 flex items-center justify-between">
+                      <div className="flex items-center gap-2"><FileText className="h-3 w-3 text-green-600" /><span className="text-xs text-green-800 font-medium truncate max-w-[150px]">{int.resumeName}</span></div>
+                      <Button size="icon" variant="ghost" className="h-6 w-6 text-green-700" onClick={() => handleDownloadResume(int.resumeName, int.resumeData)}><Download className="h-3 w-3" /></Button>
+                    </div>
+                  )}
+                  {(int.affordableRange || int.expectedSalary) && <div className="flex items-center gap-2 text-accent mt-1"><IndianRupee className="h-3 w-3" /><span className="text-xs font-bold">{int.affordableRange || int.expectedSalary}</span></div>}
+                </div>
+
+                {user.userType === 'Student' && (
+                  <TeacherAssignmentManager 
+                    studentId={user.id} 
+                    studentName={`${user.firstName} ${user.lastName}`} 
+                    enquiryId={int.id}
+                    subject={int.subject}
+                    isAdmin={isAdmin} 
+                  />
+                )}
+              </div>
+            ))
           ) : <p className="text-xs text-muted-foreground italic text-center py-4">No submissions found.</p>}
-        </ScrollArea>
+        </div>
       </div>
 
       <AlertDialog open={!!statusChangeTarget} onOpenChange={(open) => !open && setStatusChangeTarget(null)}>
@@ -560,13 +558,14 @@ export default function AdminPortal() {
 
   const notificationsQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
-    return query(collection(db, 'notifications'), limit(50));
+    // Added orderBy to ensure newest notifications show first
+    return query(collection(db, 'notifications'), orderBy('timestamp', 'desc'), limit(50));
   }, [db, isAdmin]);
   const { data: rawNotifications, isLoading: isLoadingNotifications } = useCollection(notificationsQuery);
 
   const notifications = useMemo(() => {
     if (!rawNotifications) return [];
-    return [...rawNotifications].sort((a, b) => (b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0));
+    return [...rawNotifications]; // Already sorted by query
   }, [rawNotifications]);
 
   const handleDeleteNotification = async () => {
@@ -699,28 +698,30 @@ export default function AdminPortal() {
             <Card>
               <CardHeader><CardTitle>Notifications</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                {isLoadingNotifications ? <Loader2 className="animate-spin mx-auto text-primary" /> : (notifications.length > 0 ? notifications.map(n => (
+                {isLoadingNotifications ? (
+                  <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
+                ) : (notifications.length > 0 ? notifications.map(n => (
                   <div key={n.id} className="flex items-start justify-between p-4 border rounded-xl bg-card shadow-sm">
                     <div className="flex gap-3">
                       <div className="bg-primary/10 p-2 rounded-lg h-fit">
                         {n.type === 'registration' ? <UserCheck className="h-5 w-5 text-primary" /> : <ClipboardList className="h-5 w-5 text-accent" />}
                       </div>
                       <div>
-                        <h4 className="font-bold text-sm">{(n.message?.subject) || n.subject}</h4>
-                        <p className="text-xs text-muted-foreground mt-1">{(n.message?.text) || n.body}</p>
-                        <p className="text-[10px] text-muted-foreground mt-2">{n.timestamp?.toDate?.()?.toLocaleString() || 'Synced'}</p>
+                        <h4 className="font-bold text-sm">{(n.message?.subject) || n.subject || "Platform Notification"}</h4>
+                        <p className="text-xs text-muted-foreground mt-1">{(n.message?.text) || n.body || "No message content available."}</p>
+                        <p className="text-[10px] text-muted-foreground mt-2">{n.timestamp?.toDate?.()?.toLocaleString() || 'Synced recently'}</p>
                       </div>
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => setNotificationToDelete(n.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
-                )) : <p className="text-center py-8 text-muted-foreground italic">No notifications.</p>)}
+                )) : <p className="text-center py-8 text-muted-foreground italic">No notifications found.</p>)}
               </CardContent>
             </Card>
           )}
 
           {(activeTab === 'students' || activeTab === 'teachers') && (
             <Card>
-              <CardHeader><div className="flex items-center justify-between"><div><CardTitle>{activeTab === 'students' ? 'Students' : 'Teachers'}</CardTitle></div><Badge variant="secondary">{filteredUsers.length} Active</Badge></div></CardHeader>
+              <CardHeader><div className="flex items-center justify-between"><div><CardTitle>{activeTab === 'students' ? 'Students' : 'Teachers'}</CardTitle></div><Badge variant="secondary">{filteredUsers.length} Submissions</Badge></div></CardHeader>
               <CardContent>
                 <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name & Status</TableHead><TableHead className="hidden sm:table-cell">Contact</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasEnrolled || u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'ENROLLED' : 'IN-PROGRESS'}</Badge> : u.hasCompleted || u.hasHired ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'COURSE COMPLETE' : 'HIRED'}</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View Details</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No users with submissions found.</TableCell></TableRow>}</TableBody></Table></div>
                 {totalPages > 1 && <div className="flex justify-center gap-2 mt-4"><Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button><span className="text-xs self-center font-medium">Page {currentPage} of {totalPages}</span><Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button></div>}
@@ -783,13 +784,25 @@ export default function AdminPortal() {
       </main>
 
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] p-0 overflow-hidden">
-          <div className="p-6 pb-0">
-            <DialogHeader><DialogTitle className="flex items-center gap-3"><div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{(selectedUser?.firstName || '?')[0]}{(selectedUser?.lastName || '?')[0]}</div><div><p>{selectedUser?.firstName} {selectedUser?.lastName}</p><p className="text-xs font-normal text-muted-foreground">{selectedUser?.email}</p></div></DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] p-0 flex flex-col overflow-hidden">
+          <div className="p-6 pb-0 border-b bg-card z-10">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{(selectedUser?.firstName || '?')[0]}{(selectedUser?.lastName || '?')[0]}</div>
+                <div>
+                  <p>{selectedUser?.firstName} {selectedUser?.lastName}</p>
+                  <p className="text-xs font-normal text-muted-foreground">{selectedUser?.email}</p>
+                </div>
+              </DialogTitle>
+            </DialogHeader>
           </div>
-          <div className="p-6 pt-0">
-            {selectedUser && <UserDetailsContent user={selectedUser} isAdmin={isAdmin} />}
-          </div>
+          <ScrollArea className="flex-1">
+            <div className="p-6 pt-0">
+              <div className="pt-6">
+                {selectedUser && <UserDetailsContent user={selectedUser} isAdmin={isAdmin} />}
+              </div>
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
