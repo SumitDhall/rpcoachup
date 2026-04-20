@@ -190,7 +190,7 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
     if (matchToDelete) {
       deleteDocumentNonBlocking(doc(db, 'matchProposals', matchToDelete.id));
       logSystemEvent(db, adminUser, 'unassignment', `Removed Teacher: ${matchToDelete.teacherName} from ${studentName} for ${subject}`);
-      writeEmailNotification(db, 'admin@rpcoachup.com', `Assignment Removed`, `Teacher ${matchToDelete.teacherName} was unassigned from ${studentName} for ${subject}.`, 'assignment');
+      writeEmailNotification(db, 'admin@rpcoachup.com', `Assignment Removed`, `Teacher ${matchToDelete.teacherName} was unassigned from ${studentName} for ${subject}.`, 'unassignment');
 
       toast({
         title: "Teacher Unassigned",
