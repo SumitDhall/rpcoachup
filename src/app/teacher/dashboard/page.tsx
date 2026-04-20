@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -47,10 +47,11 @@ import {
   Calendar,
   IndianRupee,
   PlusCircle,
-  Users
+  Users,
+  Edit
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp, query, where, limit } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { sendNotificationEmail } from '@/app/actions/notifications';
@@ -73,10 +74,12 @@ export default function TeacherDashboard() {
     return query(
       collection(db, 'teacherEnquiries'),
       where('teacherId', '==', user.uid),
-      limit(100)
+      limit(1)
     );
   }, [db, user?.uid]);
   const { data: rawEnquiries, isLoading: isLoadingEnquiries } = useCollection(teacherEnquiriesQuery);
+
+  const existingEnquiry = useMemo(() => rawEnquiries?.[0] || null, [rawEnquiries]);
 
   const matchesQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -106,12 +109,28 @@ export default function TeacherDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
+  // Sync basic user profile data
   useEffect(() => {
     if (profile) {
       setTeacherName(`${profile.firstName} ${profile.lastName}`);
       setEmail(profile.email || '');
     }
   }, [profile]);
+
+  // Sync existing enquiry data for editing
+  useEffect(() => {
+    if (existingEnquiry) {
+      setTeacherName(existingEnquiry.teacherName || '');
+      setPhoneValue(existingEnquiry.phone || '');
+      setEmail(existingEnquiry.email || '');
+      setQualifications(existingEnquiry.qualifications || '');
+      setExperienceYears(existingEnquiry.experienceYears || '');
+      setSubjects(existingEnquiry.subjects || '');
+      setExpectedSalary(existingEnquiry.expectedSalary || '');
+      setResumeName(existingEnquiry.resumeName || '');
+      setResumeData(existingEnquiry.resumeData || '');
+    }
+  }, [existingEnquiry]);
 
   const formatPhoneNumber = (digits: string) => {
     if (digits.length === 0) return '';
@@ -142,6 +161,10 @@ export default function TeacherDashboard() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 1024 * 500) { // Limit to 500KB for Base64 Firestore storage
+        toast({ variant: "destructive", title: "File too large", description: "Please upload a resume smaller than 500KB." });
+        return;
+      }
       setResumeName(file.name);
       const reader = new FileReader();
       reader.onloadend = () => setResumeData(reader.result as string);
@@ -171,7 +194,7 @@ export default function TeacherDashboard() {
     }
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, 'teacherEnquiries'), {
+      const payload = {
         teacherId: user?.uid,
         teacherName,
         phone: phoneValue,
@@ -182,9 +205,21 @@ export default function TeacherDashboard() {
         expectedSalary: expectedSalary || 'Negotiable',
         resumeName,
         resumeData,
-        submissionDate: serverTimestamp(),
-        status: 'Pending'
-      });
+        updatedAt: serverTimestamp(),
+      };
+
+      if (existingEnquiry) {
+        updateDocumentNonBlocking(doc(db, 'teacherEnquiries', existingEnquiry.id), payload);
+        toast({ title: "Profile Updated", description: "Your professional record has been updated successfully." });
+        setActiveTab('history');
+      } else {
+        await addDoc(collection(db, 'teacherEnquiries'), {
+          ...payload,
+          submissionDate: serverTimestamp(),
+          status: 'Pending'
+        });
+        setShowSuccessDialog(true);
+      }
       
       const aiResult = await sendNotificationEmail({
         recipientType: 'admin',
@@ -192,7 +227,7 @@ export default function TeacherDashboard() {
         userType: 'Teacher',
         userName: teacherName,
         userEmail: email,
-        details: `${teacherName} submitted a specialty profile for ${subjects}. Experience: ${experienceYears} years.`
+        details: `${teacherName} ${existingEnquiry ? 'updated' : 'submitted'} a specialty profile for ${subjects}. Experience: ${experienceYears} years.`
       });
 
       if (aiResult.success && aiResult.email) {
@@ -210,7 +245,7 @@ export default function TeacherDashboard() {
                 ${aiResult.email.body.replace(/\n/g, '<br>')}
               </div>
               <div style="padding: 20px; background-color: #f9f9f9; text-align: center; font-size: 12px; color: #777;">
-                © 2026 RP Coach-Up | Profile Confirmation
+                © 2026 RP Coach-Up | Profile ${existingEnquiry ? 'Updated' : 'Confirmation'}
               </div>
             </div>`
           },
@@ -222,14 +257,6 @@ export default function TeacherDashboard() {
         });
       }
 
-      setShowSuccessDialog(true);
-      setQualifications(''); 
-      setExperienceYears(''); 
-      setSubjects(''); 
-      setResumeName(''); 
-      setResumeData(''); 
-      setPhoneValue('');
-      setExpectedSalary('');
     } catch (error) {
       // Error handled by global listener
     } finally {
@@ -300,14 +327,10 @@ export default function TeacherDashboard() {
     }
   };
 
-  if (isUserLoading || isProfileLoading || !user) {
-    return <div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
-  }
-
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => {
     const navItems = [
       { id: 'history', icon: History, label: 'Professional Records' },
-      { id: 'profile', icon: PlusCircle, label: 'Submit Profile' },
+      { id: 'profile', icon: existingEnquiry ? Edit : PlusCircle, label: existingEnquiry ? 'Update Profile' : 'Submit Profile' },
       { id: 'feedback', icon: MessageSquare, label: 'Feedback' },
     ];
 
@@ -395,109 +418,99 @@ export default function TeacherDashboard() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                       <CardTitle>Professional Records</CardTitle>
-                      <CardDescription>Detailed records of your submitted specialty profiles and application status.</CardDescription>
+                      <CardDescription>Records of your professional profile and current assignments.</CardDescription>
                     </div>
-                    {rawEnquiries && rawEnquiries.length > 0 && (
-                      <Button onClick={() => setActiveTab('profile')} className="gap-2">
-                        <PlusCircle className="h-4 w-4" /> New/Updated Profile
-                      </Button>
-                    )}
+                    <Button onClick={() => setActiveTab('profile')} className="gap-2">
+                      {existingEnquiry ? <Edit className="h-4 w-4" /> : <PlusCircle className="h-4 w-4" />}
+                      {existingEnquiry ? 'Update Professional Record' : 'Submit Profile'}
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {isLoadingEnquiries ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
-                  ) : (rawEnquiries && rawEnquiries.length > 0 ? (
-                    [...rawEnquiries].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
-                      const assignedStudents = matches?.filter(m => m.enquiryId === i.id || m.teacherId === i.teacherId).map(m => m.studentName) || [];
-                      const uniqueStudents = Array.from(new Set(assignedStudents));
-                      
-                      return (
-                        <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                              <p className="font-bold text-lg">{i.subjects}</p>
-                              <Badge variant={i.status === 'Pending' ? 'outline' : 'default'} className={i.status === 'Hired' ? 'bg-green-600 text-white' : i.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
-                                {i.status}
-                              </Badge>
+                  ) : (existingEnquiry ? (
+                    <div className="space-y-6">
+                      <div key={existingEnquiry.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-lg">{existingEnquiry.subjects}</p>
+                            <Badge variant={existingEnquiry.status === 'Pending' ? 'outline' : 'default'} className={existingEnquiry.status === 'Hired' ? 'bg-green-600 text-white' : existingEnquiry.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}>
+                              {existingEnquiry.status}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            Submited: {existingEnquiry.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}
+                          </p>
+                        </div>
+
+                        {matches && matches.length > 0 && (
+                          <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-start gap-3">
+                            <div className="bg-primary/10 p-2 rounded-full mt-1"><Users className="h-4 w-4 text-primary" /></div>
+                            <div>
+                              <p className="text-[10px] uppercase font-bold text-primary tracking-wider mb-1">Assigned Students</p>
+                              <ol className="list-decimal list-inside space-y-0.5">
+                                {Array.from(new Set(matches.map(m => m.studentName))).map((name, idx) => (
+                                  <li key={idx} className="text-sm font-semibold">{name}</li>
+                                ))}
+                              </ol>
                             </div>
-                            <p className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {i.submissionDate?.toDate?.()?.toLocaleDateString() || 'Just now'}
+                          </div>
+                        )}
+                        
+                        <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-sm border-t pt-4">
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                              <User className="h-4 w-4" /> Teacher Details
                             </p>
+                            <div className="space-y-1">
+                              <p className="font-medium">{existingEnquiry.teacherName}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><GraduationCap className="h-3.5 w-3.5" /> {existingEnquiry.qualifications}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><Briefcase className="h-3.5 w-3.5" /> {existingEnquiry.experienceYears} Years Experience</p>
+                            </div>
                           </div>
 
-                          {(i.status === 'In-Progress' || i.status === 'Hired') && uniqueStudents.length > 0 && (
-                            <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-start gap-3">
-                              <div className="bg-primary/10 p-2 rounded-full mt-1"><Users className="h-4 w-4 text-primary" /></div>
-                              <div>
-                                <p className="text-[10px] uppercase font-bold text-primary tracking-wider mb-1">Assigned Students</p>
-                                <ol className="list-decimal list-inside space-y-0.5">
-                                  {uniqueStudents.map((name, idx) => (
-                                    <li key={idx} className="text-sm font-semibold">{name}</li>
-                                  ))}
-                                </ol>
-                              </div>
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                              <Phone className="h-3 w-3" /> Contact Details
+                            </p>
+                            <div className="space-y-1">
+                              <p className="flex items-center gap-2 font-medium"><Phone className="h-3.5 w-3.5 text-primary" /> {existingEnquiry.phone}</p>
+                              <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /> {existingEnquiry.email}</p>
                             </div>
-                          )}
-                          
-                          <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-sm border-t pt-4">
-                            <div className="space-y-2">
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                                <User className="h-4 w-4" /> Teacher Details
-                              </p>
-                              <div className="space-y-1">
-                                <p className="font-medium">{i.teacherName}</p>
-                                <p className="flex items-center gap-2 text-muted-foreground"><GraduationCap className="h-3.5 w-3.5" /> {i.qualifications}</p>
-                                <p className="flex items-center gap-2 text-muted-foreground"><Briefcase className="h-3.5 w-3.5" /> {i.experienceYears} Years Experience</p>
-                              </div>
-                            </div>
+                          </div>
 
-                            <div className="space-y-2">
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                                <Phone className="h-3 w-3" /> Contact Details
-                              </p>
-                              <div className="space-y-1">
-                                <p className="flex items-center gap-2 font-medium"><Phone className="h-3.5 w-3.5 text-primary" /> {i.phone}</p>
-                                <p className="flex items-center gap-2 text-muted-foreground"><Mail className="h-3.5 w-3.5" /> {i.email}</p>
-                              </div>
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                              <IndianRupee className="h-3 w-3" /> Salary Expectation
+                            </p>
+                            <div className="space-y-1">
+                              <p className="flex items-center gap-2 text-accent font-bold"><IndianRupee className="h-3.5 w-3.5" /> {existingEnquiry.expectedSalary}</p>
                             </div>
+                          </div>
 
-                            <div className="space-y-2">
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                                <IndianRupee className="h-3 w-3" /> Salary Expectation
-                              </p>
-                              <div className="space-y-1">
-                                <p className="flex items-center gap-2 text-accent font-bold"><IndianRupee className="h-3.5 w-3.5" /> {i.expectedSalary}</p>
-                              </div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                                 <FileText className="h-3 w-3" /> Supporting Docs
-                              </p>
-                              <div className="flex items-center gap-2 text-xs text-primary bg-primary/5 p-2 rounded-lg w-fit">
-                                <CheckCircle2 className="h-3 w-3" />
-                                Resume: {i.resumeName}
-                              </div>
-                            </div>
-
-                            <div className="col-span-full space-y-2">
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
-                                 <BookOpen className="h-3.5 w-3.5" /> Subjects Specialisation in
-                              </p>
-                              <p className="text-xs bg-secondary/10 p-2 rounded-lg leading-relaxed">{i.subjects}</p>
+                          <div className="space-y-2">
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest flex items-center gap-1">
+                               <FileText className="h-3 w-3" /> Supporting Docs
+                            </p>
+                            <div className="flex items-center gap-2 text-xs text-primary bg-primary/5 p-2 rounded-lg w-fit">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Resume: {existingEnquiry.resumeName}
                             </div>
                           </div>
                         </div>
-                      )
-                    })
+                      </div>
+                      <div className="bg-secondary/10 p-4 rounded-xl border border-dashed border-primary/20 text-center">
+                        <p className="text-sm text-muted-foreground">You can only maintain one professional profile. Use the "Update" button to make changes.</p>
+                      </div>
+                    </div>
                   ) : (
                     <div className="text-center py-16 border-2 border-dashed rounded-2xl bg-secondary/5">
                       <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto mb-4 text-primary">
                         <Briefcase className="h-8 w-8" />
                       </div>
-                      <p className="text-muted-foreground font-medium mb-4">No professional records found.</p>
+                      <p className="text-muted-foreground font-medium mb-4">No professional record found.</p>
                       <Button onClick={() => setActiveTab('profile')}>Submit your first profile</Button>
                     </div>
                   ))}
@@ -508,8 +521,12 @@ export default function TeacherDashboard() {
             <TabsContent value="profile">
               <Card className="shadow-2xl border-primary/10 overflow-hidden">
                 <CardHeader className="bg-primary/5 border-b">
-                  <CardTitle>Submit Profile</CardTitle>
-                  <CardDescription>Update your teaching subjects, qualifications, and professional background.</CardDescription>
+                  <CardTitle>{existingEnquiry ? 'Update Professional Record' : 'Submit Profile'}</CardTitle>
+                  <CardDescription>
+                    {existingEnquiry 
+                      ? "Make changes to your existing professional record below." 
+                      : "Submit your teaching subjects, qualifications, and background."}
+                  </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmitProfile}>
                   <CardContent className="space-y-8 pt-8">
@@ -576,16 +593,16 @@ export default function TeacherDashboard() {
                       </div>
                       <div className="p-6 border-2 border-dashed rounded-xl bg-secondary/5 space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="resume" className="text-base">Upload Professional Resume / CV *</Label>
+                          <Label htmlFor="resume" className="text-base">{existingEnquiry ? 'Replace Professional Resume (Optional)' : 'Upload Professional Resume / CV *'}</Label>
                           <Input 
                             id="resume" 
                             type="file" 
                             accept=".pdf,.doc,.docx" 
                             onChange={handleFileChange} 
-                            required 
+                            required={!existingEnquiry}
                             className="h-12 pt-2 cursor-pointer bg-background"
                           />
-                          <p className="text-[10px] text-muted-foreground">Accepted formats: PDF, DOC, DOCX. Max size: 5MB.</p>
+                          <p className="text-[10px] text-muted-foreground">Accepted formats: PDF, DOC, DOCX. Max size: 500KB.</p>
                         </div>
                         {resumeName && (
                           <div className="flex items-center gap-2 text-xs font-medium text-primary bg-primary/5 p-2 rounded-lg w-fit">
@@ -599,7 +616,7 @@ export default function TeacherDashboard() {
                   <CardFooter className="border-t bg-secondary/5 pt-6 pb-8">
                     <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-14 text-xl shadow-lg shadow-primary/20">
                       {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                      Submit Professional Profile
+                      {existingEnquiry ? 'Update Professional Record' : 'Submit Professional Profile'}
                     </Button>
                   </CardFooter>
                 </form>
