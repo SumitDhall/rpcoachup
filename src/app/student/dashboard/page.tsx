@@ -69,7 +69,7 @@ export default function StudentDashboard() {
   }, [db, user?.uid]);
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
-  const interestsQuery = useMemoFirebase(() => {
+  const enquiriesQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
     return query(
       collection(db, 'studentInterests'),
@@ -77,7 +77,7 @@ export default function StudentDashboard() {
       limit(100)
     );
   }, [db, user?.uid]);
-  const { data: rawInterests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
+  const { data: rawEnquiries, isLoading: isLoadingEnquiries } = useCollection(enquiriesQuery);
 
   const matchesQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -155,7 +155,7 @@ export default function StudentDashboard() {
     router.push('/');
   };
 
-  const handleSubmitInterest = async (e: React.FormEvent) => {
+  const handleSubmitEnquiry = async (e: React.FormEvent) => {
     e.preventDefault();
     const digitsOnly = phoneValue.replace(/\D/g, '');
     const userNumber = digitsOnly.startsWith('91') ? digitsOnly.slice(2) : digitsOnly;
@@ -196,17 +196,8 @@ export default function StudentDashboard() {
       
       await addDoc(collection(db, 'studentInterests'), submissionData);
       
-      addDocumentNonBlocking(collection(db, 'notifications'), {
-        type: 'interest',
-        subject: `Student Tuition Enquiry: ${subject}`,
-        body: `Student ${studentName} requested tuition for ${subject}. Budget: ${affordableRange}.`,
-        userEmail: email,
-        userName: studentName,
-        timestamp: serverTimestamp(),
-        read: false
-      });
-
-      sendNotificationEmail({
+      // Generate AI notification and write to mail collection
+      const aiResult = await sendNotificationEmail({
         recipientType: 'user',
         type: 'interest',
         userType: 'Student',
@@ -214,6 +205,21 @@ export default function StudentDashboard() {
         userEmail: email,
         details: `Your enquiry for ${subject} has been submitted successfully.`
       });
+
+      if (aiResult.success && aiResult.email) {
+        addDocumentNonBlocking(collection(db, 'notifications'), {
+          to: aiResult.email.recipientEmail,
+          message: {
+            subject: aiResult.email.subject,
+            text: aiResult.email.body
+          },
+          type: 'interest',
+          userName: studentName,
+          userEmail: email,
+          timestamp: serverTimestamp(),
+          read: false
+        });
+      }
 
       setShowSuccessDialog(true);
       setSubject(''); setSchool(''); setGradeLevel(''); setAddress(''); setNotes(''); setPhoneValue(''); setAffordableRange(''); setIntendedStartDate('');
@@ -231,6 +237,30 @@ export default function StudentDashboard() {
     }
     setIsSubmitting(true);
     try {
+      const aiResult = await sendNotificationEmail({
+        recipientType: 'admin',
+        type: 'interest',
+        userType: 'Student',
+        userName: `${profile?.firstName} ${profile?.lastName}`,
+        userEmail: profile?.email || '',
+        details: `Student provided a ${feedbackRating}-star review. Comment: ${feedbackComment}`
+      });
+
+      if (aiResult.success && aiResult.email) {
+        addDocumentNonBlocking(collection(db, 'notifications'), {
+          to: aiResult.email.recipientEmail,
+          message: {
+            subject: aiResult.email.subject,
+            text: aiResult.email.body
+          },
+          type: 'feedback',
+          userName: `${profile?.firstName} ${profile?.lastName}`,
+          userEmail: profile?.email || 'N/A',
+          timestamp: serverTimestamp(),
+          read: false
+        });
+      }
+
       await addDoc(collection(db, 'feedback'), {
         userId: user?.uid,
         userName: `${profile?.firstName} ${profile?.lastName}`,
@@ -239,25 +269,6 @@ export default function StudentDashboard() {
         comment: feedbackComment,
         teacherName: feedbackTeacher,
         createdAt: serverTimestamp()
-      });
-
-      addDocumentNonBlocking(collection(db, 'notifications'), {
-        type: 'feedback',
-        subject: `New Student Feedback: ${feedbackRating} Stars`,
-        body: `Student ${profile?.firstName} ${profile?.lastName} shared feedback: "${feedbackComment}"`,
-        userEmail: profile?.email || 'N/A',
-        userName: `${profile?.firstName} ${profile?.lastName}`,
-        timestamp: serverTimestamp(),
-        read: false
-      });
-
-      sendNotificationEmail({
-        recipientType: 'admin',
-        type: 'interest',
-        userType: 'Student',
-        userName: `${profile?.firstName} ${profile?.lastName}`,
-        userEmail: profile?.email || '',
-        details: `Student provided a ${feedbackRating}-star review. Comment: ${feedbackComment}`
       });
 
       toast({ title: "Feedback Received", description: "Thank you for sharing your thoughts!" });
@@ -289,7 +300,7 @@ export default function StudentDashboard() {
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => {
     const navItems = [
       { id: 'history', icon: History, label: 'Tutor Enquiry' },
-      { id: 'interests', icon: PlusCircle, label: 'Submit Enquiry' },
+      { id: 'enquiries', icon: PlusCircle, label: 'Submit Enquiry' },
       { id: 'feedback', icon: MessageSquare, label: 'Feedback' },
     ];
 
@@ -381,13 +392,13 @@ export default function StudentDashboard() {
           </header>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsContent value="interests">
+            <TabsContent value="enquiries">
               <Card className="border-primary/10 shadow-xl overflow-hidden">
                 <CardHeader className="bg-primary/5 border-b">
                   <CardTitle>Tuition Requirement Form</CardTitle>
                   <CardDescription>Provide detailed requirements to find the best matching teacher.</CardDescription>
                 </CardHeader>
-                <form onSubmit={handleSubmitInterest}>
+                <form onSubmit={handleSubmitEnquiry}>
                   <CardContent className="space-y-8 pt-8">
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
@@ -520,17 +531,17 @@ export default function StudentDashboard() {
                       <CardTitle>Tutor Enquiry</CardTitle>
                       <CardDescription>Detailed records of your submitted tuition enquiries.</CardDescription>
                     </div>
-                    {rawInterests && rawInterests.length > 0 && (
-                      <Button onClick={() => setActiveTab('interests')} className="gap-2 shrink-0">
+                    {rawEnquiries && rawEnquiries.length > 0 && (
+                      <Button onClick={() => setActiveTab('enquiries')} className="gap-2 shrink-0">
                         <PlusCircle className="h-4 w-4" /> Submit New Enquiry
                       </Button>
                     )}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {isLoadingInterests ? (
+                  {isLoadingEnquiries ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
-                  ) : (rawInterests && rawInterests.length > 0 ? [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
+                  ) : (rawEnquiries && rawEnquiries.length > 0 ? [...rawEnquiries].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
                     // Filter matches specifically for this enquiry
                     const enquiryMatches = matches?.filter(m => m.enquiryId === i.id);
                     const assignedTeachers = enquiryMatches?.map(m => m.teacherName) || [];
@@ -620,7 +631,7 @@ export default function StudentDashboard() {
                         <History className="h-8 w-8" />
                       </div>
                       <p className="text-muted-foreground font-medium mb-4">No tuition enquiries found yet.</p>
-                      <Button onClick={() => setActiveTab('interests')}>Start your first enquiry now</Button>
+                      <Button onClick={() => setActiveTab('enquiries')}>Start your first enquiry now</Button>
                     </div>
                   ))}
                 </CardContent>

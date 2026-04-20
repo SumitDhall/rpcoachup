@@ -86,12 +86,14 @@ function logSystemEvent(db: any, admin: any, type: string, description: string) 
   });
 }
 
-function createAdminNotification(db: any, type: 'registration' | 'interest' | 'assignment' | 'status_update' | 'feedback', subject: string, body: string, userEmail?: string, userName?: string) {
+function writeEmailNotification(db: any, recipientEmail: string, subject: string, body: string, type: string, userName?: string) {
   addDocumentNonBlocking(collection(db, 'notifications'), {
+    to: recipientEmail,
+    message: {
+      subject: subject,
+      text: body
+    },
     type,
-    subject,
-    body,
-    userEmail: userEmail || 'system',
     userName: userName || 'System',
     timestamp: serverTimestamp(),
     read: false
@@ -110,11 +112,11 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
   }, [db, isAdmin]);
   const { data: teachers, isLoading: isLoadingTeachers } = useCollection(teachersQuery);
 
-  const completedInterestsQuery = useMemoFirebase(() => {
+  const completedEnquiriesQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
     return query(collection(db, 'teacherInterests'), where('status', '==', 'Hired'), limit(500));
   }, [db, isAdmin]);
-  const { data: hiredInterests, isLoading: isLoadingInterests } = useCollection(completedInterestsQuery);
+  const { data: hiredEnquiries, isLoading: isLoadingEnquiries } = useCollection(completedEnquiriesQuery);
 
   const matchesQuery = useMemoFirebase(() => {
     if (!db || !isAdmin || !enquiryId) return null;
@@ -127,10 +129,10 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
   }, [currentMatches]);
 
   const hiredTeacherIds = useMemo(() => {
-    return new Set(hiredInterests?.map(i => i.teacherId) || []);
-  }, [hiredInterests]);
+    return new Set(hiredEnquiries?.map(i => i.teacherId) || []);
+  }, [hiredEnquiries]);
 
-  const handleAssignTeacher = (teacher: any) => {
+  const handleAssignTeacher = async (teacher: any) => {
     const teacherFullName = `${teacher.firstName} ${teacher.lastName}`;
     const matchData = {
       studentId,
@@ -146,16 +148,8 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
     addDocumentNonBlocking(collection(db, 'matchProposals'), matchData);
     logSystemEvent(db, adminUser, 'assignment', `Assigned Teacher: ${teacherFullName} to Student: ${studentName} for ${subject}`);
 
-    createAdminNotification(
-      db, 
-      'assignment', 
-      'New Teacher Assignment', 
-      `Teacher ${teacherFullName} assigned to ${studentName} for ${subject}.`,
-      teacher.email,
-      teacherFullName
-    );
-
-    sendNotificationEmail({
+    // Generate AI notification and write to mail collection
+    const aiResult = await sendNotificationEmail({
       recipientType: 'user',
       type: 'status_update',
       userType: 'Teacher',
@@ -163,6 +157,10 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
       userEmail: teacher.email,
       details: `You have been assigned to student ${studentName} for ${subject}.`
     });
+
+    if (aiResult.success && aiResult.email) {
+      writeEmailNotification(db, aiResult.email.recipientEmail, aiResult.email.subject, aiResult.email.body, 'assignment', teacherFullName);
+    }
 
     toast({
       title: "Teacher Assigned",
@@ -194,7 +192,7 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
   }, [teachers, searchTerm, hiredTeacherIds]);
 
   if (!isAdmin) return null;
-  if (isLoadingTeachers || isLoadingMatches || isLoadingInterests) {
+  if (isLoadingTeachers || isLoadingMatches || isLoadingEnquiries) {
     return <div className="flex justify-center p-4"><Loader2 className="h-4 w-4 animate-spin text-primary" /></div>;
   }
 
@@ -270,19 +268,19 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
   const { toast } = useToast();
   const [statusChangeTarget, setStatusChangeTarget] = useState<{id: string, currentStatus: string, collection: string, subject: string, userName: string, userEmail: string} | null>(null);
   
-  const interestCollection = user.userType === 'Student' ? 'studentInterests' : 'teacherInterests';
-  const interestField = user.userType === 'Student' ? 'studentId' : 'teacherId';
+  const enquiryCollection = user.userType === 'Student' ? 'studentInterests' : 'teacherInterests';
+  const enquiryField = user.userType === 'Student' ? 'studentId' : 'teacherId';
   
-  const interestsQuery = useMemoFirebase(() => {
+  const enquiriesQuery = useMemoFirebase(() => {
     if (!db || !isAdmin || !user.id) return null;
     return query(
-      collection(db, interestCollection), 
-      where(interestField, '==', user.id),
+      collection(db, enquiryCollection), 
+      where(enquiryField, '==', user.id),
       limit(50)
     );
-  }, [db, user.id, interestCollection, interestField, isAdmin]);
+  }, [db, user.id, enquiryCollection, enquiryField, isAdmin]);
 
-  const { data: interests, isLoading: isLoadingInterests } = useCollection(interestsQuery);
+  const { data: enquiries, isLoading: isLoadingEnquiries } = useCollection(enquiriesQuery);
 
   const getNextStatus = (current: string) => {
     if (user.userType === 'Student') {
@@ -296,17 +294,18 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
     }
   };
 
-  const handleStatusToggle = () => {
+  const handleStatusToggle = async () => {
     if (!statusChangeTarget) return;
     
     const newStatus = getNextStatus(statusChangeTarget.currentStatus);
-    const interestRef = doc(db, statusChangeTarget.collection, statusChangeTarget.id);
+    const enquiryRef = doc(db, statusChangeTarget.collection, statusChangeTarget.id);
     
-    updateDocumentNonBlocking(interestRef, { status: newStatus });
+    updateDocumentNonBlocking(enquiryRef, { status: newStatus });
     
     logSystemEvent(db, adminUser, 'status_update', `Updated status to ${newStatus} for ${statusChangeTarget.userName}'s enquiry in ${statusChangeTarget.subject}`);
 
-    sendNotificationEmail({
+    // Generate AI notification and write to Firestore for trigger extension
+    const aiResult = await sendNotificationEmail({
       recipientType: 'user',
       type: 'status_update',
       userType: user.userType,
@@ -314,6 +313,10 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
       userEmail: statusChangeTarget.userEmail,
       details: `Your enquiry for "${statusChangeTarget.subject}" is now: ${newStatus}`
     });
+
+    if (aiResult.success && aiResult.email) {
+      writeEmailNotification(db, aiResult.email.recipientEmail, aiResult.email.subject, aiResult.email.body, 'status_update', statusChangeTarget.userName);
+    }
 
     setStatusChangeTarget(null);
   };
@@ -332,7 +335,7 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
   };
 
   if (!isAdmin) return null;
-  if (isLoadingInterests) {
+  if (isLoadingEnquiries) {
     return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
@@ -343,13 +346,13 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
           <ClipboardList className="h-4 w-4" />
            {user.userType === 'Student' ? 'Tuition Enquiries' : 'Professional Specializations'}
         </h4>
-        {interests && interests.length > 0 ? (
+        {enquiries && enquiries.length > 0 ? (
           <div className="space-y-4">
-            {[...interests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map((int: any) => (
+            {[...enquiries].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map((int: any) => (
               <div key={int.id} className="p-4 border rounded-xl bg-card shadow-sm space-y-3">
                 <div className="flex justify-between items-center pb-2 border-b">
                   <span className="font-bold text-primary">{int.subject || int.subjects}</span>
-                  <button onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: interestCollection, subject: int.subject || int.subjects, userName: int.studentName || int.teacherName, userEmail: int.email || user.email })} className="focus:outline-none">
+                  <button onClick={() => setStatusChangeTarget({ id: int.id, currentStatus: int.status, collection: enquiryCollection, subject: int.subject || int.subjects, userName: int.studentName || int.teacherName, userEmail: int.email || user.email })} className="focus:outline-none">
                     <Badge variant={int.status === 'Pending' ? 'outline' : 'default'} className={`text-[10px] cursor-pointer ${int.status === 'Course Complete' || int.status === 'Hired' ? 'bg-green-600 text-white' : int.status === 'Enrolled' || int.status === 'In-Progress' ? 'bg-blue-500 text-white' : ''}`}>
                       {int.status}
                     </Badge>
@@ -387,7 +390,7 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
 
       <AlertDialog open={!!statusChangeTarget} onOpenChange={(open) => !open && setStatusChangeTarget(null)}>
         <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>Update Status?</AlertDialogTitle><AlertDialogDescription>Mark this submission as <strong>{statusChangeTarget ? getNextStatus(statusChangeTarget.currentStatus) : ''}</strong>?</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogHeader><AlertDialogTitle>Update Status?</AlertDialogTitle><AlertDialogDescription>Mark this enquiry as <strong>{statusChangeTarget ? getNextStatus(statusChangeTarget.currentStatus) : ''}</strong>?</AlertDialogDescription></AlertDialogHeader>
           <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleStatusToggle}>Confirm</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -473,17 +476,17 @@ export default function AdminPortal() {
 
   const isAdmin = !!adminDoc;
 
-  const studentInterestsQuery = useMemoFirebase(() => {
+  const studentEnquiriesQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
     return query(collection(db, 'studentInterests'), limit(500));
   }, [db, isAdmin]);
-  const { data: allStudentInterests } = useCollection(studentInterestsQuery);
+  const { data: allStudentEnquiries } = useCollection(studentEnquiriesQuery);
 
-  const teacherInterestsQuery = useMemoFirebase(() => {
+  const teacherEnquiriesQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
     return query(collection(db, 'teacherInterests'), limit(500));
   }, [db, isAdmin]);
-  const { data: allTeacherInterests } = useCollection(teacherInterestsQuery);
+  const { data: allTeacherEnquiries } = useCollection(teacherEnquiriesQuery);
 
   const usersQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
@@ -518,36 +521,36 @@ export default function AdminPortal() {
     if (!users) return [];
     if (activeTab === 'students') {
       const baseStudents = users.filter(u => u.userType === 'Student');
-      if (!allStudentInterests) return baseStudents;
+      if (!allStudentEnquiries) return baseStudents;
       return baseStudents.map(s => {
-        const studentInterests = allStudentInterests.filter(i => i.studentId === s.id);
-        const hasPending = studentInterests.some(i => i.status === 'Pending');
-        const hasInProgress = studentInterests.some(i => i.status === 'Enrolled');
-        const hasCompleted = studentInterests.some(i => i.status === 'Course Complete');
-        const oldestEnquiryDate = studentInterests.reduce((min, i) => Math.min(min, i.submissionDate?.toMillis?.() || Infinity), Infinity);
-        return { ...s, studentInterests, hasPending, hasInProgress, hasCompleted, oldestEnquiryDate };
-      }).filter(s => s.studentInterests.length > 0).sort((a, b) => {
-        const score = (u: any) => u.hasPending ? 3 : u.hasInProgress ? 2 : u.hasCompleted ? 1 : 0;
+        const studentEnquiries = allStudentEnquiries.filter(i => i.studentId === s.id);
+        const hasPending = studentEnquiries.some(i => i.status === 'Pending');
+        const hasEnrolled = studentEnquiries.some(i => i.status === 'Enrolled');
+        const hasCompleted = studentEnquiries.some(i => i.status === 'Course Complete');
+        const oldestEnquiryDate = studentEnquiries.reduce((min, i) => Math.min(min, i.submissionDate?.toMillis?.() || Infinity), Infinity);
+        return { ...s, studentEnquiries, hasPending, hasEnrolled, hasCompleted, oldestEnquiryDate };
+      }).filter(s => s.studentEnquiries.length > 0).sort((a, b) => {
+        const score = (u: any) => u.hasPending ? 3 : u.hasEnrolled ? 2 : u.hasCompleted ? 1 : 0;
         return (score(b) - score(a)) || (a.oldestEnquiryDate - b.oldestEnquiryDate);
       });
     }
     if (activeTab === 'teachers') {
       const baseTeachers = users.filter(u => u.userType === 'Teacher');
-      if (!allTeacherInterests) return baseTeachers;
+      if (!allTeacherEnquiries) return baseTeachers;
       return baseTeachers.map(t => {
-        const teacherInterests = allTeacherInterests.filter(i => i.teacherId === t.id);
-        const hasPending = teacherInterests.some(i => i.status === 'Pending');
-        const hasInProgress = teacherInterests.some(i => i.status === 'In-Progress');
-        const hasCompleted = teacherInterests.some(i => i.status === 'Hired');
-        const oldestEnquiryDate = teacherInterests.reduce((min, i) => Math.min(min, i.submissionDate?.toMillis?.() || Infinity), Infinity);
-        return { ...t, teacherInterests, hasPending, hasInProgress, hasCompleted, oldestEnquiryDate };
-      }).filter(t => t.teacherInterests.length > 0).sort((a, b) => {
-        const score = (u: any) => u.hasPending ? 3 : u.hasInProgress ? 2 : u.hasCompleted ? 1 : 0;
+        const teacherEnquiries = allTeacherEnquiries.filter(i => i.teacherId === t.id);
+        const hasPending = teacherEnquiries.some(i => i.status === 'Pending');
+        const hasInProgress = teacherEnquiries.some(i => i.status === 'In-Progress');
+        const hasHired = teacherEnquiries.some(i => i.status === 'Hired');
+        const oldestEnquiryDate = teacherEnquiries.reduce((min, i) => Math.min(min, i.submissionDate?.toMillis?.() || Infinity), Infinity);
+        return { ...t, teacherEnquiries, hasPending, hasInProgress, hasHired, oldestEnquiryDate };
+      }).filter(t => t.teacherEnquiries.length > 0).sort((a, b) => {
+        const score = (u: any) => u.hasPending ? 3 : u.hasInProgress ? 2 : u.hasHired ? 1 : 0;
         return (score(b) - score(a)) || (a.oldestEnquiryDate - b.oldestEnquiryDate);
       });
     }
     return [];
-  }, [users, allStudentInterests, allTeacherInterests, activeTab]);
+  }, [users, allStudentEnquiries, allTeacherEnquiries, activeTab]);
 
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
@@ -630,7 +633,16 @@ export default function AdminPortal() {
               <CardContent className="space-y-4">
                 {isLoadingNotifications ? <Loader2 className="animate-spin mx-auto text-primary" /> : (notifications.length > 0 ? notifications.map(n => (
                   <div key={n.id} className="flex items-start justify-between p-4 border rounded-xl bg-card shadow-sm">
-                    <div className="flex gap-3"><div className="bg-primary/10 p-2 rounded-lg h-fit">{n.type === 'registration' ? <UserCheck className="h-5 w-5 text-primary" /> : <ClipboardList className="h-5 w-5 text-accent" />}</div><div><h4 className="font-bold text-sm">{n.subject}</h4><p className="text-xs text-muted-foreground mt-1">{n.body}</p><p className="text-[10px] text-muted-foreground mt-2">{n.timestamp?.toDate?.()?.toLocaleString()}</p></div></div>
+                    <div className="flex gap-3">
+                      <div className="bg-primary/10 p-2 rounded-lg h-fit">
+                        {n.type === 'registration' ? <UserCheck className="h-5 w-5 text-primary" /> : <ClipboardList className="h-5 w-5 text-accent" />}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-sm">{(n.message?.subject) || n.subject}</h4>
+                        <p className="text-xs text-muted-foreground mt-1">{(n.message?.text) || n.body}</p>
+                        <p className="text-[10px] text-muted-foreground mt-2">{n.timestamp?.toDate?.()?.toLocaleString()}</p>
+                      </div>
+                    </div>
                     <Button variant="ghost" size="icon" onClick={() => setNotificationToDelete(n.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
                 )) : <p className="text-center py-8 text-muted-foreground italic">No notifications.</p>)}
@@ -642,7 +654,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader><div className="flex items-center justify-between"><div><CardTitle>{activeTab === 'students' ? 'Student Enquiries' : 'Teacher Profiles'}</CardTitle></div><Badge variant="secondary">{filteredUsers.length} Found</Badge></div></CardHeader>
               <CardContent>
-                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Details</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'ENROLLED' : 'IN-PROGRESS'}</Badge> : u.hasCompleted ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'COURSE COMPLETE' : 'HIRED'}</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View {activeTab === 'students' ? 'Enquiries' : 'Profile'}</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No results found.</TableCell></TableRow>}</TableBody></Table></div>
+                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Details</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasEnrolled ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'ENROLLED' : 'IN-PROGRESS'}</Badge> : u.hasCompleted ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'COURSE COMPLETE' : 'HIRED'}</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View {activeTab === 'students' ? 'Enquiries' : 'Profile'}</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No results found.</TableCell></TableRow>}</TableBody></Table></div>
                 {totalPages > 1 && <div className="flex justify-center gap-2 mt-4"><Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button><span className="text-xs self-center font-medium">Page {currentPage} of {totalPages}</span><Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button></div>}
               </CardContent>
             </Card>

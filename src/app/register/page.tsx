@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, Suspense } from 'react';
@@ -47,11 +48,31 @@ function RegisterForm() {
     setIsLoading(true);
 
     try {
+      // 1. Generate AI Content for notifications first
+      const adminEmailContent = await sendNotificationEmail({
+        recipientType: 'admin',
+        type: 'registration',
+        userType: role,
+        userName: `${formData.firstName} ${formData.lastName}`,
+        userEmail: formData.email
+      });
+
+      const userEmailContent = await sendNotificationEmail({
+        recipientType: 'user',
+        type: 'registration',
+        userType: role,
+        userName: `${formData.firstName} ${formData.lastName}`,
+        userEmail: formData.email,
+        details: `Welcome to RP Coach-Up! Your account as a ${role} has been created.`
+      });
+
+      // 2. Create Firebase Auth user
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
       const batch = writeBatch(db);
 
+      // 3. User Profile
       const userProfileRef = doc(db, 'users', user.uid);
       batch.set(userProfileRef, {
         id: user.uid,
@@ -63,6 +84,7 @@ function RegisterForm() {
         updatedAt: serverTimestamp(),
       });
 
+      // 4. Role-specific profile
       if (role === 'Student') {
         const studentProfileRef = doc(db, 'users', user.uid, 'studentProfile', 'studentProfile');
         batch.set(studentProfileRef, {
@@ -80,36 +102,40 @@ function RegisterForm() {
         });
       }
 
-      const notificationRef = doc(collection(db, 'notifications'));
-      batch.set(notificationRef, {
-        type: 'registration',
-        subject: `New ${role} Registration: ${formData.firstName} ${formData.lastName}`,
-        body: `A new ${role} has joined the platform.\nName: ${formData.firstName} ${formData.lastName}\nEmail: ${formData.email}`,
-        userEmail: formData.email,
-        userName: `${formData.firstName} ${formData.lastName}`,
-        timestamp: serverTimestamp(),
-        read: false
-      });
+      // 5. Add notifications to batch (Schema compatible with Trigger Email extension)
+      if (adminEmailContent.success && adminEmailContent.email) {
+        const adminNotifRef = doc(collection(db, 'notifications'));
+        batch.set(adminNotifRef, {
+          to: adminEmailContent.email.recipientEmail,
+          message: {
+            subject: adminEmailContent.email.subject,
+            text: adminEmailContent.email.body
+          },
+          type: 'registration',
+          userName: `${formData.firstName} ${formData.lastName}`,
+          userEmail: formData.email,
+          timestamp: serverTimestamp(),
+          read: false
+        });
+      }
+
+      if (userEmailContent.success && userEmailContent.email) {
+        const userNotifRef = doc(collection(db, 'notifications'));
+        batch.set(userNotifRef, {
+          to: userEmailContent.email.recipientEmail,
+          message: {
+            subject: userEmailContent.email.subject,
+            text: userEmailContent.email.body
+          },
+          type: 'registration',
+          userName: `${formData.firstName} ${formData.lastName}`,
+          userEmail: formData.email,
+          timestamp: serverTimestamp(),
+          read: false
+        });
+      }
 
       await batch.commit();
-
-      // Trigger simulated emails for BOTH admin and the user
-      sendNotificationEmail({
-        recipientType: 'admin',
-        type: 'registration',
-        userType: role,
-        userName: `${formData.firstName} ${formData.lastName}`,
-        userEmail: formData.email
-      });
-
-      sendNotificationEmail({
-        recipientType: 'user',
-        type: 'registration',
-        userType: role,
-        userName: `${formData.firstName} ${formData.lastName}`,
-        userEmail: formData.email,
-        details: `Welcome to RP Coach-Up! Your account as a ${role} has been created.`
-      });
 
       toast({
         title: "Registration Successful",
@@ -227,7 +253,7 @@ function RegisterForm() {
         </form>
       </Card>
       
-      <footer className="bg-secondary/30 border-t py-12 mt-12 w-full max-w-4xl rounded-2xl">
+      <footer className="mt-12 w-full max-w-4xl">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
             <div className="bg-primary p-1 rounded-lg"><BookOpen className="text-primary-foreground h-5 w-5" /></div>

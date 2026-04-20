@@ -14,9 +14,8 @@ export async function sendNotificationEmail(data: NotificationEmailInput) {
 
     // Simulation of sending an email (Enhanced Console Logging for debugging)
     console.log('=========================================');
-    console.log(`📤 [SIMULATED EMAIL] To: ${recipient}`);
+    console.log(`📤 [AI CONTENT GENERATED] For: ${recipient}`);
     console.log(`📌 Subject: ${email.subject}`);
-    console.log(`📝 Body: ${email.body}`);
     console.log('=========================================');
 
     return { 

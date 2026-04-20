@@ -68,7 +68,7 @@ export default function TeacherDashboard() {
   }, [db, user?.uid]);
   const { data: profile, isLoading: isProfileLoading } = useDoc(userDocRef);
 
-  const teacherInterestsQuery = useMemoFirebase(() => {
+  const teacherEnquiriesQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
     return query(
       collection(db, 'teacherInterests'),
@@ -76,7 +76,7 @@ export default function TeacherDashboard() {
       limit(100)
     );
   }, [db, user?.uid]);
-  const { data: rawInterests, isLoading: isLoadingInterests } = useCollection(teacherInterestsQuery);
+  const { data: rawEnquiries, isLoading: isLoadingEnquiries } = useCollection(teacherEnquiriesQuery);
 
   const matchesQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
@@ -154,7 +154,7 @@ export default function TeacherDashboard() {
     router.push('/');
   };
 
-  const handleSubmitInterest = async (e: React.FormEvent) => {
+  const handleSubmitProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     const digitsOnly = phoneValue.replace(/\D/g, '');
     const userNumber = digitsOnly.startsWith('91') ? digitsOnly.slice(2) : digitsOnly;
@@ -186,15 +186,29 @@ export default function TeacherDashboard() {
         status: 'Pending'
       });
       
-      addDocumentNonBlocking(collection(db, 'notifications'), {
+      const aiResult = await sendNotificationEmail({
+        recipientType: 'admin',
         type: 'interest',
-        subject: `New Teacher Application: ${teacherName}`,
-        body: `${teacherName} submitted a specialty profile for ${subjects}. Experience: ${experienceYears} years.`,
-        userEmail: email,
+        userType: 'Teacher',
         userName: teacherName,
-        timestamp: serverTimestamp(),
-        read: false
+        userEmail: email,
+        details: `${teacherName} submitted a specialty profile for ${subjects}. Experience: ${experienceYears} years.`
       });
+
+      if (aiResult.success && aiResult.email) {
+        addDocumentNonBlocking(collection(db, 'notifications'), {
+          to: aiResult.email.recipientEmail,
+          message: {
+            subject: aiResult.email.subject,
+            text: aiResult.email.body
+          },
+          type: 'interest',
+          userName: teacherName,
+          userEmail: email,
+          timestamp: serverTimestamp(),
+          read: false
+        });
+      }
 
       setShowSuccessDialog(true);
       setQualifications(''); 
@@ -218,6 +232,30 @@ export default function TeacherDashboard() {
     }
     setIsSubmitting(true);
     try {
+      const aiResult = await sendNotificationEmail({
+        recipientType: 'admin',
+        type: 'status_update',
+        userType: 'Teacher',
+        userName: `${profile?.firstName} ${profile?.lastName}`,
+        userEmail: profile?.email || '',
+        details: `Teacher provided a ${feedbackRating}-star review. Comment: ${feedbackComment}`
+      });
+
+      if (aiResult.success && aiResult.email) {
+        addDocumentNonBlocking(collection(db, 'notifications'), {
+          to: aiResult.email.recipientEmail,
+          message: {
+            subject: aiResult.email.subject,
+            text: aiResult.email.body
+          },
+          type: 'feedback',
+          userName: `${profile?.firstName} ${profile?.lastName}`,
+          userEmail: profile?.email || 'N/A',
+          timestamp: serverTimestamp(),
+          read: false
+        });
+      }
+
       await addDoc(collection(db, 'feedback'), {
         userId: user?.uid,
         userName: `${profile?.firstName} ${profile?.lastName}`,
@@ -225,25 +263,6 @@ export default function TeacherDashboard() {
         rating: Number(feedbackRating),
         comment: feedbackComment,
         createdAt: serverTimestamp()
-      });
-
-      addDocumentNonBlocking(collection(db, 'notifications'), {
-        type: 'feedback',
-        subject: `New Teacher Feedback: ${feedbackRating} Stars`,
-        body: `Teacher ${profile?.firstName} ${profile?.lastName} shared feedback: "${feedbackComment}"`,
-        userEmail: profile?.email || 'N/A',
-        userName: `${profile?.firstName} ${profile?.lastName}`,
-        timestamp: serverTimestamp(),
-        read: false
-      });
-
-      sendNotificationEmail({
-        recipientType: 'admin',
-        type: 'status_update',
-        userType: 'Teacher',
-        userName: `${profile?.firstName} ${profile?.lastName}`,
-        userEmail: profile?.email || '',
-        details: `Teacher provided a ${feedbackRating}-star review. Comment: ${feedbackComment}`
       });
 
       toast({ title: "Feedback Received", description: "Thank you for your valuable feedback!" });
@@ -352,7 +371,7 @@ export default function TeacherDashboard() {
                       <CardTitle>Professional Records</CardTitle>
                       <CardDescription>Detailed records of your submitted specialty profiles and application status.</CardDescription>
                     </div>
-                    {rawInterests && rawInterests.length > 0 && (
+                    {rawEnquiries && rawEnquiries.length > 0 && (
                       <Button onClick={() => setActiveTab('profile')} className="gap-2">
                         <PlusCircle className="h-4 w-4" /> New/Updated Profile
                       </Button>
@@ -360,10 +379,10 @@ export default function TeacherDashboard() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {isLoadingInterests ? (
+                  {isLoadingEnquiries ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
-                  ) : (rawInterests && rawInterests.length > 0 ? (
-                    [...rawInterests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
+                  ) : (rawEnquiries && rawEnquiries.length > 0 ? (
+                    [...rawEnquiries].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
                       // Show students assigned to THIS teacher globally across any specialization
                       const assignedStudents = matches?.map(m => m.studentName) || [];
                       
@@ -466,7 +485,7 @@ export default function TeacherDashboard() {
                   <CardTitle>Submit Profile</CardTitle>
                   <CardDescription>Update your teaching subjects, qualifications, and professional background.</CardDescription>
                 </CardHeader>
-                <form onSubmit={handleSubmitInterest}>
+                <form onSubmit={handleSubmitProfile}>
                   <CardContent className="space-y-8 pt-8">
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider">
@@ -643,7 +662,7 @@ export default function TeacherDashboard() {
             </div>
             <AlertDialogTitle className="text-center text-2xl text-primary">Profile Received!</AlertDialogTitle>
             <AlertDialogDescription className="text-center text-base">
-              Thank you for submitting your interest. Our support team will review your application and contact you within 7 working days for the next process.
+              Thank you for submitting your profile. Our support team will review your application and contact you within 7 working days for the next process.
               <br /><br />
               You can monitor the status of your application at the Professional Records page.
             </AlertDialogDescription>
