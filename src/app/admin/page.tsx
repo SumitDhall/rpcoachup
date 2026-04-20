@@ -196,8 +196,8 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
     if (!teachers) return [];
     return teachers.filter(t => 
       hiredTeacherIds.has(t.id) && (
-        `${t.firstName} ${t.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.email.toLowerCase().includes(searchTerm.toLowerCase())
+        `${t.firstName || ''} ${t.lastName || ''}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (t.email || '').toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
   }, [teachers, searchTerm, hiredTeacherIds]);
@@ -236,7 +236,7 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
               <div key={teacher.id} className="flex items-center justify-between p-1.5 rounded-md border bg-secondary/5">
                 <div className="flex items-center gap-2">
                   <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold ${isAssigned ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                    {teacher.firstName[0]}{teacher.lastName[0]}
+                    {(teacher.firstName || '?')[0]}{(teacher.lastName || '?')[0]}
                   </div>
                   <div>
                     <p className="text-[10px] font-medium leading-none">{teacher.firstName} {teacher.lastName}</p>
@@ -532,44 +532,26 @@ export default function AdminPortal() {
     if (activeTab === 'students') {
       const baseStudents = users.filter(u => u.userType === 'Student');
       if (!allStudentEnquiries) return baseStudents;
+      
       return baseStudents.map(s => {
         const studentEnquiries = allStudentEnquiries.filter(i => i.studentId === s.id);
         const hasPending = studentEnquiries.some(i => i.status === 'Pending');
         const hasEnrolled = studentEnquiries.some(i => i.status === 'Enrolled');
         const hasCompleted = studentEnquiries.some(i => i.status === 'Course Complete');
-        const oldestEnquiryDate = studentEnquiries.reduce((min, i) => {
-          const time = i.submissionDate?.toMillis?.() || Infinity;
-          return Math.min(min, time);
-        }, Infinity);
-        return { ...s, studentEnquiries, hasPending, hasEnrolled, hasCompleted, oldestEnquiryDate };
-      }).filter(s => s.studentEnquiries.length > 0).sort((a, b) => {
-        const score = (u: any) => u.hasPending ? 3 : u.hasEnrolled ? 2 : u.hasCompleted ? 1 : 0;
-        const scoreDiff = score(b) - score(a);
-        if (scoreDiff !== 0) return scoreDiff;
-        if (a.oldestEnquiryDate === b.oldestEnquiryDate) return 0;
-        return a.oldestEnquiryDate - b.oldestEnquiryDate;
-      });
+        return { ...s, studentEnquiries, hasPending, hasEnrolled, hasCompleted };
+      }).filter(s => s.studentEnquiries && s.studentEnquiries.length > 0);
     }
     if (activeTab === 'teachers') {
       const baseTeachers = users.filter(u => u.userType === 'Teacher');
       if (!allTeacherEnquiries) return baseTeachers;
+
       return baseTeachers.map(t => {
         const teacherEnquiries = allTeacherEnquiries.filter(i => i.teacherId === t.id);
         const hasPending = teacherEnquiries.some(i => i.status === 'Pending');
         const hasInProgress = teacherEnquiries.some(i => i.status === 'In-Progress');
         const hasHired = teacherEnquiries.some(i => i.status === 'Hired');
-        const oldestEnquiryDate = teacherEnquiries.reduce((min, i) => {
-          const time = i.submissionDate?.toMillis?.() || Infinity;
-          return Math.min(min, time);
-        }, Infinity);
-        return { ...t, teacherEnquiries, hasPending, hasInProgress, hasHired, oldestEnquiryDate };
-      }).filter(t => t.teacherEnquiries.length > 0).sort((a, b) => {
-        const score = (u: any) => u.hasPending ? 3 : u.hasInProgress ? 2 : u.hasHired ? 1 : 0;
-        const scoreDiff = score(b) - score(a);
-        if (scoreDiff !== 0) return scoreDiff;
-        if (a.oldestEnquiryDate === b.oldestEnquiryDate) return 0;
-        return a.oldestEnquiryDate - b.oldestEnquiryDate;
-      });
+        return { ...t, teacherEnquiries, hasPending, hasInProgress, hasHired };
+      }).filter(t => t.teacherEnquiries && t.teacherEnquiries.length > 0);
     }
     return [];
   }, [users, allStudentEnquiries, allTeacherEnquiries, activeTab]);
@@ -662,7 +644,7 @@ export default function AdminPortal() {
                       <div>
                         <h4 className="font-bold text-sm">{(n.message?.subject) || n.subject}</h4>
                         <p className="text-xs text-muted-foreground mt-1">{(n.message?.text) || n.body}</p>
-                        <p className="text-[10px] text-muted-foreground mt-2">{n.timestamp?.toDate?.()?.toLocaleString()}</p>
+                        <p className="text-[10px] text-muted-foreground mt-2">{n.timestamp?.toDate?.()?.toLocaleString() || 'Synced'}</p>
                       </div>
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => setNotificationToDelete(n.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
@@ -736,7 +718,7 @@ export default function AdminPortal() {
 
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle className="flex items-center gap-3"><div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{selectedUser?.firstName ? selectedUser.firstName[0] : ''}{selectedUser?.lastName ? selectedUser.lastName[0] : ''}</div><div><p>{selectedUser?.firstName} {selectedUser?.lastName}</p><p className="text-xs font-normal text-muted-foreground">{selectedUser?.email}</p></div></DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="flex items-center gap-3"><div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{(selectedUser?.firstName || '?')[0]}{(selectedUser?.lastName || '?')[0]}</div><div><p>{selectedUser?.firstName} {selectedUser?.lastName}</p><p className="text-xs font-normal text-muted-foreground">{selectedUser?.email}</p></div></DialogTitle></DialogHeader>
           {selectedUser && <UserDetailsContent user={selectedUser} isAdmin={isAdmin} />}
         </DialogContent>
       </Dialog>

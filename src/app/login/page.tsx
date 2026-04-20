@@ -59,6 +59,7 @@ export default function LoginPage() {
         setHasAttemptedRedirect(false);
       }
     } catch (e) {
+      console.error("Redirect check failed", e);
       setIsRedirecting(false);
       setHasAttemptedRedirect(false);
     }
@@ -133,7 +134,7 @@ export default function LoginPage() {
         Back to Home
       </Link>
       
-      <Card className="w-full max-w-md shadow-2xl border-border">
+      <Card className="w-full max-md shadow-2xl border-border">
         <CardHeader className="space-y-2 text-center">
           <div className="flex justify-center mb-4">
             <div className="bg-primary p-3 rounded-2xl">
