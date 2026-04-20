@@ -64,7 +64,6 @@ import {
   User,
   Mail,
   Menu,
-  MapPin,
   PlusCircle,
   Briefcase
 } from 'lucide-react';
@@ -76,17 +75,18 @@ import { Input } from '@/components/ui/input';
 import { sendNotificationEmail } from '@/app/actions/notifications';
 
 function logSystemEvent(db: any, admin: any, type: string, description: string) {
-  if (!admin) return;
+  if (!admin || !db) return;
   addDocumentNonBlocking(collection(db, 'systemLogs'), {
     type,
     description,
     adminId: admin.uid,
-    adminEmail: admin.email,
+    adminEmail: admin.email || 'Admin',
     timestamp: serverTimestamp(),
   });
 }
 
 function writeEmailNotification(db: any, recipientEmail: string, subject: string, body: string, type: string, userName?: string) {
+  if (!db) return;
   addDocumentNonBlocking(collection(db, 'notifications'), {
     to: recipientEmail,
     from: "RP Coach-Up <support@rpcoachup.com>",
@@ -537,11 +537,17 @@ export default function AdminPortal() {
         const hasPending = studentEnquiries.some(i => i.status === 'Pending');
         const hasEnrolled = studentEnquiries.some(i => i.status === 'Enrolled');
         const hasCompleted = studentEnquiries.some(i => i.status === 'Course Complete');
-        const oldestEnquiryDate = studentEnquiries.reduce((min, i) => Math.min(min, i.submissionDate?.toMillis?.() || Infinity), Infinity);
+        const oldestEnquiryDate = studentEnquiries.reduce((min, i) => {
+          const time = i.submissionDate?.toMillis?.() || Infinity;
+          return Math.min(min, time);
+        }, Infinity);
         return { ...s, studentEnquiries, hasPending, hasEnrolled, hasCompleted, oldestEnquiryDate };
       }).filter(s => s.studentEnquiries.length > 0).sort((a, b) => {
         const score = (u: any) => u.hasPending ? 3 : u.hasEnrolled ? 2 : u.hasCompleted ? 1 : 0;
-        return (score(b) - score(a)) || (a.oldestEnquiryDate - b.oldestEnquiryDate);
+        const scoreDiff = score(b) - score(a);
+        if (scoreDiff !== 0) return scoreDiff;
+        if (a.oldestEnquiryDate === b.oldestEnquiryDate) return 0;
+        return a.oldestEnquiryDate - b.oldestEnquiryDate;
       });
     }
     if (activeTab === 'teachers') {
@@ -552,11 +558,17 @@ export default function AdminPortal() {
         const hasPending = teacherEnquiries.some(i => i.status === 'Pending');
         const hasInProgress = teacherEnquiries.some(i => i.status === 'In-Progress');
         const hasHired = teacherEnquiries.some(i => i.status === 'Hired');
-        const oldestEnquiryDate = teacherEnquiries.reduce((min, i) => Math.min(min, i.submissionDate?.toMillis?.() || Infinity), Infinity);
+        const oldestEnquiryDate = teacherEnquiries.reduce((min, i) => {
+          const time = i.submissionDate?.toMillis?.() || Infinity;
+          return Math.min(min, time);
+        }, Infinity);
         return { ...t, teacherEnquiries, hasPending, hasInProgress, hasHired, oldestEnquiryDate };
       }).filter(t => t.teacherEnquiries.length > 0).sort((a, b) => {
         const score = (u: any) => u.hasPending ? 3 : u.hasInProgress ? 2 : u.hasHired ? 1 : 0;
-        return (score(b) - score(a)) || (a.oldestEnquiryDate - b.oldestEnquiryDate);
+        const scoreDiff = score(b) - score(a);
+        if (scoreDiff !== 0) return scoreDiff;
+        if (a.oldestEnquiryDate === b.oldestEnquiryDate) return 0;
+        return a.oldestEnquiryDate - b.oldestEnquiryDate;
       });
     }
     return [];
@@ -664,7 +676,7 @@ export default function AdminPortal() {
             <Card>
               <CardHeader><div className="flex items-center justify-between"><div><CardTitle>{activeTab === 'students' ? 'Student Enquiries' : 'Teacher Profiles'}</CardTitle></div><Badge variant="secondary">{filteredUsers.length} Found</Badge></div></CardHeader>
               <CardContent>
-                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Details</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasEnrolled ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'ENROLLED' : 'IN-PROGRESS'}</Badge> : u.hasCompleted ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'COURSE COMPLETE' : 'HIRED'}</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View {activeTab === 'students' ? 'Enquiries' : 'Profile'}</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No results found.</TableCell></TableRow>}</TableBody></Table></div>
+                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Details</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasEnrolled || u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'ENROLLED' : 'IN-PROGRESS'}</Badge> : u.hasCompleted || u.hasHired ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'COURSE COMPLETE' : 'HIRED'}</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View {activeTab === 'students' ? 'Enquiries' : 'Profile'}</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No results found.</TableCell></TableRow>}</TableBody></Table></div>
                 {totalPages > 1 && <div className="flex justify-center gap-2 mt-4"><Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button><span className="text-xs self-center font-medium">Page {currentPage} of {totalPages}</span><Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button></div>}
               </CardContent>
             </Card>
@@ -724,7 +736,7 @@ export default function AdminPortal() {
 
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle className="flex items-center gap-3"><div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{selectedUser?.firstName[0]}{selectedUser?.lastName[0]}</div><div><p>{selectedUser?.firstName} {selectedUser?.lastName}</p><p className="text-xs font-normal text-muted-foreground">{selectedUser?.email}</p></div></DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="flex items-center gap-3"><div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{selectedUser?.firstName ? selectedUser.firstName[0] : ''}{selectedUser?.lastName ? selectedUser.lastName[0] : ''}</div><div><p>{selectedUser?.firstName} {selectedUser?.lastName}</p><p className="text-xs font-normal text-muted-foreground">{selectedUser?.email}</p></div></DialogTitle></DialogHeader>
           {selectedUser && <UserDetailsContent user={selectedUser} isAdmin={isAdmin} />}
         </DialogContent>
       </Dialog>

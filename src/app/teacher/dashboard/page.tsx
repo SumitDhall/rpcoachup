@@ -231,6 +231,7 @@ export default function TeacherDashboard() {
       setPhoneValue('');
       setExpectedSalary('');
     } catch (error) {
+      // Error handled by global listener
     } finally {
       setIsSubmitting(false);
     }
@@ -293,6 +294,7 @@ export default function TeacherDashboard() {
       setFeedbackComment('');
       setFeedbackRating('5');
     } catch (error) {
+      // Error handled by global listener
     } finally {
       setIsSubmitting(false);
     }
@@ -407,7 +409,8 @@ export default function TeacherDashboard() {
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
                   ) : (rawEnquiries && rawEnquiries.length > 0 ? (
                     [...rawEnquiries].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
-                      const assignedStudents = matches?.map(m => m.studentName) || [];
+                      const assignedStudents = matches?.filter(m => m.enquiryId === i.id || m.teacherId === i.teacherId).map(m => m.studentName) || [];
+                      const uniqueStudents = Array.from(new Set(assignedStudents));
                       
                       return (
                         <div key={i.id} className="p-5 border rounded-xl space-y-4 bg-card shadow-sm border-l-4 border-l-primary">
@@ -424,13 +427,13 @@ export default function TeacherDashboard() {
                             </p>
                           </div>
 
-                          {(i.status === 'In-Progress' || i.status === 'Hired') && assignedStudents.length > 0 && (
+                          {(i.status === 'In-Progress' || i.status === 'Hired') && uniqueStudents.length > 0 && (
                             <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-start gap-3">
                               <div className="bg-primary/10 p-2 rounded-full mt-1"><Users className="h-4 w-4 text-primary" /></div>
                               <div>
                                 <p className="text-[10px] uppercase font-bold text-primary tracking-wider mb-1">Assigned Students</p>
                                 <ol className="list-decimal list-inside space-y-0.5">
-                                  {assignedStudents.map((name, idx) => (
+                                  {uniqueStudents.map((name, idx) => (
                                     <li key={idx} className="text-sm font-semibold">{name}</li>
                                   ))}
                                 </ol>

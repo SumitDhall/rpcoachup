@@ -235,6 +235,7 @@ export default function StudentDashboard() {
       setShowSuccessDialog(true);
       setSubject(''); setSchool(''); setGradeLevel(''); setAddress(''); setNotes(''); setPhoneValue(''); setAffordableRange(''); setIntendedStartDate('');
     } catch (error) {
+      // Error is handled by global listener
     } finally {
       setIsSubmitting(false);
     }
@@ -298,6 +299,7 @@ export default function StudentDashboard() {
       setFeedbackComment('');
       setFeedbackRating('5');
     } catch (error) {
+      // Error handled by global listener
     } finally {
       setIsSubmitting(false);
     }
