@@ -176,7 +176,6 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
 
     if (aiResult.success && aiResult.email) {
       writeEmailNotification(db, aiResult.email.recipientEmail, aiResult.email.subject, aiResult.email.body, 'assignment', teacherFullName);
-      // Admin copy
       writeEmailNotification(db, 'admin@rpcoachup.com', `Assignment Complete: ${teacherFullName}`, `Teacher ${teacherFullName} has been assigned to ${studentName} for ${subject}.`, 'assignment', teacherFullName);
     }
 
@@ -334,7 +333,6 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
 
     if (aiResult.success && aiResult.email) {
       writeEmailNotification(db, aiResult.email.recipientEmail, aiResult.email.subject, aiResult.email.body, 'status_update', statusChangeTarget.userName);
-      // Admin copy
       writeEmailNotification(db, 'admin@rpcoachup.com', `Status Updated: ${statusChangeTarget.userName}`, `Status changed to ${newStatus} for ${statusChangeTarget.userName} (${statusChangeTarget.subject}).`, 'status_update', statusChangeTarget.userName);
     }
 
@@ -361,7 +359,7 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
 
   return (
     <div className="space-y-8">
-      <div className="space-y-4 pt-4 border-t">
+      <div className="space-y-4">
         <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
            {user.userType === 'Student' ? 'Tuition Enquiries' : 'Professional Specializations'}
@@ -797,8 +795,8 @@ export default function AdminPortal() {
       </main>
 
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] p-0 flex flex-col overflow-hidden">
-          <div className="p-6 pb-0 border-b bg-card">
+        <DialogContent className="sm:max-w-[600px] h-[85vh] p-0 flex flex-col overflow-hidden">
+          <div className="flex-none p-6 border-b bg-card">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{(selectedUser?.firstName || '?')[0]}{(selectedUser?.lastName || '?')[0]}</div>
@@ -809,11 +807,9 @@ export default function AdminPortal() {
               </DialogTitle>
             </DialogHeader>
           </div>
-          <ScrollArea className="flex-1">
-            <div className="p-6 pt-0">
-              <div className="pt-6">
-                {selectedUser && <UserDetailsContent user={selectedUser} isAdmin={isAdmin} />}
-              </div>
+          <ScrollArea className="flex-1 w-full">
+            <div className="p-6">
+              {selectedUser && <UserDetailsContent user={selectedUser} isAdmin={isAdmin} />}
             </div>
           </ScrollArea>
         </DialogContent>
