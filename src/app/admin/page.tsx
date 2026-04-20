@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,7 @@ import {
   SheetTitle,
   SheetClose
 } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   BookOpen, 
   Loader2,
@@ -65,7 +66,11 @@ import {
   Mail,
   Menu,
   PlusCircle,
-  Briefcase
+  Briefcase,
+  Star,
+  Zap,
+  RefreshCcw,
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
@@ -101,7 +106,7 @@ function writeEmailNotification(db: any, recipientEmail: string, subject: string
           ${body.replace(/\n/g, '<br>')}
         </div>
         <div style="padding: 20px; background-color: #f9f9f9; text-align: center; font-size: 12px; color: #777;">
-          © 2026 RP Coach-Up | Empowering Learning
+          © 2026 RP Coach-Up | Platform Event
         </div>
       </div>`
     },
@@ -171,6 +176,7 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
 
     if (aiResult.success && aiResult.email) {
       writeEmailNotification(db, aiResult.email.recipientEmail, aiResult.email.subject, aiResult.email.body, 'assignment', teacherFullName);
+      writeEmailNotification(db, 'admin@rpcoachup.com', `Assignment Complete: ${teacherFullName}`, `Teacher ${teacherFullName} has been assigned to ${studentName} for ${subject}.`, 'assignment', teacherFullName);
     }
 
     toast({
@@ -184,6 +190,7 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
     if (matchToDelete) {
       deleteDocumentNonBlocking(doc(db, 'matchProposals', matchToDelete.id));
       logSystemEvent(db, adminUser, 'unassignment', `Removed Teacher: ${matchToDelete.teacherName} from ${studentName} for ${subject}`);
+      writeEmailNotification(db, 'admin@rpcoachup.com', `Assignment Removed`, `Teacher ${matchToDelete.teacherName} was unassigned from ${studentName} for ${subject}.`, 'unassignment');
 
       toast({
         title: "Teacher Unassigned",
@@ -326,6 +333,7 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
 
     if (aiResult.success && aiResult.email) {
       writeEmailNotification(db, aiResult.email.recipientEmail, aiResult.email.subject, aiResult.email.body, 'status_update', statusChangeTarget.userName);
+      writeEmailNotification(db, 'admin@rpcoachup.com', `Status Updated: ${statusChangeTarget.userName}`, `Status changed to ${newStatus} for ${statusChangeTarget.userName} (${statusChangeTarget.subject}).`, 'status_update', statusChangeTarget.userName);
     }
 
     setStatusChangeTarget(null);
@@ -351,14 +359,14 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
 
   return (
     <div className="space-y-8">
-      <div className="space-y-4 pt-4 border-t">
+      <div className="space-y-4">
         <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <ClipboardList className="h-4 w-4" />
            {user.userType === 'Student' ? 'Tuition Enquiries' : 'Professional Specializations'}
         </h4>
-        {interests && interests.length > 0 ? (
-          <div className="space-y-4">
-            {[...interests].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map((int: any) => (
+        <div className="space-y-4">
+          {interests && interests.length > 0 ? (
+            interests.map((int: any) => (
               <div key={int.id} className="p-4 border rounded-xl bg-card shadow-sm space-y-3">
                 <div className="flex justify-between items-center pb-2 border-b">
                   <span className="font-bold text-primary">{int.subject || int.subjects}</span>
@@ -393,9 +401,9 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
                   />
                 )}
               </div>
-            ))}
-          </div>
-        ) : <p className="text-xs text-muted-foreground italic text-center py-4">No submissions found.</p>}
+            ))
+          ) : <p className="text-xs text-muted-foreground italic text-center py-4">No submissions found.</p>}
+        </div>
       </div>
 
       <AlertDialog open={!!statusChangeTarget} onOpenChange={(open) => !open && setStatusChangeTarget(null)}>
@@ -465,16 +473,56 @@ function SystemSettingsLogs({ isAdmin }: { isAdmin: boolean }) {
   );
 }
 
+function UserFeedbackList({ isAdmin }: { isAdmin: boolean }) {
+  const db = useFirestore();
+  const feedbackQuery = useMemoFirebase(() => {
+    if (!db || !isAdmin) return null;
+    return query(collection(db, 'feedback'), orderBy('createdAt', 'desc'), limit(100));
+  }, [db, isAdmin]);
+  const { data: feedback, isLoading } = useCollection(feedbackQuery);
+
+  if (!isAdmin) return null;
+  if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+
+  return (
+    <Card>
+      <CardHeader><div className="flex items-center gap-2"><Star className="h-5 w-5 text-accent" /><div><CardTitle>User Feedback</CardTitle><CardDescription>Direct testimonials and suggestions from users.</CardDescription></div></div></CardHeader>
+      <CardContent>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {feedback && feedback.length > 0 ? feedback.map((fb) => (
+            <Card key={fb.id} className="border-none shadow-sm bg-secondary/5">
+              <CardContent className="pt-6">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`h-3 w-3 ${i < fb.rating ? 'fill-accent text-accent' : 'text-muted'}`} />
+                    ))}
+                  </div>
+                  <Badge variant="outline" className="text-[8px]">{fb.userType}</Badge>
+                </div>
+                <p className="text-xs italic text-muted-foreground mb-4">"{fb.comment}"</p>
+                <div className="flex justify-between items-center border-t pt-2 mt-auto">
+                  <span className="text-[10px] font-bold">{fb.userName}</span>
+                  <span className="text-[8px] text-muted-foreground">{fb.createdAt?.toDate?.()?.toLocaleDateString()}</span>
+                </div>
+              </CardContent>
+            </Card>
+          )) : <p className="text-center py-12 text-muted-foreground italic col-span-2">No feedback received yet.</p>}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function AdminPortal() {
   const db = useFirestore();
   const auth = useAuth();
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('notifications');
+  const [activeTab, setActiveTab] = useState('settings');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [notificationToDelete, setNotificationToDelete] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
@@ -485,6 +533,14 @@ export default function AdminPortal() {
   const { data: adminDoc, isLoading: isAdminLoading } = useDoc(adminDocRef);
 
   const isAdmin = !!adminDoc;
+
+  useEffect(() => {
+    if (!isUserLoading && !isAdminLoading) {
+      if (!user || !adminDoc) {
+        router.push('/');
+      }
+    }
+  }, [user, adminDoc, isUserLoading, isAdminLoading, router]);
 
   const studentInterestsQuery = useMemoFirebase(() => {
     if (!db || !isAdmin) return null;
@@ -504,24 +560,6 @@ export default function AdminPortal() {
   }, [db, isAdmin]);
   const { data: users, isLoading: isLoadingUsers } = useCollection(usersQuery);
 
-  const notificationsQuery = useMemoFirebase(() => {
-    if (!db || !isAdmin) return null;
-    return query(collection(db, 'notifications'), limit(50));
-  }, [db, isAdmin]);
-  const { data: rawNotifications, isLoading: isLoadingNotifications } = useCollection(notificationsQuery);
-
-  const notifications = useMemo(() => {
-    if (!rawNotifications) return [];
-    return [...rawNotifications].sort((a, b) => (b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0));
-  }, [rawNotifications]);
-
-  const handleDeleteNotification = async () => {
-    if (notificationToDelete && isAdmin) {
-      await deleteDoc(doc(db, 'notifications', notificationToDelete));
-      setNotificationToDelete(null);
-    }
-  };
-
   const handleSignOut = async () => {
     await signOut(auth);
     router.push('/');
@@ -529,6 +567,14 @@ export default function AdminPortal() {
 
   const filteredUsers = useMemo(() => {
     if (!users) return [];
+    
+    const getStatusWeight = (u: any) => {
+      if (u.hasPending) return 0;
+      if (u.hasEnrolled || u.hasInProgress) return 1;
+      if (u.hasCompleted || u.hasHired) return 2;
+      return 3;
+    };
+
     if (activeTab === 'students') {
       const baseStudents = users.filter(u => u.userType === 'Student');
       return baseStudents.map(s => {
@@ -537,8 +583,11 @@ export default function AdminPortal() {
         const hasEnrolled = studentInterests.some(i => i.status === 'Enrolled');
         const hasCompleted = studentInterests.some(i => i.status === 'Course Complete');
         return { ...s, studentInterests, hasPending, hasEnrolled, hasCompleted };
-      }).filter(s => s.studentInterests.length > 0);
+      })
+      .filter(s => s.studentInterests.length > 0)
+      .sort((a, b) => getStatusWeight(a) - getStatusWeight(b));
     }
+
     if (activeTab === 'teachers') {
       const baseTeachers = users.filter(u => u.userType === 'Teacher');
       return baseTeachers.map(t => {
@@ -547,7 +596,9 @@ export default function AdminPortal() {
         const hasInProgress = teacherInterests.some(i => i.status === 'In-Progress');
         const hasHired = teacherInterests.some(i => i.status === 'Hired');
         return { ...t, teacherInterests, hasPending, hasInProgress, hasHired };
-      }).filter(t => t.teacherInterests.length > 0);
+      })
+      .filter(t => t.teacherInterests.length > 0)
+      .sort((a, b) => getStatusWeight(a) - getStatusWeight(b));
     }
     return [];
   }, [users, allStudentInterests, allTeacherInterests, activeTab]);
@@ -555,7 +606,7 @@ export default function AdminPortal() {
   const paginatedUsers = filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
 
-  if (isUserLoading || isAdminLoading || !user) return <div className="flex h-screen items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
+  if (isUserLoading || isAdminLoading || !user || !adminDoc) return <div className="flex h-screen items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
 
   const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => {
     const NavButton = ({ id, icon: Icon, label }: { id: string, icon: any, label: string }) => {
@@ -563,7 +614,7 @@ export default function AdminPortal() {
         <Button 
           variant={activeTab === id ? 'secondary' : 'ghost'} 
           className="w-full justify-start gap-3" 
-          onClick={() => setActiveTab(id)}
+          onClick={() => { setActiveTab(id); setCurrentPage(1); }}
         >
           <Icon className="h-4 w-4" />
           {label}
@@ -579,10 +630,10 @@ export default function AdminPortal() {
           <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
         </Link>
         <nav className="flex-1 px-4 space-y-1">
-          <NavButton id="notifications" icon={Bell} label="Notifications" />
+          <NavButton id="settings" icon={History} label="Activity Logs" />
           <NavButton id="students" icon={UserCheck} label="Students" />
           <NavButton id="teachers" icon={GraduationCap} label="Teachers" />
-          <NavButton id="settings" icon={History} label="Activity Logs" />
+          <NavButton id="feedback" icon={Star} label="User Feedback" />
           <NavButton id="maintenance" icon={Database} label="Maintenance" />
         </nav>
         <div className="p-4 border-t mt-auto">
@@ -627,40 +678,19 @@ export default function AdminPortal() {
         <div className="max-w-6xl mx-auto space-y-8 flex-1 w-full">
           <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div><h1 className="text-3xl font-headline font-bold text-primary">Admin Portal</h1><p className="text-muted-foreground">System Administration and Matching</p></div></header>
 
-          {activeTab === 'notifications' && (
-            <Card>
-              <CardHeader><CardTitle>Notifications</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                {isLoadingNotifications ? <Loader2 className="animate-spin mx-auto text-primary" /> : (notifications.length > 0 ? notifications.map(n => (
-                  <div key={n.id} className="flex items-start justify-between p-4 border rounded-xl bg-card shadow-sm">
-                    <div className="flex gap-3">
-                      <div className="bg-primary/10 p-2 rounded-lg h-fit">
-                        {n.type === 'registration' ? <UserCheck className="h-5 w-5 text-primary" /> : <ClipboardList className="h-5 w-5 text-accent" />}
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm">{(n.message?.subject) || n.subject}</h4>
-                        <p className="text-xs text-muted-foreground mt-1">{(n.message?.text) || n.body}</p>
-                        <p className="text-[10px] text-muted-foreground mt-2">{n.timestamp?.toDate?.()?.toLocaleString() || 'Synced'}</p>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => setNotificationToDelete(n.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                  </div>
-                )) : <p className="text-center py-8 text-muted-foreground italic">No notifications.</p>)}
-              </CardContent>
-            </Card>
-          )}
+          {activeTab === 'settings' && <SystemSettingsLogs isAdmin={isAdmin} />}
 
           {(activeTab === 'students' || activeTab === 'teachers') && (
             <Card>
-              <CardHeader><div className="flex items-center justify-between"><div><CardTitle>{activeTab === 'students' ? 'Students' : 'Teachers'}</CardTitle></div><Badge variant="secondary">{filteredUsers.length} Active</Badge></div></CardHeader>
+              <CardHeader><div className="flex items-center justify-between"><div><CardTitle>{activeTab === 'students' ? 'Students' : 'Teachers'}</CardTitle></div><Badge variant="secondary">{filteredUsers.length} Submissions</Badge></div></CardHeader>
               <CardContent>
-                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Contact</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasEnrolled || u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'ENROLLED' : 'IN-PROGRESS'}</Badge> : u.hasCompleted || u.hasHired ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'COURSE COMPLETE' : 'HIRED'}</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View Details</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No users with submissions found.</TableCell></TableRow>}</TableBody></Table></div>
+                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name & Status</TableHead><TableHead className="hidden sm:table-cell">Contact</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasEnrolled || u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'ENROLLED' : 'IN-PROGRESS'}</Badge> : u.hasCompleted || u.hasHired ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'COURSE COMPLETE' : 'HIRED'}</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View Details</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No users with submissions found.</TableCell></TableRow>}</TableBody></Table></div>
                 {totalPages > 1 && <div className="flex justify-center gap-2 mt-4"><Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button><span className="text-xs self-center font-medium">Page {currentPage} of {totalPages}</span><Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button></div>}
               </CardContent>
             </Card>
           )}
 
-          {activeTab === 'settings' && <SystemSettingsLogs isAdmin={isAdmin} />}
+          {activeTab === 'feedback' && <UserFeedbackList isAdmin={isAdmin} />}
 
           {activeTab === 'maintenance' && (
             <Card>
@@ -713,18 +743,25 @@ export default function AdminPortal() {
       </main>
 
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle className="flex items-center gap-3"><div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{(selectedUser?.firstName || '?')[0]}{(selectedUser?.lastName || '?')[0]}</div><div><p>{selectedUser?.firstName} {selectedUser?.lastName}</p><p className="text-xs font-normal text-muted-foreground">{selectedUser?.email}</p></div></DialogTitle></DialogHeader>
-          {selectedUser && <UserDetailsContent user={selectedUser} isAdmin={isAdmin} />}
+        <DialogContent className="sm:max-w-[600px] h-[85vh] p-0 flex flex-col overflow-hidden">
+          <div className="flex-none p-6 border-b bg-card">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{(selectedUser?.firstName || '?')[0]}{(selectedUser?.lastName || '?')[0]}</div>
+                <div>
+                  <p>{selectedUser?.firstName} {selectedUser?.lastName}</p>
+                  <p className="text-xs font-normal text-muted-foreground">{selectedUser?.email}</p>
+                </div>
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+          <ScrollArea className="flex-1 w-full">
+            <div className="p-6">
+              {selectedUser && <UserDetailsContent user={selectedUser} isAdmin={isAdmin} />}
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
-
-      <AlertDialog open={!!notificationToDelete} onOpenChange={(open) => !open && setNotificationToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>Delete Notification?</AlertDialogTitle><AlertDialogDescription>This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteNotification} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction></AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

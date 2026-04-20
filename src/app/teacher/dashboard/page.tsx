@@ -208,6 +208,27 @@ export default function TeacherDashboard() {
 
       if (existingInterest) {
         updateDocumentNonBlocking(doc(db, 'teacherInterests', existingInterest.id), payload);
+        
+        // Admin Notification for update
+        addDocumentNonBlocking(collection(db, 'notifications'), {
+          to: 'admin@rpcoachup.com',
+          from: "RP Coach-Up <support@rpcoachup.com>",
+          message: {
+            subject: `Profile Updated: ${teacherName}`,
+            text: `Teacher ${teacherName} has updated their professional specialty profile for ${subjects}.`,
+            html: `<div style="font-family: sans-serif; padding: 20px;">
+              <h2>Teacher Profile Updated</h2>
+              <p><strong>Name:</strong> ${teacherName}</p>
+              <p><strong>Subjects:</strong> ${subjects}</p>
+            </div>`
+          },
+          type: 'interest',
+          userName: teacherName,
+          userEmail: email,
+          timestamp: serverTimestamp(),
+          read: false
+        });
+
         toast({ title: "Profile Updated", description: "Your professional record has been updated successfully." });
         setActiveTab('history');
       } else {
@@ -216,6 +237,29 @@ export default function TeacherDashboard() {
           submissionDate: serverTimestamp(),
           status: 'Pending'
         });
+
+        // Admin Notification for new profile
+        addDocumentNonBlocking(collection(db, 'notifications'), {
+          to: 'admin@rpcoachup.com',
+          from: "RP Coach-Up <support@rpcoachup.com>",
+          message: {
+            subject: `New Teacher Profile: ${teacherName}`,
+            text: `A new teacher specialty profile has been submitted by ${teacherName} for ${subjects}. Experience: ${experienceYears} years.`,
+            html: `<div style="font-family: sans-serif; padding: 20px;">
+              <h2>New Teacher Specialty Profile</h2>
+              <p><strong>Name:</strong> ${teacherName}</p>
+              <p><strong>Subjects:</strong> ${subjects}</p>
+              <p><strong>Experience:</strong> ${experienceYears} Years</p>
+              <p><strong>Phone:</strong> ${phoneValue}</p>
+            </div>`
+          },
+          type: 'interest',
+          userName: teacherName,
+          userEmail: email,
+          timestamp: serverTimestamp(),
+          read: false
+        });
+
         setShowSuccessDialog(true);
       }
       

@@ -205,7 +205,30 @@ export default function StudentDashboard() {
         details: `Your enquiry for ${subject} has been submitted successfully.`
       });
 
+      // Admin Notification for notification tab
+      addDocumentNonBlocking(collection(db, 'notifications'), {
+        to: 'admin@rpcoachup.com',
+        from: "RP Coach-Up <support@rpcoachup.com>",
+        message: {
+          subject: `New Enquiry: ${subject} from ${studentName}`,
+          text: `A new student enquiry has been submitted by ${studentName} for the subject ${subject}. Phone: ${phoneValue}`,
+          html: `<div style="font-family: sans-serif; padding: 20px;">
+            <h2>New Student Enquiry</h2>
+            <p><strong>Name:</strong> ${studentName}</p>
+            <p><strong>Subject:</strong> ${subject}</p>
+            <p><strong>Class:</strong> ${gradeLevel}</p>
+            <p><strong>Phone:</strong> ${phoneValue}</p>
+          </div>`
+        },
+        type: 'interest',
+        userName: studentName,
+        userEmail: email,
+        timestamp: serverTimestamp(),
+        read: false
+      });
+
       if (aiResult.success && aiResult.email) {
+        // User Notification
         addDocumentNonBlocking(collection(db, 'notifications'), {
           to: aiResult.email.recipientEmail,
           from: "RP Coach-Up <support@rpcoachup.com>",
@@ -251,7 +274,7 @@ export default function StudentDashboard() {
     try {
       const aiResult = await sendNotificationEmail({
         recipientType: 'admin',
-        type: 'interest',
+        type: 'status_update',
         userType: 'Student',
         userName: `${profile?.firstName} ${profile?.lastName}`,
         userEmail: profile?.email || '',
