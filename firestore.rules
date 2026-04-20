@@ -5,6 +5,7 @@ service cloud.firestore {
 
     /**
      * RP Coach-Up Security Rules
+     * Collection names: studentInterests, teacherInterests, matchProposals, notifications
      */
 
     function isSignedIn() {
@@ -13,10 +14,6 @@ service cloud.firestore {
 
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
-    }
-
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
     }
 
     function isAdmin() {
@@ -31,45 +28,27 @@ service cloud.firestore {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
       allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && isImmutable('id');
+      allow update: if isOwner(userId) && isImmutable('id');
       allow delete: if isAdmin();
-
-      match /studentProfile/{profileId} {
-        allow get, list: if isOwner(userId) || isAdmin();
-        allow create: if isOwner(userId);
-        allow update: if isExistingOwner(userId);
-        allow delete: if isExistingOwner(userId) || isAdmin();
-      }
-
-      match /teacherProfile/{profileId} {
-        allow get, list: if isSignedIn();
-        allow create: if isOwner(userId);
-        allow update: if isExistingOwner(userId);
-        allow delete: if isExistingOwner(userId) || isAdmin();
-      }
     }
 
     match /studentInterests/{enquiryId} {
-      allow get, list: if (isSignedIn() && (resource == null || request.auth.uid == resource.data.studentId)) || isAdmin();
+      // Allow list if admin or if the query is filtered by studentId (handled by Firestore engine)
+      allow get, list: if isSignedIn() && (isAdmin() || (resource != null && resource.data.studentId == request.auth.uid));
       allow create: if isSignedIn() && request.resource.data.studentId == request.auth.uid;
-      allow update: if isAdmin() || (isExistingOwner(resource.data.studentId) && isImmutable('studentId'));
-      allow delete: if isExistingOwner(resource.data.studentId) || isAdmin();
+      allow update: if isAdmin() || (isOwner(resource.data.studentId) && isImmutable('studentId'));
+      allow delete: if isOwner(resource.data.studentId) || isAdmin();
     }
 
-    match /teacherInterests/{enquiryId} {
-      allow get, list: if (isSignedIn() && (resource == null || request.auth.uid == resource.data.teacherId)) || isAdmin();
+    match /teacherInterests/{interestId} {
+      allow get, list: if isSignedIn() && (isAdmin() || (resource != null && resource.data.teacherId == request.auth.uid));
       allow create: if isSignedIn() && request.resource.data.teacherId == request.auth.uid;
-      allow update: if isAdmin() || (isExistingOwner(resource.data.teacherId) && isImmutable('teacherId'));
-      allow delete: if isExistingOwner(resource.data.teacherId) || isAdmin();
-    }
-
-    match /subjects/{subjectId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
+      allow update: if isAdmin() || (isOwner(resource.data.teacherId) && isImmutable('teacherId'));
+      allow delete: if isOwner(resource.data.teacherId) || isAdmin();
     }
 
     match /matchProposals/{matchId} {
-      allow get, list: if isSignedIn() && (resource == null || (request.auth.uid == resource.data.studentId || request.auth.uid == resource.data.teacherId || isAdmin()));
+      allow get, list: if isSignedIn() && (isAdmin() || (resource != null && (request.auth.uid == resource.data.studentId || request.auth.uid == resource.data.teacherId)));
       allow create, update, delete: if isAdmin();
     }
 
@@ -83,10 +62,9 @@ service cloud.firestore {
     }
 
     match /feedback/{feedbackId} {
-      allow get, list: if true; 
+      allow get, list: if isAdmin(); 
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isExistingOwner(resource.data.userId) && isImmutable('userId');
-      allow delete: if isExistingOwner(resource.data.userId) || isAdmin();
+      allow update, delete: if isAdmin();
     }
 
     match /roles_admin/{adminId} {
