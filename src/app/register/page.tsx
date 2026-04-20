@@ -48,28 +48,13 @@ function RegisterForm() {
     setIsLoading(true);
 
     try {
-      const adminEmailContent = await sendNotificationEmail({
-        recipientType: 'admin',
-        type: 'registration',
-        userType: role,
-        userName: `${formData.firstName} ${formData.lastName}`,
-        userEmail: formData.email
-      });
-
-      const userEmailContent = await sendNotificationEmail({
-        recipientType: 'user',
-        type: 'registration',
-        userType: role,
-        userName: `${formData.firstName} ${formData.lastName}`,
-        userEmail: formData.email,
-        details: `Welcome to RP Coach-Up! Your account as a ${role} has been created.`
-      });
-
+      // 1. Create the Auth User first
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
       const batch = writeBatch(db);
 
+      // 2. Set the core user profile
       const userProfileRef = doc(db, 'users', user.uid);
       batch.set(userProfileRef, {
         id: user.uid,
@@ -81,24 +66,34 @@ function RegisterForm() {
         updatedAt: serverTimestamp(),
       });
 
-      if (role === 'Student') {
-        const studentProfileRef = doc(db, 'users', user.uid, 'studentProfile', 'studentProfile');
-        batch.set(studentProfileRef, {
-          id: 'studentProfile',
-          userProfileId: user.uid,
-          gradeLevel: '',
+      // 3. Attempt to generate AI content (done after auth to ensure user exists)
+      // We wrap these in try/catch to ensure registration doesn't fail just because AI service is slow
+      let adminEmailContent = null;
+      let userEmailContent = null;
+
+      try {
+        adminEmailContent = await sendNotificationEmail({
+          recipientType: 'admin',
+          type: 'registration',
+          userType: role,
+          userName: `${formData.firstName} ${formData.lastName}`,
+          userEmail: formData.email
         });
-      } else if (role === 'Teacher') {
-        const teacherProfileRef = doc(db, 'users', user.uid, 'teacherProfile', 'teacherProfile');
-        batch.set(teacherProfileRef, {
-          id: 'teacherProfile',
-          userProfileId: user.uid,
-          experienceYears: 0,
-          qualifications: '',
+
+        userEmailContent = await sendNotificationEmail({
+          recipientType: 'user',
+          type: 'registration',
+          userType: role,
+          userName: `${formData.firstName} ${formData.lastName}`,
+          userEmail: formData.email,
+          details: `Welcome to RP Coach-Up! Your account as a ${role} has been created.`
         });
+      } catch (aiError) {
+        console.warn("AI Email generation skipped due to error:", aiError);
       }
 
-      if (adminEmailContent.success && adminEmailContent.email) {
+      // 4. Add notifications to batch if AI generation was successful
+      if (adminEmailContent?.success && adminEmailContent?.email) {
         const adminNotifRef = doc(collection(db, 'notifications'));
         batch.set(adminNotifRef, {
           to: adminEmailContent.email.recipientEmail,
@@ -126,7 +121,7 @@ function RegisterForm() {
         });
       }
 
-      if (userEmailContent.success && userEmailContent.email) {
+      if (userEmailContent?.success && userEmailContent?.email) {
         const userNotifRef = doc(collection(db, 'notifications'));
         batch.set(userNotifRef, {
           to: userEmailContent.email.recipientEmail,
@@ -154,6 +149,7 @@ function RegisterForm() {
         });
       }
 
+      // 5. Commit all Firestore writes
       await batch.commit();
 
       toast({
@@ -163,11 +159,14 @@ function RegisterForm() {
 
       router.push(`/${role.toLowerCase()}/dashboard`);
     } catch (error: any) {
+      console.error("Registration error details:", error);
       let msg = "An error occurred during registration.";
       if (error.code === 'auth/email-already-in-use') {
         msg = "This email is already in use.";
       } else if (error.code === 'auth/weak-password') {
         msg = "Your password is too weak.";
+      } else if (error.message?.includes('permissions')) {
+        msg = "Database permission error. Please contact support.";
       }
       
       toast({
