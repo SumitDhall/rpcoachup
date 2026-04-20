@@ -531,27 +531,23 @@ export default function AdminPortal() {
     if (!users) return [];
     if (activeTab === 'students') {
       const baseStudents = users.filter(u => u.userType === 'Student');
-      if (!allStudentEnquiries) return baseStudents;
-      
       return baseStudents.map(s => {
-        const studentEnquiries = allStudentEnquiries.filter(i => i.studentId === s.id);
+        const studentEnquiries = allStudentEnquiries?.filter(i => i.studentId === s.id) || [];
         const hasPending = studentEnquiries.some(i => i.status === 'Pending');
         const hasEnrolled = studentEnquiries.some(i => i.status === 'Enrolled');
         const hasCompleted = studentEnquiries.some(i => i.status === 'Course Complete');
         return { ...s, studentEnquiries, hasPending, hasEnrolled, hasCompleted };
-      }).filter(s => s.studentEnquiries && s.studentEnquiries.length > 0);
+      });
     }
     if (activeTab === 'teachers') {
       const baseTeachers = users.filter(u => u.userType === 'Teacher');
-      if (!allTeacherEnquiries) return baseTeachers;
-
       return baseTeachers.map(t => {
-        const teacherEnquiries = allTeacherEnquiries.filter(i => i.teacherId === t.id);
+        const teacherEnquiries = allTeacherEnquiries?.filter(i => i.teacherId === t.id) || [];
         const hasPending = teacherEnquiries.some(i => i.status === 'Pending');
         const hasInProgress = teacherEnquiries.some(i => i.status === 'In-Progress');
         const hasHired = teacherEnquiries.some(i => i.status === 'Hired');
         return { ...t, teacherEnquiries, hasPending, hasInProgress, hasHired };
-      }).filter(t => t.teacherEnquiries && t.teacherEnquiries.length > 0);
+      });
     }
     return [];
   }, [users, allStudentEnquiries, allTeacherEnquiries, activeTab]);
@@ -656,9 +652,9 @@ export default function AdminPortal() {
 
           {(activeTab === 'students' || activeTab === 'teachers') && (
             <Card>
-              <CardHeader><div className="flex items-center justify-between"><div><CardTitle>{activeTab === 'students' ? 'Student Enquiries' : 'Teacher Profiles'}</CardTitle></div><Badge variant="secondary">{filteredUsers.length} Found</Badge></div></CardHeader>
+              <CardHeader><div className="flex items-center justify-between"><div><CardTitle>{activeTab === 'students' ? 'Students' : 'Teachers'}</CardTitle></div><Badge variant="secondary">{filteredUsers.length} Registered</Badge></div></CardHeader>
               <CardContent>
-                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Details</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasEnrolled || u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'ENROLLED' : 'IN-PROGRESS'}</Badge> : u.hasCompleted || u.hasHired ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'COURSE COMPLETE' : 'HIRED'}</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View {activeTab === 'students' ? 'Enquiries' : 'Profile'}</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No results found.</TableCell></TableRow>}</TableBody></Table></div>
+                <div className="rounded-md border"><Table><TableHeader><TableRow><TableHead>Name</TableHead><TableHead className="hidden sm:table-cell">Contact</TableHead><TableHead className="text-right">Action</TableHead></TableRow></TableHeader><TableBody>{paginatedUsers.length > 0 ? paginatedUsers.map(u => (<TableRow key={u.id} className="hover:bg-secondary/5"><TableCell className="font-medium"><div className="flex flex-col"><div className="flex items-center gap-2 flex-wrap"><span>{u.firstName} {u.lastName}</span>{u.hasPending ? <Badge variant="default" className="text-[8px] h-4 bg-primary px-1.5 uppercase font-bold">NEW</Badge> : u.hasEnrolled || u.hasInProgress ? <Badge variant="secondary" className="text-[8px] h-4 bg-blue-500 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'ENROLLED' : 'IN-PROGRESS'}</Badge> : u.hasCompleted || u.hasHired ? <Badge variant="secondary" className="text-[8px] h-4 bg-green-600 text-white px-1.5 uppercase font-bold">{u.userType === 'Student' ? 'COURSE COMPLETE' : 'HIRED'}</Badge> : null}</div></div></TableCell><TableCell className="hidden sm:table-cell text-muted-foreground"><div className="flex flex-col gap-1"><span className="text-[11px]">{u.email}</span></div></TableCell><TableCell className="text-right"><Button variant="outline" size="sm" className="h-8" onClick={() => { setSelectedUser(u); setIsDetailsOpen(true); }}>View Details</Button></TableCell></TableRow>)) : <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">No users found.</TableCell></TableRow>}</TableBody></Table></div>
                 {totalPages > 1 && <div className="flex justify-center gap-2 mt-4"><Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}><ChevronLeft className="h-4 w-4" /></Button><span className="text-xs self-center font-medium">Page {currentPage} of {totalPages}</span><Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}><ChevronRight className="h-4 w-4" /></Button></div>}
               </CardContent>
             </Card>
