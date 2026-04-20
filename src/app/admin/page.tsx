@@ -520,10 +520,9 @@ export default function AdminPortal() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('notifications');
+  const [activeTab, setActiveTab] = useState('settings');
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [notificationToDelete, setNotificationToDelete] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
@@ -560,24 +559,6 @@ export default function AdminPortal() {
     return query(collection(db, 'users'), limit(500));
   }, [db, isAdmin]);
   const { data: users, isLoading: isLoadingUsers } = useCollection(usersQuery);
-
-  const notificationsQuery = useMemoFirebase(() => {
-    if (!db || !isAdmin) return null;
-    return query(collection(db, 'notifications'), orderBy('timestamp', 'desc'), limit(50));
-  }, [db, isAdmin]);
-  const { data: rawNotifications, isLoading: isLoadingNotifications } = useCollection(notificationsQuery);
-
-  const notifications = useMemo(() => {
-    if (!rawNotifications) return [];
-    return [...rawNotifications];
-  }, [rawNotifications]);
-
-  const handleDeleteNotification = async () => {
-    if (notificationToDelete && isAdmin) {
-      await deleteDoc(doc(db, 'notifications', notificationToDelete));
-      setNotificationToDelete(null);
-    }
-  };
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -649,11 +630,10 @@ export default function AdminPortal() {
           <span className="font-headline font-bold text-lg text-primary">RP Coach-Up</span>
         </Link>
         <nav className="flex-1 px-4 space-y-1">
-          <NavButton id="notifications" icon={Bell} label="Notifications" />
+          <NavButton id="settings" icon={History} label="Activity Logs" />
           <NavButton id="students" icon={UserCheck} label="Students" />
           <NavButton id="teachers" icon={GraduationCap} label="Teachers" />
           <NavButton id="feedback" icon={Star} label="User Feedback" />
-          <NavButton id="settings" icon={History} label="Activity Logs" />
           <NavButton id="maintenance" icon={Database} label="Maintenance" />
         </nav>
         <div className="p-4 border-t mt-auto">
@@ -698,37 +678,7 @@ export default function AdminPortal() {
         <div className="max-w-6xl mx-auto space-y-8 flex-1 w-full">
           <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div><h1 className="text-3xl font-headline font-bold text-primary">Admin Portal</h1><p className="text-muted-foreground">System Administration and Matching</p></div></header>
 
-          {activeTab === 'notifications' && (
-            <Card>
-              <CardHeader><div className="flex items-center justify-between"><div><CardTitle>Platform Notifications</CardTitle><CardDescription>Real-time updates on registrations and enquiries.</CardDescription></div><Button variant="outline" size="sm" onClick={() => window.location.reload()}><RefreshCcw className="h-4 w-4 mr-2" />Refresh</Button></div></CardHeader>
-              <CardContent className="space-y-4">
-                {isLoadingNotifications ? (
-                  <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
-                ) : (notifications.length > 0 ? notifications.map(n => (
-                  <div key={n.id} className="flex items-start justify-between p-4 border rounded-xl bg-card shadow-sm hover:border-primary/30 transition-colors">
-                    <div className="flex gap-3">
-                      <div className="bg-primary/10 p-2 rounded-lg h-fit">
-                        {n.type === 'registration' ? <UserPlus className="h-5 w-5 text-primary" /> : 
-                         n.type === 'interest' ? <ClipboardList className="h-5 w-5 text-accent" /> :
-                         n.type === 'status_update' ? <RefreshCcw className="h-5 w-5 text-blue-500" /> :
-                         n.type === 'assignment' ? <UserCheck className="h-5 w-5 text-green-500" /> :
-                         <Bell className="h-5 w-5 text-muted-foreground" />}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                           <h4 className="font-bold text-sm">{(n.message?.subject) || n.subject || "Platform Notification"}</h4>
-                           <Badge variant="outline" className="text-[8px] uppercase">{n.type || 'System'}</Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">{(n.message?.text) || n.body || "No message content available."}</p>
-                        <p className="text-[10px] text-muted-foreground mt-2">{n.timestamp?.toDate?.()?.toLocaleString() || 'Synced recently'}</p>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => setNotificationToDelete(n.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                  </div>
-                )) : <div className="text-center py-16 border-2 border-dashed rounded-xl"><Bell className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-20" /><p className="text-muted-foreground italic">No recent notifications found.</p></div>)}
-              </CardContent>
-            </Card>
-          )}
+          {activeTab === 'settings' && <SystemSettingsLogs isAdmin={isAdmin} />}
 
           {(activeTab === 'students' || activeTab === 'teachers') && (
             <Card>
@@ -741,8 +691,6 @@ export default function AdminPortal() {
           )}
 
           {activeTab === 'feedback' && <UserFeedbackList isAdmin={isAdmin} />}
-
-          {activeTab === 'settings' && <SystemSettingsLogs isAdmin={isAdmin} />}
 
           {activeTab === 'maintenance' && (
             <Card>
@@ -814,13 +762,6 @@ export default function AdminPortal() {
           </ScrollArea>
         </DialogContent>
       </Dialog>
-
-      <AlertDialog open={!!notificationToDelete} onOpenChange={(open) => !open && setNotificationToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>Delete Notification?</AlertDialogTitle><AlertDialogDescription>This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteNotification} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction></AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
