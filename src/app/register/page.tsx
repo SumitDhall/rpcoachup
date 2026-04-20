@@ -48,7 +48,6 @@ function RegisterForm() {
     setIsLoading(true);
 
     try {
-      // 1. Generate AI Content for notifications first
       const adminEmailContent = await sendNotificationEmail({
         recipientType: 'admin',
         type: 'registration',
@@ -66,13 +65,11 @@ function RegisterForm() {
         details: `Welcome to RP Coach-Up! Your account as a ${role} has been created.`
       });
 
-      // 2. Create Firebase Auth user
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
       const batch = writeBatch(db);
 
-      // 3. User Profile
       const userProfileRef = doc(db, 'users', user.uid);
       batch.set(userProfileRef, {
         id: user.uid,
@@ -84,7 +81,6 @@ function RegisterForm() {
         updatedAt: serverTimestamp(),
       });
 
-      // 4. Role-specific profile
       if (role === 'Student') {
         const studentProfileRef = doc(db, 'users', user.uid, 'studentProfile', 'studentProfile');
         batch.set(studentProfileRef, {
@@ -102,14 +98,14 @@ function RegisterForm() {
         });
       }
 
-      // 5. Add notifications to batch (Schema compatible with Trigger Email extension)
       if (adminEmailContent.success && adminEmailContent.email) {
         const adminNotifRef = doc(collection(db, 'notifications'));
         batch.set(adminNotifRef, {
           to: adminEmailContent.email.recipientEmail,
           message: {
             subject: adminEmailContent.email.subject,
-            text: adminEmailContent.email.body
+            text: adminEmailContent.email.body,
+            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${adminEmailContent.email.body.replace(/\n/g, '<br>')}</div>`
           },
           type: 'registration',
           userName: `${formData.firstName} ${formData.lastName}`,
@@ -125,7 +121,8 @@ function RegisterForm() {
           to: userEmailContent.email.recipientEmail,
           message: {
             subject: userEmailContent.email.subject,
-            text: userEmailContent.email.body
+            text: userEmailContent.email.body,
+            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${userEmailContent.email.body.replace(/\n/g, '<br>')}</div>`
           },
           type: 'registration',
           userName: `${formData.firstName} ${formData.lastName}`,

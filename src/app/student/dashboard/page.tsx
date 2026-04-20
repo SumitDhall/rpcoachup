@@ -196,7 +196,6 @@ export default function StudentDashboard() {
       
       await addDoc(collection(db, 'studentInterests'), submissionData);
       
-      // Generate AI notification and write to mail collection
       const aiResult = await sendNotificationEmail({
         recipientType: 'user',
         type: 'interest',
@@ -211,7 +210,8 @@ export default function StudentDashboard() {
           to: aiResult.email.recipientEmail,
           message: {
             subject: aiResult.email.subject,
-            text: aiResult.email.body
+            text: aiResult.email.body,
+            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${aiResult.email.body.replace(/\n/g, '<br>')}</div>`
           },
           type: 'interest',
           userName: studentName,
@@ -251,7 +251,8 @@ export default function StudentDashboard() {
           to: aiResult.email.recipientEmail,
           message: {
             subject: aiResult.email.subject,
-            text: aiResult.email.body
+            text: aiResult.email.body,
+            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${aiResult.email.body.replace(/\n/g, '<br>')}</div>`
           },
           type: 'feedback',
           userName: `${profile?.firstName} ${profile?.lastName}`,
@@ -542,7 +543,6 @@ export default function StudentDashboard() {
                   {isLoadingEnquiries ? (
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>
                   ) : (rawEnquiries && rawEnquiries.length > 0 ? [...rawEnquiries].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
-                    // Filter matches specifically for this enquiry
                     const enquiryMatches = matches?.filter(m => m.enquiryId === i.id);
                     const assignedTeachers = enquiryMatches?.map(m => m.teacherName) || [];
                     

@@ -200,7 +200,8 @@ export default function TeacherDashboard() {
           to: aiResult.email.recipientEmail,
           message: {
             subject: aiResult.email.subject,
-            text: aiResult.email.body
+            text: aiResult.email.body,
+            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${aiResult.email.body.replace(/\n/g, '<br>')}</div>`
           },
           type: 'interest',
           userName: teacherName,
@@ -246,7 +247,8 @@ export default function TeacherDashboard() {
           to: aiResult.email.recipientEmail,
           message: {
             subject: aiResult.email.subject,
-            text: aiResult.email.body
+            text: aiResult.email.body,
+            html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${aiResult.email.body.replace(/\n/g, '<br>')}</div>`
           },
           type: 'feedback',
           userName: `${profile?.firstName} ${profile?.lastName}`,
@@ -383,7 +385,6 @@ export default function TeacherDashboard() {
                     <div className="flex justify-center p-8"><Loader2 className="animate-spin h-8 w-8 text-primary" /></div>
                   ) : (rawEnquiries && rawEnquiries.length > 0 ? (
                     [...rawEnquiries].sort((a,b) => (b.submissionDate?.toMillis?.() || 0) - (a.submissionDate?.toMillis?.() || 0)).map(i => {
-                      // Show students assigned to THIS teacher globally across any specialization
                       const assignedStudents = matches?.map(m => m.studentName) || [];
                       
                       return (

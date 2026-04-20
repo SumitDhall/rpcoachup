@@ -91,7 +91,8 @@ function writeEmailNotification(db: any, recipientEmail: string, subject: string
     to: recipientEmail,
     message: {
       subject: subject,
-      text: body
+      text: body,
+      html: `<div style="font-family: sans-serif; line-height: 1.6; color: #333;">${body.replace(/\n/g, '<br>')}</div>`
     },
     type,
     userName: userName || 'System',
@@ -148,7 +149,6 @@ function TeacherAssignmentManager({ studentId, studentName, enquiryId, subject, 
     addDocumentNonBlocking(collection(db, 'matchProposals'), matchData);
     logSystemEvent(db, adminUser, 'assignment', `Assigned Teacher: ${teacherFullName} to Student: ${studentName} for ${subject}`);
 
-    // Generate AI notification and write to mail collection
     const aiResult = await sendNotificationEmail({
       recipientType: 'user',
       type: 'status_update',
@@ -304,7 +304,6 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
     
     logSystemEvent(db, adminUser, 'status_update', `Updated status to ${newStatus} for ${statusChangeTarget.userName}'s enquiry in ${statusChangeTarget.subject}`);
 
-    // Generate AI notification and write to Firestore for trigger extension
     const aiResult = await sendNotificationEmail({
       recipientType: 'user',
       type: 'status_update',

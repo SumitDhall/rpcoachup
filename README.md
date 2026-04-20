@@ -11,9 +11,12 @@ These emails are handled automatically by Firebase.
 - **Troubleshooting**: If you get a "Contact Support" error when editing templates, ensure your project domain is verified in **Firebase Hosting**.
 
 ### 2. Custom Platform Notifications (Status Updates, Assignments)
-Currently, notifications for status changes (e.g., "Enrolled", "Hired") and new registrations are **simulated** for safety and development speed.
-- **Where to see them?** During development, look at your **Server Logs** (Terminal) to see the full content of the generated emails.
-- **Production Setup**: To send real emails, you should install the **"Trigger Email from Firestore"** extension in the Firebase Console. This will allow the platform to send real emails via SMTP or SendGrid whenever a new entry is added to the `notifications` collection.
+This app is integrated with the **"Trigger Email from Firestore"** extension.
+- **CRITICAL CONFIGURATION**:
+  - In the Firebase Extension settings, ensure the **"Email documents collection"** parameter is set exactly to `notifications`.
+  - The extension defaults to `mail`. You MUST update it to `notifications` for emails to be sent automatically.
+- **Recipient Verification**: Check that your SMTP/SendGrid configuration in the extension is active and that your sender email matches your verified domain.
+- **Where to see them?** All generated emails are recorded in the `notifications` collection and visible in the Admin Portal.
 
 ## 🖼 How to use your own images
 1.  **Prepare your images**: Rename your downloaded images to `hero-education.jpg`, `teacher-mentoring.jpg`, and `online-course.jpg`.
