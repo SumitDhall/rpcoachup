@@ -607,7 +607,13 @@ export default function TeacherDashboard() {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="salary">Expected Monthly Salary *</Label>
-                          <Input id="salary" value={expectedSalary} onChange={e => setExpectedSalary(e.target.value)} placeholder="e.g., ₹5,000" required />
+                          <Input 
+                            id="salary" 
+                            value={expectedSalary} 
+                            onChange={e => setExpectedSalary(e.target.value)} 
+                            placeholder="e.g., ₹5,000" 
+                            required 
+                          />
                         </div>
                       </div>
                     </div>
@@ -775,3 +781,4 @@ export default function TeacherDashboard() {
     </div>
   );
 }
+
