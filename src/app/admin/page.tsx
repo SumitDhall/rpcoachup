@@ -70,7 +70,8 @@ import {
   Star,
   Zap,
   RefreshCcw,
-  CheckCircle2
+  CheckCircle2,
+  Calendar
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
@@ -397,7 +398,7 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
                   {user.userType === 'Teacher' && int.experienceYears && (
                     <div className="flex items-center gap-2 mt-1">
                       <Briefcase className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-xs">Exp: {int.experienceYears} Years</span>
+                      <span className="text-xs">Exp: {int.experienceYears} Years Experience</span>
                     </div>
                   )}
                   {user.userType === 'Teacher' && int.resumeName && (
