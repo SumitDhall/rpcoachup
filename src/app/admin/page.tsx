@@ -70,7 +70,9 @@ import {
   Star,
   Zap,
   RefreshCcw,
-  CheckCircle2
+  CheckCircle2,
+  Calendar,
+  Info
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
@@ -382,6 +384,12 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
                   {int.phone && <div className="flex items-center gap-2"><Phone className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.phone}</span></div>}
                   {int.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.email}</span></div>}
                   {user.userType === 'Student' && int.school && <div className="flex items-center gap-2"><School className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.school} ({int.gradeOrClass})</span></div>}
+                  {user.userType === 'Student' && int.intendedStartDate && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <Calendar className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs">Starts: {int.intendedStartDate}</span>
+                    </div>
+                  )}
                   {user.userType === 'Teacher' && int.resumeName && (
                     <div className="mt-2 p-2 bg-green-50 rounded-lg border border-green-200 flex items-center justify-between">
                       <div className="flex items-center gap-2"><FileText className="h-3 w-3 text-green-600" /><span className="text-xs text-green-800 font-medium truncate max-w-[150px]">{int.resumeName}</span></div>
