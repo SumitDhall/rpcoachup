@@ -70,9 +70,7 @@ import {
   Star,
   Zap,
   RefreshCcw,
-  CheckCircle2,
-  Calendar,
-  Info
+  CheckCircle2
 } from 'lucide-react';
 import { useAuth, useFirestore, useCollection, useDoc, useMemoFirebase, useUser, updateDocumentNonBlocking, addDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, limit, doc, where, deleteDoc, serverTimestamp, orderBy, getDocs, writeBatch } from 'firebase/firestore';
