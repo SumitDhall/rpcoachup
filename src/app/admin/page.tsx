@@ -382,6 +382,24 @@ function UserDetailsContent({ user, isAdmin }: { user: any; isAdmin: boolean }) 
                   {int.phone && <div className="flex items-center gap-2"><Phone className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.phone}</span></div>}
                   {int.email && <div className="flex items-center gap-2"><Mail className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.email}</span></div>}
                   {user.userType === 'Student' && int.school && <div className="flex items-center gap-2"><School className="h-3 w-3 text-muted-foreground" /><span className="text-xs">{int.school} ({int.gradeOrClass})</span></div>}
+                  {user.userType === 'Student' && int.intendedStartDate && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <Calendar className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs">Starts: {int.intendedStartDate}</span>
+                    </div>
+                  )}
+                  {user.userType === 'Teacher' && int.qualifications && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <GraduationCap className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs">Qual: {int.qualifications}</span>
+                    </div>
+                  )}
+                  {user.userType === 'Teacher' && int.experienceYears && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <Briefcase className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs">Exp: {int.experienceYears} Years</span>
+                    </div>
+                  )}
                   {user.userType === 'Teacher' && int.resumeName && (
                     <div className="mt-2 p-2 bg-green-50 rounded-lg border border-green-200 flex items-center justify-between">
                       <div className="flex items-center gap-2"><FileText className="h-3 w-3 text-green-600" /><span className="text-xs text-green-800 font-medium truncate max-w-[150px]">{int.resumeName}</span></div>

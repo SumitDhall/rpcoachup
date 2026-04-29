@@ -180,13 +180,13 @@ export default function TeacherDashboard() {
     const digitsOnly = phoneValue.replace(/\D/g, '');
     const userNumber = digitsOnly.startsWith('91') ? digitsOnly.slice(2) : digitsOnly;
     
-    if (!teacherName || !subjects || userNumber.length !== 10 || !email || !resumeName || !qualifications || !experienceYears) {
+    if (!teacherName || !subjects || userNumber.length !== 10 || !email || !resumeName || !qualifications || !experienceYears || !expectedSalary) {
       toast({ 
         variant: "destructive", 
         title: "Validation Error", 
         description: userNumber.length !== 10 
           ? "Please enter a valid 10-digit phone number." 
-          : "Please complete all mandatory fields." 
+          : "Please complete all mandatory fields including salary." 
       });
       return;
     }
@@ -200,7 +200,7 @@ export default function TeacherDashboard() {
         qualifications,
         experienceYears,
         subjects,
-        expectedSalary: expectedSalary || 'Negotiable',
+        expectedSalary,
         resumeName,
         resumeData,
         updatedAt: serverTimestamp(),
@@ -606,8 +606,14 @@ export default function TeacherDashboard() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="salary">Expected Monthly Salary (Optional)</Label>
-                          <Input id="salary" value={expectedSalary} onChange={e => setExpectedSalary(e.target.value)} placeholder="e.g., ₹15,000" />
+                          <Label htmlFor="salary">Expected Monthly Salary *</Label>
+                          <Input 
+                            id="salary" 
+                            value={expectedSalary} 
+                            onChange={e => setExpectedSalary(e.target.value)} 
+                            placeholder="e.g., ₹5,000" 
+                            required 
+                          />
                         </div>
                       </div>
                     </div>
@@ -775,3 +781,4 @@ export default function TeacherDashboard() {
     </div>
   );
 }
+
