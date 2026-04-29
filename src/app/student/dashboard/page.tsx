@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -331,12 +330,10 @@ export default function StudentDashboard() {
   const gradeOptions = Array.from({ length: 12 }, (_, i) => `Class ${i + 1}`);
   
   const budgetRanges = [
-    "₹5,000 - ₹7,500",
-    "₹7,500 - ₹10,000",
+    "₹8,000 - ₹10,000",
     "₹10,000 - ₹15,000",
     "₹15,000 - ₹20,000",
     "₹20,000 - ₹25,000",
-    "Above ₹25,000",
     "Per Session Basis",
     "Negotiable"
   ];
