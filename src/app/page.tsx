@@ -1,13 +1,10 @@
 import React from "react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function Page() {
   return (
     <div className="flex flex-col h-full">
       <header className="flex h-16 items-center border-b border-white/5 px-6 shrink-0">
-        <SidebarTrigger />
-        <div className="ml-4 h-4 w-px bg-white/10" />
-        <h2 className="ml-4 text-sm font-medium text-muted-foreground uppercase tracking-widest">
+        <h2 className="ml-6 text-sm font-medium text-muted-foreground uppercase tracking-widest">
           Home
         </h2>
       </header>
