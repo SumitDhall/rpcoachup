@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import "./globals.css";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -24,7 +25,7 @@ export default function RootLayout({
         <SidebarProvider>
           <div className="flex min-h-screen w-full">
             <AppSidebar />
-            <main className="flex-1 flex flex-col overflow-auto bg-[radial-gradient(circle_at_center,rgba(187,133,255,0.05),transparent_70%)]">
+            <main className="flex-1 flex flex-col overflow-auto bg-[radial-gradient(circle_at_center,rgba(82,168,255,0.05),transparent_70%)]">
               <header className="flex h-14 items-center gap-4 border-b border-white/5 px-6 lg:hidden">
                 <SidebarTrigger />
                 <span className="text-sm font-bold text-gradient uppercase tracking-wider">DanceVerse</span>

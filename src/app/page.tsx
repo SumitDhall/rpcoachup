@@ -1,3 +1,4 @@
+
 import React from "react";
 
 export default function Page() {
@@ -12,7 +13,7 @@ export default function Page() {
             <p className="text-base md:text-lg text-muted-foreground font-medium uppercase tracking-[0.3em]">
               Universal Rhythm Dash
             </p>
-            <div className="h-1 w-24 bg-primary mx-auto rounded-full shadow-[0_0_15px_rgba(230,140,255,0.5)]" />
+            <div className="h-1 w-24 bg-primary mx-auto rounded-full shadow-[0_0_15px_rgba(82,168,255,0.5)]" />
           </div>
         </div>
       </main>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -55,7 +56,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-white/5 py-4 px-6">
         <div className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[0_0_15px_rgba(230,140,255,0.3)]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[0_0_15px_rgba(82,168,255,0.3)]">
             <DanceLogo />
           </div>
           <span className="text-xl font-bold text-gradient tracking-tight group-data-[collapsible=icon]:hidden">
