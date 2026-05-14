@@ -1,10 +1,39 @@
 
 import React from "react";
+import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export default function Page() {
   return (
-    <div className="flex flex-col h-full items-center justify-center">
-      <main className="flex flex-col items-center justify-center p-6">
+    <div className="flex flex-col h-full relative">
+      {/* Mobile Navigation Trigger - Visible only on mobile */}
+      <div className="md:hidden absolute top-6 right-6 z-50">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-10 w-10 text-primary">
+              <Menu className="h-8 w-8" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="glass-card border-l border-white/10">
+            <SheetHeader>
+              <SheetTitle className="text-gradient text-2xl font-bold">Menu</SheetTitle>
+            </SheetHeader>
+            <nav className="flex flex-col gap-4 mt-8">
+              <a href="#" className="text-lg font-medium hover:text-primary transition-colors">Artists</a>
+              <a href="#" className="text-lg font-medium hover:text-primary transition-colors">Sorties</a>
+            </nav>
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      <main className="flex flex-1 flex-col items-center justify-center p-6">
         <div className="text-center space-y-6 animate-in fade-in zoom-in duration-1000">
           <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-gradient italic">
             DANCEVERSE
