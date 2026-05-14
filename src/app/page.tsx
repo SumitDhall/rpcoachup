@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from "react";
@@ -11,23 +10,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-
-const DanceLogo = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="h-8 w-8"
-  >
-    <circle cx="12" cy="5" r="2.5" />
-    <path d="M12 7.5c-2.5 0-5.5 1.5-6.5 4s1.5 4.5 4.5 4.5 4.5-1.5 5.5-4-1.5-4.5-4.5-4.5z" />
-    <path d="M10 16v5M14 16v5" />
-    <path d="M5.5 11.5C3.5 13 2 16 2 16M18.5 11.5C20.5 13 22 16 22 16" />
-  </svg>
-);
 
 export default function Page() {
   return (
@@ -42,10 +24,7 @@ export default function Page() {
           </SheetTrigger>
           <SheetContent side="right" className="glass-card border-l border-white/10 w-80">
             <SheetHeader className="mb-8">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                  <DanceLogo />
-                </div>
+              <div className="flex items-center">
                 <SheetTitle className="text-gradient text-2xl font-bold">DanceVerse</SheetTitle>
               </div>
             </SheetHeader>
@@ -80,14 +59,9 @@ export default function Page() {
 
       {/* Desktop Persistent Right Sidebar */}
       <aside className="hidden md:flex w-72 flex-col glass-card border-l border-white/5 p-6 space-y-8 z-40">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-primary/20 rounded-xl text-primary shadow-[0_0_15px_rgba(82,168,255,0.2)]">
-            <DanceLogo />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xl font-bold text-gradient leading-none">DanceVerse</span>
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Admin Portal</span>
-          </div>
+        <div className="flex flex-col mb-4">
+          <span className="text-2xl font-bold text-gradient leading-none">DanceVerse</span>
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-2">Admin Portal</span>
         </div>
 
         <nav className="flex-1 flex flex-col gap-2">
