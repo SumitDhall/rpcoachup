@@ -1,6 +1,6 @@
 'use client';
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, Users, Calendar } from "lucide-react";
@@ -16,17 +16,22 @@ import { cn } from "@/lib/utils";
 
 export function NavigationShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   const navLinks = [
     { name: "Artists", href: "/artists", icon: Users },
     { name: "Sorties", href: "#", icon: Calendar },
   ];
 
+  const handleLinkClick = () => {
+    setOpen(false);
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
       {/* Mobile Navigation Trigger - Visible only on mobile */}
       <div className="md:hidden absolute top-6 right-6 z-50">
-        <Sheet>
+        <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="h-10 w-10 text-primary border border-primary/20 bg-card/50 backdrop-blur-sm">
               <Menu className="h-8 w-8" />
@@ -35,7 +40,13 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
           <SheetContent side="right" className="glass-card border-l border-white/10 w-80">
             <SheetHeader className="mb-8">
               <SheetTitle className="text-left">
-                <Link href="/" className="text-gradient text-2xl font-bold">DanceVerse</Link>
+                <Link 
+                  href="/" 
+                  className="text-gradient text-2xl font-bold"
+                  onClick={handleLinkClick}
+                >
+                  DanceVerse
+                </Link>
               </SheetTitle>
             </SheetHeader>
             <nav className="flex flex-col gap-2">
@@ -43,6 +54,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                 <Link
                   key={link.name}
                   href={link.href}
+                  onClick={handleLinkClick}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-lg font-bold uppercase tracking-wider transition-colors",
                     pathname === link.href ? "bg-primary/10 text-primary" : "hover:bg-white/5 text-muted-foreground hover:text-foreground"
