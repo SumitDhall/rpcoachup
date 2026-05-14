@@ -30,12 +30,12 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
-      {/* Mobile Navigation Trigger - Visible only on mobile */}
+      {/* Mobile Navigation Trigger - Top Right */}
       <div className="md:hidden absolute top-6 right-6 z-50">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-10 w-10 text-primary border border-primary/20 bg-card/50 backdrop-blur-sm">
-              <Menu className="h-8 w-8" />
+            <Button variant="default" size="icon" className="h-10 w-10 shadow-lg shadow-primary/20">
+              <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="glass-card border-l border-white/10 w-80">
@@ -46,7 +46,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   className="text-gradient text-2xl font-bold"
                   onClick={handleLinkClick}
                 >
-                  DanceVerse
+                  Dance Realm
                 </Link>
               </SheetTitle>
             </SheetHeader>
@@ -58,7 +58,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   onClick={handleLinkClick}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-lg font-bold uppercase tracking-wider transition-colors",
-                    pathname === link.href ? "bg-primary/10 text-primary" : "hover:bg-white/5 text-muted-foreground hover:text-foreground"
+                    pathname === link.href ? "bg-primary text-primary-foreground" : "hover:bg-white/5 text-muted-foreground hover:text-foreground"
                   )}
                 >
                   <link.icon className="h-5 w-5" />
@@ -94,11 +94,11 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
 
         <div className={cn("flex flex-col mb-8 overflow-hidden", isCollapsed ? "items-center" : "items-start")}>
           <Link href="/" className={cn("font-bold text-gradient leading-none transition-all", isCollapsed ? "text-xl" : "text-2xl")}>
-            {isCollapsed ? "DV" : "DanceVerse"}
+            {isCollapsed ? "DR" : "Dance Realm"}
           </Link>
           {!isCollapsed && (
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-2 animate-in fade-in duration-500 whitespace-nowrap">
-              Admin Portal
+              Connecting Dancers
             </span>
           )}
         </div>
@@ -134,7 +134,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
           <div className="pt-6 border-t border-white/5 mt-auto animate-in fade-in duration-500">
             <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-transparent p-4 border border-white/5">
               <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">System Status</p>
-              <p className="text-[10px] text-muted-foreground">All rhythms synchronized.</p>
+              <p className="text-[10px] text-muted-foreground">Realm synchronized.</p>
             </div>
           </div>
         )}

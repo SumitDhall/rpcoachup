@@ -3,8 +3,8 @@ import "./globals.css";
 import { NavigationShell } from "@/components/navigation-shell";
 
 export const metadata: Metadata = {
-  title: "DanceVerse | Your Rhythm, Your Universe",
-  description: "The rhythmic heart of your dance universe.",
+  title: "Dance Realm | Connecting Dancers Worldwide",
+  description: "Connecting Dancers Worldwide.",
 };
 
 export default function RootLayout({
