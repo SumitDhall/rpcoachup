@@ -10,11 +10,11 @@ export const performanceData = [
 ];
 
 export const danceStyleData = [
-  { style: 'Contemporary', count: 450, fill: 'hsl(var(--chart-1))' },
-  { style: 'Hip Hop', count: 380, fill: 'hsl(var(--chart-2))' },
-  { style: 'Ballet', count: 240, fill: 'hsl(var(--chart-3))' },
-  { style: 'Jazz', count: 180, fill: 'hsl(var(--chart-4))' },
-  { style: 'Latin', count: 150, fill: 'hsl(var(--chart-5))' },
+  { name: 'Contemporary', count: 450, fill: 'hsl(var(--chart-1))' },
+  { name: 'Hip Hop', count: 380, fill: 'hsl(var(--chart-2))' },
+  { name: 'Ballet', count: 240, fill: 'hsl(var(--chart-3))' },
+  { name: 'Jazz', count: 180, fill: 'hsl(var(--chart-4))' },
+  { name: 'Latin', count: 150, fill: 'hsl(var(--chart-5))' },
 ];
 
 export const metrics = [

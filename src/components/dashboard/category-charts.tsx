@@ -36,7 +36,7 @@ export function CategoryCharts() {
             <Pie
               data={danceStyleData}
               dataKey="count"
-              nameKey="style"
+              nameKey="name"
               innerRadius={60}
               outerRadius={80}
               strokeWidth={5}
@@ -50,9 +50,9 @@ export function CategoryCharts() {
         </ChartContainer>
         <div className="grid grid-cols-2 gap-4 mt-4 pb-4">
           {danceStyleData.map((item) => (
-            <div key={item.style} className="flex items-center space-x-2">
+            <div key={item.name} className="flex items-center space-x-2">
               <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.fill }} />
-              <span className="text-xs font-medium text-muted-foreground">{item.style}</span>
+              <span className="text-xs font-medium text-muted-foreground">{item.name}</span>
             </div>
           ))}
         </div>
