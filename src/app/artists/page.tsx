@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Search, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const MOCK_ARTISTS = [
   { id: 1, name: "Julianne Hough", style: "Ballroom" },
@@ -40,7 +41,7 @@ export default function ArtistsPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary/60" />
           <Input
             placeholder="Search by name or style..."
-            className="pl-12 h-14 text-lg glass-card border-white/10 focus-visible:ring-primary shadow-2xl shadow-primary/5"
+            className="pl-12 h-14 text-lg glass-card border-primary/30 focus:border-primary/60 hover:border-primary/50 transition-colors focus-visible:ring-primary shadow-2xl shadow-primary/5"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
