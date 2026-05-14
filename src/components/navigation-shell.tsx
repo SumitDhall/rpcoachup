@@ -34,9 +34,9 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
           </SheetTrigger>
           <SheetContent side="right" className="glass-card border-l border-white/10 w-80">
             <SheetHeader className="mb-8">
-              <div className="flex items-center">
+              <SheetTitle className="text-left">
                 <Link href="/" className="text-gradient text-2xl font-bold">DanceVerse</Link>
-              </div>
+              </SheetTitle>
             </SheetHeader>
             <nav className="flex flex-col gap-2">
               {navLinks.map((link) => (
