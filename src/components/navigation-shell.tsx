@@ -21,7 +21,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
 
   const navLinks = [
     { name: "Artists", href: "/artists", icon: Users },
-    { name: "Sorties", href: "#", icon: Calendar },
+    { name: "Sorties", href: "/sorties", icon: Calendar },
   ];
 
   const handleLinkClick = () => {
