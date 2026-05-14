@@ -2,13 +2,8 @@ import React from "react";
 
 export default function Page() {
   return (
-    <div className="flex flex-col h-full">
-      <header className="flex h-16 items-center border-b border-white/5 px-6 shrink-0">
-        <h2 className="ml-6 text-sm font-medium text-muted-foreground uppercase tracking-widest">
-          Home
-        </h2>
-      </header>
-      <main className="flex-1 flex flex-col items-center justify-center p-6">
+    <div className="flex flex-col h-full items-center justify-center">
+      <main className="flex flex-col items-center justify-center p-6">
         <div className="text-center space-y-6 animate-in fade-in zoom-in duration-1000">
           <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-gradient italic">
             DANCEVERSE
