@@ -1,0 +1,29 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "dance-bg",
+      "description": "Abstract dance movement",
+      "imageUrl": "https://picsum.photos/seed/dance1/1200/800",
+      "imageHint": "modern dance"
+    },
+    {
+      "id": "avatar-1",
+      "description": "Dancer Avatar 1",
+      "imageUrl": "https://picsum.photos/seed/dancer1/100/100",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "avatar-2",
+      "description": "Dancer Avatar 2",
+      "imageUrl": "https://picsum.photos/seed/dancer2/100/100",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "avatar-3",
+      "description": "Dancer Avatar 3",
+      "imageUrl": "https://picsum.photos/seed/dancer3/100/100",
+      "imageHint": "person portrait"
+    }
+  ]
+}
