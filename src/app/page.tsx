@@ -17,19 +17,15 @@ const DanceLogo = () => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth="2"
+    strokeWidth="1.5"
     strokeLinecap="round"
     strokeLinejoin="round"
     className="h-8 w-8"
   >
-    <path d="M12 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
-    <path d="M12 8v4" />
-    <path d="M10 12h4" />
-    <path d="M8 10c0-1 2-2 4-2s4 1 4 2" />
-    <path d="m7 21 3-5 2-4" />
-    <path d="m17 21-3-5-2-4" />
-    <path d="m14 12 4-2" />
-    <path d="m10 12-4-2" />
+    <circle cx="12" cy="5" r="2.5" />
+    <path d="M12 7.5c-2.5 0-5.5 1.5-6.5 4s1.5 4.5 4.5 4.5 4.5-1.5 5.5-4-1.5-4.5-4.5-4.5z" />
+    <path d="M10 16v5M14 16v5" />
+    <path d="M5.5 11.5C3.5 13 2 16 2 16M18.5 11.5C20.5 13 22 16 22 16" />
   </svg>
 );
 
