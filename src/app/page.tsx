@@ -1,6 +1,8 @@
 
+'use client';
+
 import React from "react";
-import { Menu } from "lucide-react";
+import { Menu, Users, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -10,36 +12,54 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+const DanceLogo = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="h-8 w-8"
+  >
+    <path d="M12 4a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
+    <path d="M12 8v4" />
+    <path d="M10 12h4" />
+    <path d="M8 10c0-1 2-2 4-2s4 1 4 2" />
+    <path d="m7 21 3-5 2-4" />
+    <path d="m17 21-3-5-2-4" />
+    <path d="m14 12 4-2" />
+    <path d="m10 12-4-2" />
+  </svg>
+);
+
 export default function Page() {
   return (
-    <div className="flex flex-col h-full relative">
-      {/* Desktop Navigation - Visible only on larger screens */}
-      <nav className="hidden md:flex absolute top-10 right-10 z-50 items-center gap-8">
-        <a href="#" className="text-sm font-bold uppercase tracking-widest hover:text-primary transition-colors">
-          Artists
-        </a>
-        <a href="#" className="text-sm font-bold uppercase tracking-widest hover:text-primary transition-colors">
-          Sorties
-        </a>
-      </nav>
-
+    <div className="flex h-screen w-full overflow-hidden bg-background">
       {/* Mobile Navigation Trigger - Visible only on mobile */}
       <div className="md:hidden absolute top-6 right-6 z-50">
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-10 w-10 text-primary">
+            <Button variant="ghost" size="icon" className="h-10 w-10 text-primary border border-primary/20 bg-card/50 backdrop-blur-sm">
               <Menu className="h-8 w-8" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="glass-card border-l border-white/10">
-            <SheetHeader>
-              <SheetTitle className="text-gradient text-2xl font-bold text-left">Menu</SheetTitle>
+          <SheetContent side="right" className="glass-card border-l border-white/10 w-80">
+            <SheetHeader className="mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                  <DanceLogo />
+                </div>
+                <SheetTitle className="text-gradient text-2xl font-bold">DanceVerse</SheetTitle>
+              </div>
             </SheetHeader>
-            <nav className="flex flex-col gap-6 mt-12">
-              <a href="#" className="text-xl font-bold uppercase tracking-wider hover:text-primary transition-colors">
+            <nav className="flex flex-col gap-2">
+              <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary font-bold uppercase tracking-wider transition-colors">
+                <Users className="h-5 w-5" />
                 Artists
               </a>
-              <a href="#" className="text-xl font-bold uppercase tracking-wider hover:text-primary transition-colors">
+              <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-foreground font-bold uppercase tracking-wider transition-colors">
+                <Calendar className="h-5 w-5" />
                 Sorties
               </a>
             </nav>
@@ -47,7 +67,8 @@ export default function Page() {
         </Sheet>
       </div>
 
-      <main className="flex flex-1 flex-col items-center justify-center p-6">
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col items-center justify-center p-6 relative">
         <div className="text-center space-y-6 animate-in fade-in zoom-in duration-1000">
           <h1 className="text-6xl md:text-9xl font-black tracking-tighter text-gradient italic">
             DANCEVERSE
@@ -60,6 +81,46 @@ export default function Page() {
           </div>
         </div>
       </main>
+
+      {/* Desktop Persistent Right Sidebar */}
+      <aside className="hidden md:flex w-72 flex-col glass-card border-l border-white/5 p-6 space-y-8 z-40">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-primary/20 rounded-xl text-primary shadow-[0_0_15px_rgba(82,168,255,0.2)]">
+            <DanceLogo />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xl font-bold text-gradient leading-none">DanceVerse</span>
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Admin Portal</span>
+          </div>
+        </div>
+
+        <nav className="flex-1 flex flex-col gap-2">
+          <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-bold px-4 mb-2">
+            Navigation
+          </div>
+          <a 
+            href="#" 
+            className="flex items-center gap-4 px-4 py-3 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 font-bold uppercase tracking-widest text-xs transition-all hover:scale-[1.02]"
+          >
+            <Users className="h-4 w-4" />
+            Artists
+          </a>
+          <a 
+            href="#" 
+            className="flex items-center gap-4 px-4 py-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 font-bold uppercase tracking-widest text-xs transition-all"
+          >
+            <Calendar className="h-4 w-4" />
+            Sorties
+          </a>
+        </nav>
+
+        <div className="pt-6 border-t border-white/5 mt-auto">
+          <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-transparent p-4 border border-white/5">
+            <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">System Status</p>
+            <p className="text-[10px] text-muted-foreground">All rhythms synchronized.</p>
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }
