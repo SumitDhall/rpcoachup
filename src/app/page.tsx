@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Page() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-6 relative overflow-hidden dance-pattern bg-[#050816]">
+    <div className="flex min-h-screen flex-col items-center justify-center p-6 relative overflow-hidden dance-pattern bg-[#050816]">
       {/* Dynamic Animated Blobs */}
       <div className="blob top-0 -left-20" />
       <div className="blob blob-reverse bottom-0 -right-20" />
@@ -60,6 +60,6 @@ export default function Page() {
       </div>
 
       <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#050816] to-transparent z-20" />
-    </main>
+    </div>
   );
 }

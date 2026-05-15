@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Users, Calendar, ChevronLeft, ChevronRight, Zap } from "lucide-react";
+import { Menu, Users, Calendar, ChevronLeft, ChevronRight, Zap, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -22,6 +22,11 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
   const navLinks = [
     { name: "Artists", href: "/artists", icon: Users },
     { name: "Sorties", href: "/sorties", icon: Calendar },
+  ];
+
+  const authLinks = [
+    { name: "Sign In", href: "/login", icon: LogIn },
+    { name: "Register", href: "/register", icon: UserPlus },
   ];
 
   const handleLinkClick = () => {
@@ -51,7 +56,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
               </SheetTitle>
             </SheetHeader>
             <nav className="flex flex-col gap-4">
-              {navLinks.map((link) => (
+              {[...navLinks, ...authLinks].map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
@@ -131,6 +136,32 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
               )}
             </Link>
           ))}
+
+          <div className="mt-8 space-y-2">
+            {!isCollapsed && (
+              <div className="text-[10px] uppercase tracking-[0.5em] text-[#F4F7FF]/20 font-black px-4 mb-2">
+                Account
+              </div>
+            )}
+            {authLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className={cn(
+                  "flex items-center transition-all font-black uppercase tracking-[0.2em] text-[11px]",
+                  isCollapsed ? "justify-center p-4 rounded-2xl" : "gap-5 px-6 py-4 rounded-2xl",
+                  pathname === link.href 
+                    ? "bg-vibrant-gradient text-[#050816] shadow-2xl shadow-primary/40 scale-[1.05]" 
+                    : "text-[#F4F7FF]/50 hover:text-white hover:bg-white/5"
+                )}
+              >
+                <link.icon className={cn("shrink-0", isCollapsed ? "h-6 w-6" : "h-5 w-5")} />
+                {!isCollapsed && (
+                  <span className="animate-in slide-in-from-left-4 duration-500">{link.name}</span>
+                )}
+              </Link>
+            ))}
+          </div>
         </nav>
 
         {!isCollapsed && (

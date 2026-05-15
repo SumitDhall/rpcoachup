@@ -48,6 +48,10 @@
   @apply bg-gradient-to-br from-[#3DDCFF] via-[#8B5CFF] to-[#FF4FD8];
 }
 
+.bg-radial-gradient {
+  background: radial-gradient(circle at center, var(--tw-gradient-from) 0%, var(--tw-gradient-to) 100%);
+}
+
 /* Animated Blobs */
 .blob {
   position: absolute;
