@@ -86,3 +86,68 @@ export const activities = [
     type: 'update',
   },
 ];
+
+export const ARTISTS = [
+  { 
+    id: "1", 
+    name: "Julianne Hough", 
+    style: "Ballroom",
+    description: "A two-time professional champion of ABC's Dancing with the Stars, Julianne has become a household name in the world of ballroom dance and entertainment.",
+    image: "https://picsum.photos/seed/artist1/800/800",
+    videos: [
+      { id: "v1", title: "Samba Soul", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
+      { id: "v2", title: "Cha Cha Champions", url: "https://www.w3schools.com/html/movie.mp4" }
+    ]
+  },
+  { 
+    id: "2", 
+    name: "Derek Hough", 
+    style: "Contemporary",
+    description: "Emmy Award-winning choreographer and New York Times Best Selling author, Derek Hough is a powerhouse of creative expression and technical excellence.",
+    image: "https://picsum.photos/seed/artist2/800/800",
+    videos: [
+      { id: "v3", title: "Emotional Flow", url: "https://www.w3schools.com/html/movie.mp4" },
+      { id: "v4", title: "Modern Masterpiece", url: "https://www.w3schools.com/html/mov_bbb.mp4" }
+    ]
+  },
+  { 
+    id: "3", 
+    name: "Misty Copeland", 
+    style: "Ballet",
+    description: "The first African American woman to be promoted to principal dancer in ABT's 75-year history, Misty is a true pioneer and inspiration.",
+    image: "https://picsum.photos/seed/artist3/800/800",
+    videos: [
+      { id: "v5", title: "Swan Lake Solo", url: "https://www.w3schools.com/html/mov_bbb.mp4" }
+    ]
+  },
+  { 
+    id: "4", 
+    name: "Les Twins", 
+    style: "Hip Hop",
+    description: "Larry and Laurent Bourgeois are world-renowned creators, entertainers, and dancers recognized for their innovative freestyle technique.",
+    image: "https://picsum.photos/seed/artist4/800/800",
+    videos: [
+      { id: "v6", title: "New Style Session", url: "https://www.w3schools.com/html/movie.mp4" }
+    ]
+  },
+  { 
+    id: "5", 
+    name: "Travis Wall", 
+    style: "Jazz",
+    description: "Known for his work on So You Think You Can Dance, Travis is a master of contemporary jazz storytelling through intricate movement.",
+    image: "https://picsum.photos/seed/artist5/800/800",
+    videos: [
+      { id: "v7", title: "Jazz Fusion", url: "https://www.w3schools.com/html/mov_bbb.mp4" }
+    ]
+  },
+  { 
+    id: "6", 
+    name: "Parris Goebel", 
+    style: "Urban",
+    description: "Creator of the 'Polyswagg' style, Parris is the visionary behind some of the most iconic music video choreographies in modern history.",
+    image: "https://picsum.photos/seed/artist6/800/800",
+    videos: [
+      { id: "v8", title: "Urban Pulse", url: "https://www.w3schools.com/html/movie.mp4" }
+    ]
+  }
+];

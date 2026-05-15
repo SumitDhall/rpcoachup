@@ -24,6 +24,12 @@
       "description": "Dancer Avatar 3",
       "imageUrl": "https://picsum.photos/seed/dancer3/100/100",
       "imageHint": "person portrait"
+    },
+    {
+      "id": "artist-hero",
+      "description": "Professional dancer in action",
+      "imageUrl": "https://picsum.photos/seed/dancepro/800/600",
+      "imageHint": "professional dancer"
     }
   ]
 }
