@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -28,6 +28,8 @@ export default function ArtistDetailPage() {
   
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!artist) {
     return (
@@ -40,7 +42,26 @@ export default function ArtistDetailPage() {
     );
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   const handleUpload = () => {
+    if (!selectedFile) {
+      toast({
+        variant: "destructive",
+        title: "No file selected",
+        description: "Please choose a video file to upload.",
+      });
+      return;
+    }
+
     setIsUploading(true);
     let progress = 0;
     const interval = setInterval(() => {
@@ -51,9 +72,10 @@ export default function ArtistDetailPage() {
         setTimeout(() => {
           setIsUploading(false);
           setUploadProgress(0);
+          setSelectedFile(null);
           toast({
             title: "Success!",
-            description: `A new performance has been added to ${artist.name}'s profile.`,
+            description: `Performance "${selectedFile.name}" has been added to ${artist.name}'s profile.`,
           });
         }, 500);
       }
@@ -146,9 +168,21 @@ export default function ArtistDetailPage() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Video File</Label>
-                    <div className="border-2 border-dashed border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 bg-black/10 hover:bg-black/20 transition-colors cursor-pointer group">
+                    <div 
+                      onClick={triggerFileInput}
+                      className="border-2 border-dashed border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 bg-black/10 hover:bg-black/20 transition-colors cursor-pointer group"
+                    >
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        className="hidden" 
+                        accept="video/*" 
+                        onChange={handleFileChange}
+                      />
                       <FileVideo className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors" />
-                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Select Video File</span>
+                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest text-center px-4">
+                        {selectedFile ? selectedFile.name : "Select Video File"}
+                      </span>
                     </div>
                   </div>
                   {isUploading && (
@@ -169,8 +203,8 @@ export default function ArtistDetailPage() {
                 <DialogFooter>
                   <Button 
                     onClick={handleUpload} 
-                    disabled={isUploading}
-                    className="w-full h-12 rounded-xl font-black uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90"
+                    disabled={isUploading || !selectedFile}
+                    className="w-full h-12 rounded-xl font-black uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                   >
                     {isUploading ? "Syncing to Realm..." : "Finish Upload"}
                   </Button>
