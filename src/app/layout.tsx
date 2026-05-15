@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { NavigationShell } from "@/components/navigation-shell";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "Dance Realm | Connecting Dancers Worldwide",
@@ -23,6 +24,7 @@ export default function RootLayout({
         <NavigationShell>
           {children}
         </NavigationShell>
+        <Toaster />
       </body>
     </html>
   );

@@ -74,14 +74,16 @@ export default function ArtistDetailPage() {
           setIsUploading(false);
           setUploadProgress(0);
           setSelectedFile(null);
-          setIsDialogOpen(false); // Automatically close the dialog
+          setIsDialogOpen(false); 
+          
+          // Successful notification displayed on the main screen
           toast({
-            title: "Success!",
-            description: `Performance has been successfully synced to the Dance Realm.`,
+            title: "Performance Synced!",
+            description: "Your video has been successfully added to the Dance Realm gallery.",
           });
-        }, 500);
+        }, 300);
       }
-    }, 200);
+    }, 150);
   };
 
   return (
