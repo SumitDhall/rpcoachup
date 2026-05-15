@@ -1,18 +1,33 @@
-
 'use client';
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Play, Music2, Share2, Heart } from "lucide-react";
+import { ArrowLeft, Play, Music2, Share2, Heart, Upload, FileVideo } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ARTISTS } from "@/lib/mock-data";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ArtistDetailPage() {
   const { id } = useParams();
   const artist = ARTISTS.find((a) => a.id === id);
+  const { toast } = useToast();
+  
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   if (!artist) {
     return (
@@ -24,6 +39,26 @@ export default function ArtistDetailPage() {
       </div>
     );
   }
+
+  const handleUpload = () => {
+    setIsUploading(true);
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      setUploadProgress(progress);
+      if (progress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          setIsUploading(false);
+          setUploadProgress(0);
+          toast({
+            title: "Success!",
+            description: `A new performance has been added to ${artist.name}'s profile.`,
+          });
+        }, 500);
+      }
+    }, 200);
+  };
 
   return (
     <div className="min-h-screen bg-background relative pb-20">
@@ -89,7 +124,59 @@ export default function ArtistDetailPage() {
         <div className="lg:col-span-2 space-y-8">
           <div className="flex items-center justify-between">
             <h2 className="text-3xl font-black italic uppercase tracking-tighter">Performances</h2>
-            <div className="h-px flex-1 mx-6 bg-gradient-to-r from-primary/20 to-transparent" />
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="h-10 px-4 rounded-full border-primary/40 text-primary hover:bg-primary/5 font-black uppercase tracking-widest text-[10px]">
+                  <Upload className="w-3.5 h-3.5 mr-2" />
+                  Add New Video
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-card border-white/10 sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Upload for {artist.name}</DialogTitle>
+                  <DialogDescription className="text-xs uppercase tracking-widest font-bold opacity-70">
+                    Sync a new masterpiece to this artist's realm
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-6 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="video-title" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Performance Title</Label>
+                    <Input id="video-title" placeholder="e.g. Midnight Samba Flow" className="bg-black/20 border-white/10" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Video File</Label>
+                    <div className="border-2 border-dashed border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 bg-black/10 hover:bg-black/20 transition-colors cursor-pointer group">
+                      <FileVideo className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Select Video File</span>
+                    </div>
+                  </div>
+                  {isUploading && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
+                        <span>Uploading...</span>
+                        <span>{uploadProgress}%</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-primary transition-all duration-300" 
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button 
+                    onClick={handleUpload} 
+                    disabled={isUploading}
+                    className="w-full h-12 rounded-xl font-black uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    {isUploading ? "Syncing to Realm..." : "Finish Upload"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
