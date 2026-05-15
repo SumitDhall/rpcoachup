@@ -29,16 +29,16 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
+    <div className="flex h-screen w-full overflow-hidden bg-[#050816]">
       {/* Mobile Navigation Trigger */}
       <div className="md:hidden absolute top-6 right-6 z-50">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="default" size="icon" className="h-12 w-12 rounded-2xl bg-vibrant-gradient shadow-lg shadow-primary/40">
-              <Menu className="h-6 w-6" />
+              <Menu className="h-6 w-6 text-[#050816]" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="glass-card border-l border-white/10 w-80">
+          <SheetContent side="right" className="glass-card border-l border-white/10 w-80 bg-[#050816]/95">
             <SheetHeader className="mb-8">
               <SheetTitle className="text-left">
                 <Link 
@@ -59,8 +59,8 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   className={cn(
                     "flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-sm transition-all",
                     pathname === link.href 
-                      ? "bg-vibrant-gradient text-white shadow-xl shadow-primary/30" 
-                      : "hover:bg-white/5 text-white/60 hover:text-white"
+                      ? "bg-vibrant-gradient text-[#050816] shadow-xl shadow-primary/30" 
+                      : "hover:bg-white/5 text-[#F4F7FF]/60 hover:text-white"
                   )}
                 >
                   <link.icon className="h-5 w-5" />
@@ -88,7 +88,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
           variant="ghost"
           size="icon"
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -left-5 top-12 h-10 w-10 rounded-full bg-card border border-white/20 text-primary shadow-2xl hover:bg-primary hover:text-white transition-all z-50"
+          className="absolute -left-5 top-12 h-10 w-10 rounded-full bg-card border border-white/20 text-primary shadow-2xl hover:bg-primary hover:text-background transition-all z-50"
         >
           {isCollapsed ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
         </Button>
@@ -99,8 +99,8 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
           </Link>
           {!isCollapsed && (
             <div className="flex items-center gap-2 mt-3 animate-in fade-in slide-in-from-left-4 duration-700">
-              <Zap className="h-3 w-3 text-accent fill-accent" />
-              <span className="text-[10px] uppercase tracking-[0.4em] font-black text-white/40 whitespace-nowrap">
+              <Zap className="h-3 w-3 text-secondary fill-secondary" />
+              <span className="text-[10px] uppercase tracking-[0.4em] font-black text-[#F4F7FF]/40 whitespace-nowrap">
                 Connecting Dancers Worldwide
               </span>
             </div>
@@ -109,7 +109,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
 
         <nav className="flex-1 flex flex-col gap-3">
           {!isCollapsed && (
-            <div className="text-[10px] uppercase tracking-[0.5em] text-white/20 font-black px-4 mb-4">
+            <div className="text-[10px] uppercase tracking-[0.5em] text-[#F4F7FF]/20 font-black px-4 mb-4">
               Menu
             </div>
           )}
@@ -121,8 +121,8 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                 "flex items-center transition-all font-black uppercase tracking-[0.2em] text-[11px]",
                 isCollapsed ? "justify-center p-4 rounded-2xl" : "gap-5 px-6 py-4 rounded-2xl",
                 pathname === link.href 
-                  ? "bg-vibrant-gradient text-white shadow-2xl shadow-primary/40 scale-[1.05]" 
-                  : "text-white/50 hover:text-white hover:bg-white/5"
+                  ? "bg-vibrant-gradient text-[#050816] shadow-2xl shadow-primary/40 scale-[1.05]" 
+                  : "text-[#F4F7FF]/50 hover:text-white hover:bg-white/5"
               )}
             >
               <link.icon className={cn("shrink-0", isCollapsed ? "h-6 w-6" : "h-5 w-5")} />
@@ -140,7 +140,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
               <p className="text-[10px] font-black text-accent uppercase tracking-[0.3em] mb-2">Live Status</p>
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]" />
-                <p className="text-[10px] font-bold text-white/60">Realm Synchronized</p>
+                <p className="text-[10px] font-bold text-[#F4F7FF]/60">Realm Synchronized</p>
               </div>
             </div>
           </div>

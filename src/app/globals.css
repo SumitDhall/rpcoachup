@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 260 40% 2%;
-    --foreground: 0 0% 98%;
-    --card: 260 40% 4%;
-    --card-foreground: 0 0% 98%;
-    --popover: 260 40% 3%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 320 100% 60%; /* Vibrant Pink */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 260 100% 65%; /* Electric Purple */
-    --secondary-foreground: 0 0% 98%;
-    --muted: 260 30% 15%;
-    --muted-foreground: 260 10% 70%;
-    --accent: 30 100% 60%; /* Neon Orange */
-    --accent-foreground: 0 0% 98%;
+    --background: 229 64% 5%; /* #050816 */
+    --foreground: 225 100% 98%; /* #F4F7FF */
+    --card: 229 64% 7%;
+    --card-foreground: 225 100% 98%;
+    --popover: 229 64% 6%;
+    --popover-foreground: 225 100% 98%;
+    --primary: 191 100% 62%; /* Cyan #3DDCFF */
+    --primary-foreground: 229 64% 5%;
+    --secondary: 257 100% 68%; /* Purple #8B5CFF */
+    --secondary-foreground: 225 100% 98%;
+    --muted: 229 30% 15%;
+    --muted-foreground: 225 20% 70%;
+    --accent: 314 100% 65%; /* Pink #FF4FD8 */
+    --accent-foreground: 225 100% 98%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 260 30% 12%;
-    --input: 260 30% 12%;
-    --ring: 320 100% 60%;
+    --border: 229 30% 12%;
+    --input: 229 30% 12%;
+    --ring: 191 100% 62%;
     --radius: 1rem;
   }
 }
@@ -32,20 +32,20 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body antialiased selection:bg-primary selection:text-white;
+    @apply bg-background text-foreground font-body antialiased selection:bg-primary selection:text-background;
   }
 }
 
 .glass-card {
-  @apply bg-card/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+  @apply bg-card/40 backdrop-blur-xl border border-white/5 shadow-2xl;
 }
 
 .text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#ff00ea] via-[#8a2be2] to-[#ff8c00];
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#3DDCFF] via-[#8B5CFF] to-[#FF4FD8];
 }
 
 .bg-vibrant-gradient {
-  @apply bg-gradient-to-br from-[#ff00ea] via-[#8a2be2] to-[#ff8c00];
+  @apply bg-gradient-to-br from-[#3DDCFF] via-[#8B5CFF] to-[#FF4FD8];
 }
 
 /* Animated Blobs */
@@ -53,7 +53,7 @@
   position: absolute;
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(255,0,234,0.15) 0%, rgba(138,43,226,0.05) 100%);
+  background: radial-gradient(circle, rgba(61,220,255,0.15) 0%, rgba(139,92,255,0.05) 100%);
   filter: blur(80px);
   border-radius: 50%;
   z-index: -1;
@@ -66,7 +66,7 @@
 }
 
 .blob-reverse {
-  background: radial-gradient(circle, rgba(255,140,0,0.1) 0%, rgba(255,0,234,0.05) 100%);
+  background: radial-gradient(circle, rgba(255,79,216,0.1) 0%, rgba(61,220,255,0.05) 100%);
   animation: move-reverse 30s infinite alternate ease-in-out;
 }
 
@@ -77,5 +77,5 @@
 
 /* Dance Silhouette Overlay */
 .dance-pattern {
-  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 20c2 0 4 2 4 4s-2 4-4 4-4-2-4-4 2-4 4-4zm-5 10h10v15H45zM40 30l5 5v10l-5 5M60 30l-5 5v10l5 5M45 45l-5 15M55 45l5 15' stroke='%23ffffff' stroke-opacity='0.03' fill='none'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 20c2 0 4 2 4 4s-2 4-4 4-4-2-4-4 2-4 4-4zm-5 10h10v15H45zM40 30l5 5v10l-5 5M60 30l-5 5v10l5 5M45 45l-5 15M55 45l5 15' stroke='%233DDCFF' stroke-opacity='0.03' fill='none'/%3E%3C/svg%3E");
 }
