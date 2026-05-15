@@ -92,13 +92,13 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
           {isCollapsed ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </Button>
 
-        <div className={cn("flex flex-col mb-8 overflow-hidden", isCollapsed ? "items-center" : "items-start")}>
+        <div className={cn("flex flex-col mb-8", isCollapsed ? "items-center" : "items-start")}>
           <Link href="/" className={cn("font-bold text-gradient leading-none transition-all", isCollapsed ? "text-xl" : "text-2xl")}>
             {isCollapsed ? "DR" : "Dance Realm"}
           </Link>
           {!isCollapsed && (
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-2 animate-in fade-in duration-500 whitespace-nowrap">
-              Connecting Dancers
+            <span className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground mt-2 animate-in fade-in duration-500 whitespace-nowrap block w-full">
+              Connecting Dancers Worldwide
             </span>
           )}
         </div>
