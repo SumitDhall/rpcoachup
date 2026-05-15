@@ -1,35 +1,29 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 222 47% 4%;
+    --background: 260 40% 2%;
     --foreground: 0 0% 98%;
-    --card: 222 47% 6%;
+    --card: 260 40% 4%;
     --card-foreground: 0 0% 98%;
-    --popover: 222 47% 4%;
+    --popover: 260 40% 3%;
     --popover-foreground: 0 0% 98%;
-    --primary: 210 100% 66%;
-    --primary-foreground: 222 47% 4%;
-    --secondary: 174 75% 46%;
+    --primary: 320 100% 60%; /* Vibrant Pink */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 260 100% 65%; /* Electric Purple */
     --secondary-foreground: 0 0% 98%;
-    --muted: 222 47% 15%;
-    --muted-foreground: 222 10% 70%;
-    --accent: 174 75% 46%;
+    --muted: 260 30% 15%;
+    --muted-foreground: 260 10% 70%;
+    --accent: 30 100% 60%; /* Neon Orange */
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 222 47% 15%;
-    --input: 222 47% 15%;
-    --ring: 210 100% 66%;
-    --chart-1: 210 100% 66%;
-    --chart-2: 174 75% 46%;
-    --chart-3: 199 89% 48%;
-    --chart-4: 240 70% 70%;
-    --chart-5: 200 60% 80%;
-    --radius: 0.75rem;
+    --border: 260 30% 12%;
+    --input: 260 30% 12%;
+    --ring: 320 100% 60%;
+    --radius: 1rem;
   }
 }
 
@@ -38,14 +32,50 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-background text-foreground font-body antialiased selection:bg-primary selection:text-white;
   }
 }
 
 .glass-card {
-  @apply bg-card/50 backdrop-blur-md border border-white/5;
+  @apply bg-card/40 backdrop-blur-xl border border-white/10 shadow-2xl;
 }
 
 .text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#52a8ff] to-[#00f2fe];
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#ff00ea] via-[#8a2be2] to-[#ff8c00];
+}
+
+.bg-vibrant-gradient {
+  @apply bg-gradient-to-br from-[#ff00ea] via-[#8a2be2] to-[#ff8c00];
+}
+
+/* Animated Blobs */
+.blob {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255,0,234,0.15) 0%, rgba(138,43,226,0.05) 100%);
+  filter: blur(80px);
+  border-radius: 50%;
+  z-index: -1;
+  animation: move 25s infinite alternate ease-in-out;
+}
+
+@keyframes move {
+  from { transform: translate(-10%, -10%) scale(1); }
+  to { transform: translate(20%, 20%) scale(1.2); }
+}
+
+.blob-reverse {
+  background: radial-gradient(circle, rgba(255,140,0,0.1) 0%, rgba(255,0,234,0.05) 100%);
+  animation: move-reverse 30s infinite alternate ease-in-out;
+}
+
+@keyframes move-reverse {
+  from { transform: translate(10%, 10%) scale(1.1); }
+  to { transform: translate(-20%, -20%) scale(0.9); }
+}
+
+/* Dance Silhouette Overlay */
+.dance-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 20c2 0 4 2 4 4s-2 4-4 4-4-2-4-4 2-4 4-4zm-5 10h10v15H45zM40 30l5 5v10l-5 5M60 30l-5 5v10l5 5M45 45l-5 15M55 45l5 15' stroke='%23ffffff' stroke-opacity='0.03' fill='none'/%3E%3C/svg%3E");
 }

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Users, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Menu, Users, Calendar, ChevronLeft, ChevronRight, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -30,11 +30,11 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
-      {/* Mobile Navigation Trigger - Top Right */}
+      {/* Mobile Navigation Trigger */}
       <div className="md:hidden absolute top-6 right-6 z-50">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="default" size="icon" className="h-10 w-10 shadow-lg shadow-primary/20">
+            <Button variant="default" size="icon" className="h-12 w-12 rounded-2xl bg-vibrant-gradient shadow-lg shadow-primary/40">
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
@@ -43,22 +43,24 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
               <SheetTitle className="text-left">
                 <Link 
                   href="/" 
-                  className="text-gradient text-2xl font-bold"
+                  className="text-gradient text-3xl font-black italic uppercase tracking-tighter"
                   onClick={handleLinkClick}
                 >
                   Dance Realm
                 </Link>
               </SheetTitle>
             </SheetHeader>
-            <nav className="flex flex-col gap-2">
+            <nav className="flex flex-col gap-4">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
                   onClick={handleLinkClick}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg font-bold uppercase tracking-wider transition-colors",
-                    pathname === link.href ? "bg-primary text-primary-foreground" : "hover:bg-white/5 text-muted-foreground hover:text-foreground"
+                    "flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-sm transition-all",
+                    pathname === link.href 
+                      ? "bg-vibrant-gradient text-white shadow-xl shadow-primary/30" 
+                      : "hover:bg-white/5 text-white/60 hover:text-white"
                   )}
                 >
                   <link.icon className="h-5 w-5" />
@@ -75,66 +77,71 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      {/* Desktop Persistent Right Sidebar - Collapsible */}
+      {/* Desktop Persistent Sidebar */}
       <aside 
         className={cn(
-          "hidden md:flex flex-col glass-card border-l border-white/5 p-6 transition-all duration-300 relative z-40 h-full",
-          isCollapsed ? "w-20" : "w-72"
+          "hidden md:flex flex-col glass-card border-l border-white/10 p-6 transition-all duration-500 relative z-40 h-full",
+          isCollapsed ? "w-24" : "w-80"
         )}
       >
-        {/* Toggle Button for Desktop Sidebar */}
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -left-4 top-10 h-8 w-8 rounded-full bg-card border border-white/10 text-primary shadow-xl hover:bg-primary/10 transition-colors z-50"
+          className="absolute -left-5 top-12 h-10 w-10 rounded-full bg-card border border-white/20 text-primary shadow-2xl hover:bg-primary hover:text-white transition-all z-50"
         >
-          {isCollapsed ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          {isCollapsed ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
         </Button>
 
-        <div className={cn("flex flex-col mb-8", isCollapsed ? "items-center" : "items-start")}>
-          <Link href="/" className={cn("font-bold text-gradient leading-none transition-all", isCollapsed ? "text-xl" : "text-2xl")}>
+        <div className={cn("flex flex-col mb-12", isCollapsed ? "items-center" : "items-start")}>
+          <Link href="/" className={cn("font-black text-gradient italic leading-none transition-all uppercase tracking-tighter", isCollapsed ? "text-2xl" : "text-4xl")}>
             {isCollapsed ? "DR" : "Dance Realm"}
           </Link>
           {!isCollapsed && (
-            <span className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground mt-2 animate-in fade-in duration-500 whitespace-nowrap block w-full">
-              Connecting Dancers Worldwide
-            </span>
+            <div className="flex items-center gap-2 mt-3 animate-in fade-in slide-in-from-left-4 duration-700">
+              <Zap className="h-3 w-3 text-accent fill-accent" />
+              <span className="text-[10px] uppercase tracking-[0.4em] font-black text-white/40 whitespace-nowrap">
+                Connecting Dancers Worldwide
+              </span>
+            </div>
           )}
         </div>
 
-        <nav className="flex-1 flex flex-col gap-2">
+        <nav className="flex-1 flex flex-col gap-3">
           {!isCollapsed && (
-            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-bold px-4 mb-2 animate-in fade-in duration-500">
-              Navigation
+            <div className="text-[10px] uppercase tracking-[0.5em] text-white/20 font-black px-4 mb-4">
+              Menu
             </div>
           )}
           {navLinks.map((link) => (
             <Link
               key={link.name}
               href={link.href}
-              title={isCollapsed ? link.name : ""}
               className={cn(
-                "flex items-center transition-all font-bold uppercase tracking-widest text-xs",
-                isCollapsed ? "justify-center p-3 rounded-lg" : "gap-4 px-4 py-3 rounded-xl",
+                "flex items-center transition-all font-black uppercase tracking-[0.2em] text-[11px]",
+                isCollapsed ? "justify-center p-4 rounded-2xl" : "gap-5 px-6 py-4 rounded-2xl",
                 pathname === link.href 
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02]" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                  ? "bg-vibrant-gradient text-white shadow-2xl shadow-primary/40 scale-[1.05]" 
+                  : "text-white/50 hover:text-white hover:bg-white/5"
               )}
             >
-              <link.icon className={cn("shrink-0", isCollapsed ? "h-6 w-6" : "h-4 w-4")} />
+              <link.icon className={cn("shrink-0", isCollapsed ? "h-6 w-6" : "h-5 w-5")} />
               {!isCollapsed && (
-                <span className="truncate animate-in slide-in-from-left-2 duration-300">{link.name}</span>
+                <span className="animate-in slide-in-from-left-4 duration-500">{link.name}</span>
               )}
             </Link>
           ))}
         </nav>
 
         {!isCollapsed && (
-          <div className="pt-6 border-t border-white/5 mt-auto animate-in fade-in duration-500">
-            <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-transparent p-4 border border-white/5">
-              <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">System Status</p>
-              <p className="text-[10px] text-muted-foreground">Realm synchronized.</p>
+          <div className="pt-8 border-t border-white/5 mt-auto animate-in fade-in duration-1000">
+            <div className="rounded-3xl bg-gradient-to-br from-white/5 to-transparent p-6 border border-white/5 relative overflow-hidden group">
+              <div className="absolute -top-10 -right-10 w-24 h-24 bg-primary/20 blur-3xl group-hover:bg-accent/30 transition-all" />
+              <p className="text-[10px] font-black text-accent uppercase tracking-[0.3em] mb-2">Live Status</p>
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]" />
+                <p className="text-[10px] font-bold text-white/60">Realm Synchronized</p>
+              </div>
             </div>
           </div>
         )}
