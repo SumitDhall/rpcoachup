@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Play, Music2, Share2, Heart, Upload, FileVideo } from "lucide-react";
+import { ArrowLeft, Play, Music2, Share2, Heart, Upload, FileVideo, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ARTISTS } from "@/lib/mock-data";
@@ -20,6 +20,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function ArtistDetailPage() {
   const { id } = useParams();
@@ -30,6 +31,7 @@ export default function ArtistDetailPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [videoTitle, setVideoTitle] = useState("");
+  const [videoCategory, setVideoCategory] = useState("performance");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [artistVideos, setArtistVideos] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -74,17 +76,17 @@ export default function ArtistDetailPage() {
     setIsUploading(true);
     let progress = 0;
     const interval = setInterval(() => {
-      progress += 20;
+      progress += 10;
       setUploadProgress(progress);
       if (progress >= 100) {
         clearInterval(interval);
         setTimeout(() => {
-          // Create a temporary URL for the uploaded video to display it
           const newVideoUrl = URL.createObjectURL(selectedFile);
           const newVideo = {
             id: `v-new-${Date.now()}`,
             title: videoTitle || selectedFile.name.split('.')[0],
             url: newVideoUrl,
+            category: videoCategory
           };
 
           setArtistVideos((prev) => [newVideo, ...prev]);
@@ -96,16 +98,15 @@ export default function ArtistDetailPage() {
           
           toast({
             title: "Performance Synced!",
-            description: "Your video has been successfully added to the Dance Realm gallery.",
+            description: "Your masterpiece is now live in the Realm gallery.",
           });
-        }, 300);
+        }, 500);
       }
-    }, 150);
+    }, 100);
   };
 
   return (
     <div className="min-h-screen bg-background relative pb-20">
-      {/* Header / Hero Section */}
       <div className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
         <Image
           src={artist.image}
@@ -139,7 +140,6 @@ export default function ArtistDetailPage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-3 gap-12 -mt-8 relative z-10">
-        {/* Profile Info */}
         <div className="lg:col-span-1 space-y-8">
           <div className="glass-card p-8 rounded-3xl space-y-6 border-white/5">
             <div className="space-y-4">
@@ -163,7 +163,6 @@ export default function ArtistDetailPage() {
           </div>
         </div>
 
-        {/* Video Gallery */}
         <div className="lg:col-span-2 space-y-8">
           <div className="flex items-center justify-between">
             <h2 className="text-3xl font-black italic uppercase tracking-tighter">Performances</h2>
@@ -183,21 +182,37 @@ export default function ArtistDetailPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-6 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="video-title" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Performance Title</Label>
-                    <Input 
-                      id="video-title" 
-                      placeholder="e.g. Midnight Samba Flow" 
-                      className="bg-black/20 border-white/10" 
-                      value={videoTitle}
-                      onChange={(e) => setVideoTitle(e.target.value)}
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="video-title" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Title</Label>
+                      <Input 
+                        id="video-title" 
+                        placeholder="Midnight Samba" 
+                        className="bg-black/20 border-white/10 h-11" 
+                        value={videoTitle}
+                        onChange={(e) => setVideoTitle(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Type</Label>
+                      <Select value={videoCategory} onValueChange={setVideoCategory}>
+                        <SelectTrigger className="bg-black/20 border-white/10 h-11">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent className="glass-card border-white/10">
+                          <SelectItem value="performance">Performance</SelectItem>
+                          <SelectItem value="rehearsal">Rehearsal</SelectItem>
+                          <SelectItem value="tutorial">Tutorial</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Video File</Label>
                     <div 
                       onClick={triggerFileInput}
-                      className="border-2 border-dashed border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 bg-black/10 hover:bg-black/20 transition-colors cursor-pointer group"
+                      className="border-2 border-dashed border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 bg-black/10 hover:bg-black/20 transition-all cursor-pointer group relative"
                     >
                       <input 
                         type="file" 
@@ -206,16 +221,29 @@ export default function ArtistDetailPage() {
                         accept="video/*" 
                         onChange={handleFileChange}
                       />
-                      <FileVideo className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors" />
-                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest text-center px-4">
-                        {selectedFile ? selectedFile.name : "Select Video File"}
-                      </span>
+                      {selectedFile ? (
+                        <div className="flex flex-col items-center gap-2 animate-in zoom-in duration-300">
+                          <CheckCircle2 className="h-10 w-10 text-primary" />
+                          <span className="text-[10px] font-black uppercase tracking-widest text-primary">Selected</span>
+                          <span className="text-[10px] font-bold text-muted-foreground truncate max-w-[200px]">
+                            {selectedFile.name}
+                          </span>
+                        </div>
+                      ) : (
+                        <>
+                          <FileVideo className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest text-center px-4">
+                            Select Video File
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
+
                   {isUploading && (
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                        <span>Uploading...</span>
+                    <div className="space-y-2 animate-in fade-in duration-300">
+                      <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-primary">
+                        <span>Syncing to Realm...</span>
                         <span>{uploadProgress}%</span>
                       </div>
                       <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -231,9 +259,9 @@ export default function ArtistDetailPage() {
                   <Button 
                     onClick={handleUpload} 
                     disabled={isUploading || !selectedFile}
-                    className="w-full h-12 rounded-xl font-black uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                    className="w-full h-12 rounded-xl font-black uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all"
                   >
-                    {isUploading ? "Syncing to Realm..." : "Finish Upload"}
+                    {isUploading ? "Syncing..." : "Finish Upload"}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -262,7 +290,12 @@ export default function ArtistDetailPage() {
                     <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                       <Music2 className="w-5 h-5" />
                     </div>
-                    <span className="font-bold text-sm uppercase tracking-wider">{video.title}</span>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-sm uppercase tracking-wider">{video.title}</span>
+                      {video.category && (
+                        <span className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/60">{video.category}</span>
+                      )}
+                    </div>
                   </div>
                   <Badge variant="secondary" className="bg-white/5 text-[10px] font-bold">HD</Badge>
                 </div>
