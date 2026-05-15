@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -29,8 +29,16 @@ export default function ArtistDetailPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [videoTitle, setVideoTitle] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [artistVideos, setArtistVideos] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (artist) {
+      setArtistVideos(artist.videos);
+    }
+  }, [artist]);
 
   if (!artist) {
     return (
@@ -66,17 +74,26 @@ export default function ArtistDetailPage() {
     setIsUploading(true);
     let progress = 0;
     const interval = setInterval(() => {
-      progress += 10;
+      progress += 20;
       setUploadProgress(progress);
       if (progress >= 100) {
         clearInterval(interval);
         setTimeout(() => {
+          // Create a temporary URL for the uploaded video to display it
+          const newVideoUrl = URL.createObjectURL(selectedFile);
+          const newVideo = {
+            id: `v-new-${Date.now()}`,
+            title: videoTitle || selectedFile.name.split('.')[0],
+            url: newVideoUrl,
+          };
+
+          setArtistVideos((prev) => [newVideo, ...prev]);
           setIsUploading(false);
           setUploadProgress(0);
           setSelectedFile(null);
+          setVideoTitle("");
           setIsDialogOpen(false); 
           
-          // Successful notification displayed on the main screen
           toast({
             title: "Performance Synced!",
             description: "Your video has been successfully added to the Dance Realm gallery.",
@@ -168,7 +185,13 @@ export default function ArtistDetailPage() {
                 <div className="grid gap-6 py-4">
                   <div className="space-y-2">
                     <Label htmlFor="video-title" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Performance Title</Label>
-                    <Input id="video-title" placeholder="e.g. Midnight Samba Flow" className="bg-black/20 border-white/10" />
+                    <Input 
+                      id="video-title" 
+                      placeholder="e.g. Midnight Samba Flow" 
+                      className="bg-black/20 border-white/10" 
+                      value={videoTitle}
+                      onChange={(e) => setVideoTitle(e.target.value)}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Video File</Label>
@@ -218,7 +241,7 @@ export default function ArtistDetailPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {artist.videos.map((video) => (
+            {artistVideos.map((video) => (
               <div key={video.id} className="group relative glass-card rounded-2xl overflow-hidden border-white/5 hover:border-primary/40 transition-all">
                 <div className="aspect-video relative bg-black flex items-center justify-center">
                   <video
