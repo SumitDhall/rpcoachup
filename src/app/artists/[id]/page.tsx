@@ -29,6 +29,7 @@ export default function ArtistDetailPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!artist) {
@@ -73,9 +74,10 @@ export default function ArtistDetailPage() {
           setIsUploading(false);
           setUploadProgress(0);
           setSelectedFile(null);
+          setIsDialogOpen(false); // Automatically close the dialog
           toast({
             title: "Success!",
-            description: `Performance "${selectedFile.name}" has been added to ${artist.name}'s profile.`,
+            description: `Performance has been successfully synced to the Dance Realm.`,
           });
         }, 500);
       }
@@ -147,7 +149,7 @@ export default function ArtistDetailPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-3xl font-black italic uppercase tracking-tighter">Performances</h2>
             
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="h-10 px-4 rounded-full border-primary/40 text-primary hover:bg-primary/5 font-black uppercase tracking-widest text-[10px]">
                   <Upload className="w-3.5 h-3.5 mr-2" />
@@ -156,9 +158,9 @@ export default function ArtistDetailPage() {
               </DialogTrigger>
               <DialogContent className="glass-card border-white/10 sm:max-w-md">
                 <DialogHeader>
-                  <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Upload for {artist.name}</DialogTitle>
+                  <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Upload for Dance Realm</DialogTitle>
                   <DialogDescription className="text-xs uppercase tracking-widest font-bold opacity-70">
-                    Sync a new masterpiece to this artist's realm
+                    Sync a new masterpiece to the global stage
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-6 py-4">
