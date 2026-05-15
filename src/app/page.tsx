@@ -37,14 +37,14 @@ export default function Page() {
           
           <div className="flex items-center gap-4">
             <Button asChild variant="outline" className="h-12 px-6 rounded-full border-white/10 glass-card hover:border-primary/50 hover:bg-primary/5 text-xs font-bold uppercase tracking-widest transition-all">
-              <Link href="#" className="flex items-center gap-2">
+              <Link href="/login" className="flex items-center gap-2">
                 <LogIn className="w-4 h-4" />
                 Sign In
               </Link>
             </Button>
             
             <Button asChild variant="outline" className="h-12 px-6 rounded-full border-primary/20 bg-primary/5 hover:bg-primary hover:text-primary-foreground text-xs font-bold uppercase tracking-widest transition-all border-2">
-              <Link href="#" className="flex items-center gap-2">
+              <Link href="/register" className="flex items-center gap-2">
                 <UserPlus className="w-4 h-4" />
                 Register
               </Link>
