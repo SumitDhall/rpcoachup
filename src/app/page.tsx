@@ -9,11 +9,11 @@ export default function Page() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-6 relative overflow-hidden dance-pattern bg-[#050816]">
       {/* Dynamic Animated Blobs */}
-      <div className="blob top-0 -left-20" />
-      <div className="blob blob-reverse bottom-0 -right-20" />
+      <div className="blob top-0 -left-20 pointer-events-none" />
+      <div className="blob blob-reverse bottom-0 -right-20 pointer-events-none" />
       <div className="absolute inset-0 bg-radial-gradient from-transparent via-[#050816]/40 to-[#050816] pointer-events-none" />
 
-      <div className="text-center space-y-12 animate-in fade-in zoom-in duration-1000 relative z-10">
+      <div className="text-center space-y-12 animate-in fade-in zoom-in duration-1000 relative z-30">
         <div className="space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-4 animate-bounce">
             <Flame className="w-4 h-4 text-primary fill-primary" />
@@ -33,8 +33,8 @@ export default function Page() {
         </div>
 
         {/* Call to Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-8 pt-8">
-          <Button asChild size="lg" className="h-16 px-10 rounded-full bg-vibrant-gradient text-[#050816] font-black uppercase tracking-[0.2em] hover:scale-110 transition-all duration-300 shadow-[0_0_40px_rgba(61,220,255,0.4)] border-none">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-8 pt-8 relative z-40">
+          <Button asChild size="lg" className="h-16 px-10 rounded-full bg-vibrant-gradient text-[#050816] font-black uppercase tracking-[0.2em] hover:scale-110 transition-all duration-300 shadow-[0_0_40px_rgba(61,220,255,0.4)] border-none cursor-pointer">
             <Link href="/artists" className="flex items-center gap-3">
               <Play className="w-5 h-5 fill-current" />
               Enter the Realm
@@ -42,14 +42,14 @@ export default function Page() {
           </Button>
           
           <div className="flex items-center gap-4">
-            <Button asChild variant="outline" className="h-14 px-8 rounded-full border-white/20 glass-card hover:border-primary hover:bg-primary/10 text-xs font-black uppercase tracking-widest transition-all">
+            <Button asChild variant="outline" className="h-14 px-8 rounded-full border-white/20 glass-card hover:border-primary hover:bg-primary/10 text-xs font-black uppercase tracking-widest transition-all cursor-pointer">
               <Link href="/login" className="flex items-center gap-2">
                 <LogIn className="w-4 h-4 text-primary" />
                 Sign In
               </Link>
             </Button>
             
-            <Button asChild variant="outline" className="h-14 px-8 rounded-full border-secondary/40 glass-card hover:bg-secondary hover:text-white text-xs font-black uppercase tracking-widest transition-all">
+            <Button asChild variant="outline" className="h-14 px-8 rounded-full border-secondary/40 glass-card hover:bg-secondary hover:text-white text-xs font-black uppercase tracking-widest transition-all cursor-pointer">
               <Link href="/register" className="flex items-center gap-2">
                 <UserPlus className="w-4 h-4 text-secondary" />
                 Register
@@ -59,7 +59,7 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#050816] to-transparent z-20" />
+      <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#050816] to-transparent z-20 pointer-events-none" />
     </div>
   );
 }
