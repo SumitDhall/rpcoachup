@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from "react";
-import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X } from "lucide-react";
+import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X, Volume2, VolumeX } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import videojs from 'video.js';
@@ -38,7 +38,7 @@ const MOCK_BLIPS = [
     location: "Miami, FL",
     date: "Sep 12, 2024",
     duration: "0:58",
-    videoUrl: "https://vjs.zencdn.net/v/oceans.mp4", // Using stable fallback
+    videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
   },
   {
     id: 3,
@@ -69,7 +69,13 @@ const MOCK_COMMENTS = [
   { id: 4, user: "Marcus", text: "Can't wait to see more from this dancer.", time: "1h ago" },
 ];
 
-function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
+interface ReelItemProps {
+  blip: typeof MOCK_BLIPS[0];
+  isMuted: boolean;
+  onToggleMute: () => void;
+}
+
+function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const [isIntersecting, setIsIntersecting] = useState(false);
@@ -89,7 +95,7 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
       responsive: true,
       fluid: true,
       loop: true,
-      muted: true,
+      muted: isMuted,
       preload: 'auto',
       sources: [{
         src: blip.videoUrl,
@@ -127,6 +133,13 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
     }
   }, [isIntersecting]);
 
+  useEffect(() => {
+    const player = playerRef.current;
+    if (player) {
+      player.muted(isMuted);
+    }
+  }, [isMuted]);
+
   return (
     <div className="h-screen w-full snap-start relative bg-black flex items-center justify-center overflow-hidden">
       <div ref={containerRef} className="h-full w-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" />
@@ -134,6 +147,20 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
       
       <div className="absolute right-4 bottom-32 flex flex-col gap-6 items-center pointer-events-auto z-20">
+        <div className="flex flex-col items-center gap-1 group">
+          <Button 
+            size="icon" 
+            variant="ghost" 
+            onClick={onToggleMute}
+            className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-md hover:bg-primary/20 hover:text-primary transition-all"
+          >
+            {isMuted ? <VolumeX className="h-6 w-6 text-white" /> : <Volume2 className="h-6 w-6 text-white" />}
+          </Button>
+          <span className="text-[10px] font-bold uppercase tracking-tighter text-white">
+            {isMuted ? 'Muted' : 'Sound'}
+          </span>
+        </div>
+
         <div className="flex flex-col items-center gap-1 group">
           <Button 
             size="icon" 
@@ -250,6 +277,10 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
 }
 
 export default function BlipsPage() {
+  const [isMuted, setIsMuted] = useState(true);
+
+  const toggleMute = () => setIsMuted(prev => !prev);
+
   return (
     <div className="h-screen w-full bg-black overflow-y-scroll snap-y snap-mandatory scroll-smooth hide-scrollbar">
       <style jsx global>{`
@@ -281,7 +312,12 @@ export default function BlipsPage() {
       `}</style>
       
       {MOCK_BLIPS.map((blip) => (
-        <ReelItem key={blip.id} blip={blip} />
+        <ReelItem 
+          key={blip.id} 
+          blip={blip} 
+          isMuted={isMuted} 
+          onToggleMute={toggleMute}
+        />
       ))}
     </div>
   );
