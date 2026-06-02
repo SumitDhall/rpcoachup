@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import MuxPlayer from "@mux/mux-player-react";
 import {
   Drawer,
   DrawerContent,
@@ -12,6 +13,8 @@ import {
   DrawerTitle,
   DrawerTrigger,
   DrawerClose,
+  DrawerOverlay,
+  DrawerPortal,
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -67,7 +70,7 @@ const MOCK_COMMENTS = [
 ];
 
 function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const playerRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -81,19 +84,19 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
       { threshold: 0.6 }
     );
 
-    if (videoRef.current) {
-      observer.observe(videoRef.current);
+    if (playerRef.current) {
+      observer.observe(playerRef.current);
     }
 
     return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
-    if (videoRef.current) {
+    if (playerRef.current) {
       if (isIntersecting) {
-        videoRef.current.play().catch(err => console.log("Autoplay prevented", err));
+        playerRef.current.play().catch((err: any) => console.log("Autoplay prevented", err));
       } else {
-        videoRef.current.pause();
+        playerRef.current.pause();
       }
     }
   }, [isIntersecting]);
@@ -106,20 +109,23 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
 
   return (
     <div className="h-screen w-full snap-start relative bg-black flex items-center justify-center overflow-hidden">
-      <video
-        ref={videoRef}
+      <MuxPlayer
+        ref={playerRef}
         src={blip.videoUrl}
-        className="h-full w-full object-cover opacity-90"
         loop
         muted
+        autoPlay="muted"
         playsInline
+        controls={false}
+        className="h-full w-full object-cover opacity-90 pointer-events-none"
+        style={{ aspectRatio: 'unset' }}
       />
       
       {/* Overlay UI */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
       
       {/* Right Side Actions */}
-      <div className="absolute right-4 bottom-32 flex flex-col gap-6 items-center pointer-events-auto">
+      <div className="absolute right-4 bottom-32 flex flex-col gap-6 items-center pointer-events-auto z-20">
         <div className="flex flex-col items-center gap-1 group">
           <Button 
             size="icon" 
@@ -129,61 +135,64 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
           >
             <Heart className={`h-6 w-6 ${isLiked ? 'fill-current' : ''}`} />
           </Button>
-          <span className="text-[10px] font-bold uppercase tracking-tighter">Like</span>
+          <span className="text-[10px] font-bold uppercase tracking-tighter text-white">Like</span>
         </div>
 
         <Drawer shouldScaleBackground={false}>
           <DrawerTrigger asChild>
             <div className="flex flex-col items-center gap-1 group cursor-pointer">
               <Button size="icon" variant="ghost" className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-md hover:bg-primary/20 hover:text-primary transition-all">
-                <MessageCircle className="h-6 w-6" />
+                <MessageCircle className="h-6 w-6 text-white" />
               </Button>
-              <span className="text-[10px] font-bold uppercase tracking-tighter">Chat</span>
+              <span className="text-[10px] font-bold uppercase tracking-tighter text-white">Chat</span>
             </div>
           </DrawerTrigger>
-          <DrawerContent className="glass-card border-white/10 bg-black/90 text-foreground h-[60vh]">
-            <DrawerHeader className="border-b border-white/5 flex items-center justify-between px-6 py-4">
-              <DrawerTitle className="text-xl font-black italic uppercase tracking-tighter">
-                Comments
-              </DrawerTitle>
-              <DrawerClose asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-white/10">
-                  <X className="h-4 w-4" />
-                </Button>
-              </DrawerClose>
-            </DrawerHeader>
-            <ScrollArea ref={scrollRef} className="flex-1 p-6">
-              <div className="space-y-6">
-                {MOCK_COMMENTS.map((comment) => (
-                  <div key={comment.id} className="flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <Avatar className="h-8 w-8 border border-white/10">
-                      <AvatarImage src={`https://picsum.photos/seed/${comment.user}/100/100`} />
-                      <AvatarFallback>{comment.user[0]}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-black uppercase tracking-widest text-primary">{comment.user}</span>
-                        <span className="text-[9px] font-bold opacity-40 uppercase">{comment.time}</span>
+          <DrawerPortal>
+            <DrawerOverlay className="bg-black/40 backdrop-blur-none" />
+            <DrawerContent className="glass-card border-white/10 bg-black/90 text-foreground h-[60vh] outline-none">
+              <DrawerHeader className="border-b border-white/5 flex items-center justify-between px-6 py-4">
+                <DrawerTitle className="text-xl font-black italic uppercase tracking-tighter">
+                  Comments
+                </DrawerTitle>
+                <DrawerClose asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-white/10">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </DrawerClose>
+              </DrawerHeader>
+              <ScrollArea ref={scrollRef} className="flex-1 p-6">
+                <div className="space-y-6">
+                  {MOCK_COMMENTS.map((comment) => (
+                    <div key={comment.id} className="flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <Avatar className="h-8 w-8 border border-white/10">
+                        <AvatarImage src={`https://picsum.photos/seed/${comment.user}/100/100`} />
+                        <AvatarFallback>{comment.user[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-black uppercase tracking-widest text-primary">{comment.user}</span>
+                          <span className="text-[9px] font-bold opacity-40 uppercase">{comment.time}</span>
+                        </div>
+                        <p className="text-sm opacity-80 leading-relaxed">{comment.text}</p>
                       </div>
-                      <p className="text-sm opacity-80 leading-relaxed">{comment.text}</p>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </DrawerContent>
+                  ))}
+                </div>
+              </ScrollArea>
+            </DrawerContent>
+          </DrawerPortal>
         </Drawer>
 
         <div className="flex flex-col items-center gap-1 group">
           <Button size="icon" variant="ghost" className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-md hover:bg-primary/20 hover:text-primary transition-all">
-            <Share2 className="h-6 w-6" />
+            <Share2 className="h-6 w-6 text-white" />
           </Button>
-          <span className="text-[10px] font-bold uppercase tracking-tighter">Share</span>
+          <span className="text-[10px] font-bold uppercase tracking-tighter text-white">Share</span>
         </div>
       </div>
 
       {/* Bottom Info */}
-      <div className="absolute bottom-10 left-6 right-20 space-y-4 pointer-events-none">
+      <div className="absolute bottom-10 left-6 right-20 space-y-4 pointer-events-none z-20">
         <div className="space-y-3">
           <div className="flex items-center gap-3 pointer-events-auto">
             <h3 className="text-sm font-black uppercase tracking-widest text-primary drop-shadow-md">
