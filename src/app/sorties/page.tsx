@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from "react";
-import { MapPin, Calendar, Clock, Music2, Share2, Heart, MessageCircle } from "lucide-react";
+import { MapPin, Clock, Music2, Share2, Heart, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
-const MOCK_SORTIES = [
+const MOCK_BLIPS = [
   {
     id: 1,
     title: "Urban Flow Night",
@@ -45,7 +44,7 @@ const MOCK_SORTIES = [
   }
 ];
 
-function ReelItem({ sortie }: { sortie: typeof MOCK_SORTIES[0] }) {
+function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isIntersecting, setIsIntersecting] = useState(false);
 
@@ -78,7 +77,7 @@ function ReelItem({ sortie }: { sortie: typeof MOCK_SORTIES[0] }) {
     <div className="h-screen w-full snap-start relative bg-black flex items-center justify-center overflow-hidden">
       <video
         ref={videoRef}
-        src={sortie.videoUrl}
+        src={blip.videoUrl}
         className="h-full w-full object-cover opacity-90"
         loop
         muted
@@ -114,22 +113,22 @@ function ReelItem({ sortie }: { sortie: typeof MOCK_SORTIES[0] }) {
       <div className="absolute bottom-10 left-6 right-20 space-y-4 pointer-events-none">
         <div className="space-y-1">
           <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white drop-shadow-lg">
-            {sortie.title}
+            {blip.title}
           </h2>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30 backdrop-blur-md">
               <Clock className="w-3 h-3 mr-1" />
-              {sortie.duration}
+              {blip.duration}
             </Badge>
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-white/70 uppercase tracking-widest">
               <MapPin className="w-3 h-3 text-primary" />
-              {sortie.location}
+              {blip.location}
             </div>
           </div>
         </div>
         
         <p className="text-sm text-white/80 line-clamp-2 leading-relaxed max-w-md drop-shadow-md">
-          {sortie.description}
+          {blip.description}
         </p>
 
         <div className="flex items-center gap-2 pt-2">
@@ -138,7 +137,7 @@ function ReelItem({ sortie }: { sortie: typeof MOCK_SORTIES[0] }) {
           </div>
           <div className="overflow-hidden whitespace-nowrap w-40">
             <p className="text-[10px] font-bold uppercase tracking-widest text-primary animate-marquee inline-block">
-              Original Audio • {sortie.title} Rhythms • Dance Realm exclusive
+              Original Audio • {blip.title} Rhythms • Dance Realm exclusive
             </p>
           </div>
         </div>
@@ -147,7 +146,7 @@ function ReelItem({ sortie }: { sortie: typeof MOCK_SORTIES[0] }) {
   );
 }
 
-export default function SortiesPage() {
+export default function BlipsPage() {
   return (
     <div className="h-screen w-full bg-black overflow-y-scroll snap-y snap-mandatory scroll-smooth hide-scrollbar">
       <style jsx global>{`
@@ -174,8 +173,8 @@ export default function SortiesPage() {
         }
       `}</style>
       
-      {MOCK_SORTIES.map((sortie) => (
-        <ReelItem key={sortie.id} sortie={sortie} />
+      {MOCK_BLIPS.map((blip) => (
+        <ReelItem key={blip.id} blip={blip} />
       ))}
     </div>
   );

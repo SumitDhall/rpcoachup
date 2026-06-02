@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -56,17 +55,17 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Artists">
-                  <a href="#" className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors">
+                  <a href="/artists" className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors">
                     <Users className="h-5 w-5" />
                     <span className="font-medium">Artists</span>
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Sorties">
-                  <a href="#" className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors">
+                <SidebarMenuButton asChild tooltip="Blips">
+                  <a href="/sorties" className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors">
                     <Calendar className="h-5 w-5" />
-                    <span className="font-medium">Sorties</span>
+                    <span className="font-medium">Blips</span>
                   </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
