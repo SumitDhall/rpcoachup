@@ -93,7 +93,7 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
       autoplay: false,
       controls: false,
       responsive: true,
-      fluid: true,
+      fluid: false, // Set to false to allow filling the container
       loop: true,
       muted: isMuted,
       preload: 'auto',
@@ -142,10 +142,16 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
 
   return (
     <div className="h-screen w-full snap-start relative bg-black flex items-center justify-center overflow-hidden">
-      <div ref={containerRef} className="h-full w-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" />
+      {/* Immersive Video Container */}
+      <div 
+        ref={containerRef} 
+        className="absolute inset-0 h-full w-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" 
+      />
       
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+      {/* Gradient Overlay for Readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none z-10" />
       
+      {/* Right Side Actions - Floating on Top */}
       <div className="absolute right-4 bottom-32 flex flex-col gap-6 items-center pointer-events-auto z-20">
         <div className="flex flex-col items-center gap-1 group">
           <Button 
@@ -226,6 +232,7 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
         </div>
       </div>
 
+      {/* Bottom Info - Floating on Top */}
       <div className="absolute bottom-10 left-6 right-20 space-y-4 pointer-events-none z-20">
         <div className="space-y-3">
           <div className="flex items-center gap-3 pointer-events-auto">
@@ -304,6 +311,10 @@ export default function BlipsPage() {
         }
         .animate-spin-slow {
           animation: spin-slow 8s linear infinite;
+        }
+        /* Ensure Video.js tech (actual video) stretches to fill its container */
+        .vjs-tech {
+          object-fit: cover !important;
         }
         .video-js.vjs-fill {
            width: 100%;
