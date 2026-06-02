@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useRef, useState } from "react";
@@ -39,7 +38,7 @@ const MOCK_BLIPS = [
     location: "Miami, FL",
     date: "Sep 12, 2024",
     duration: "0:58",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    videoUrl: "https://vjs.zencdn.net/v/oceans.mp4", // Using stable fallback
   },
   {
     id: 3,
@@ -49,7 +48,7 @@ const MOCK_BLIPS = [
     location: "New York, NY",
     date: "Aug 05, 2024",
     duration: "0:32",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
   },
   {
     id: 4,
@@ -59,7 +58,7 @@ const MOCK_BLIPS = [
     location: "London, UK",
     date: "Jul 20, 2024",
     duration: "0:55",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
   }
 ];
 
@@ -71,19 +70,18 @@ const MOCK_COMMENTS = [
 ];
 
 function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
-  const videoRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
-    if (!videoRef.current) return;
+    if (!containerRef.current) return;
 
     const videoElement = document.createElement("video-js");
     videoElement.classList.add('vjs-fill', 'vjs-big-play-centered');
-    videoRef.current.appendChild(videoElement);
+    containerRef.current.appendChild(videoElement);
 
     const player = playerRef.current = videojs(videoElement, {
       autoplay: false,
@@ -106,7 +104,7 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
       { threshold: 0.6 }
     );
 
-    observer.observe(videoRef.current);
+    observer.observe(containerRef.current);
 
     return () => {
       if (player) {
@@ -118,18 +116,20 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
 
   useEffect(() => {
     const player = playerRef.current;
-    if (player && player.readyState() > 0) {
-      if (isIntersecting) {
-        player.play().catch((err: any) => console.log("Autoplay prevented", err));
-      } else {
-        player.pause();
-      }
+    if (player) {
+      player.ready(() => {
+        if (isIntersecting) {
+          player.play().catch(() => {});
+        } else {
+          player.pause();
+        }
+      });
     }
   }, [isIntersecting]);
 
   return (
     <div className="h-screen w-full snap-start relative bg-black flex items-center justify-center overflow-hidden">
-      <div ref={videoRef} className="h-full w-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" />
+      <div ref={containerRef} className="h-full w-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" />
       
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
       
@@ -168,7 +168,7 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
                   </Button>
                 </DrawerClose>
               </DrawerHeader>
-              <ScrollArea ref={scrollRef} className="flex-1 p-6">
+              <ScrollArea className="flex-1 p-6">
                 <div className="space-y-6">
                   {MOCK_COMMENTS.map((comment) => (
                     <div key={comment.id} className="flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">

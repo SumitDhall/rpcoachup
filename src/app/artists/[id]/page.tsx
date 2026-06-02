@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useRef, useEffect } from "react";
@@ -120,6 +119,23 @@ export default function ArtistDetailPage() {
 
   const shareLink = typeof window !== 'undefined' ? window.location.href : '';
 
+  const handleSocialShare = (platform: string) => {
+    const text = `Check out ${artist.name} on Dance Realm: ${shareLink}`;
+    let url = '';
+    
+    switch (platform) {
+      case 'instagram':
+        window.open(`https://www.instagram.com/reels/`, '_blank');
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareLink)}`, '_blank');
+        break;
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        break;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background relative pb-20">
       <div className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
@@ -181,15 +197,15 @@ export default function ArtistDetailPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="glass-card border-white/10">
-                  <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => window.open(`https://www.instagram.com/reels/`, '_blank')}>
+                  <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('instagram')}>
                     <Instagram className="h-4 w-4" />
                     <span>Instagram</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareLink}`, '_blank')}>
+                  <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('facebook')}>
                     <Facebook className="h-4 w-4" />
                     <span>Facebook</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => window.open(`https://wa.me/?text=Check out this artist on Dance Realm: ${shareLink}`, '_blank')}>
+                  <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('whatsapp')}>
                     <MessageSquare className="h-4 w-4" />
                     <span>WhatsApp</span>
                   </DropdownMenuItem>
