@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useRef, useEffect } from "react";
@@ -30,7 +31,7 @@ import {
 import { MediaPlayer, MediaProvider } from '@vidstack/react';
 import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
-// import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/video';
+import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/video';
 
 export default function ArtistDetailPage() {
   const { id } = useParams();

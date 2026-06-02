@@ -29,7 +29,7 @@ const MOCK_BLIPS = [
     location: "Los Angeles, CA",
     date: "Oct 24, 2024",
     duration: "0:45",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
   },
   {
     id: 2,
@@ -39,7 +39,7 @@ const MOCK_BLIPS = [
     location: "Miami, FL",
     date: "Sep 12, 2024",
     duration: "0:58",
-    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
   },
   {
     id: 3,
@@ -81,9 +81,8 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
   useEffect(() => {
     if (!videoRef.current) return;
 
-    // Initialize video.js
     const videoElement = document.createElement("video-js");
-    videoElement.classList.add('vjs-big-play-centered');
+    videoElement.classList.add('vjs-fill', 'vjs-big-play-centered');
     videoRef.current.appendChild(videoElement);
 
     const player = playerRef.current = videojs(videoElement, {
@@ -98,8 +97,6 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
         src: blip.videoUrl,
         type: 'video/mp4'
       }]
-    }, () => {
-      // Player ready
     });
 
     const observer = new IntersectionObserver(
@@ -121,7 +118,7 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
 
   useEffect(() => {
     const player = playerRef.current;
-    if (player) {
+    if (player && player.readyState() > 0) {
       if (isIntersecting) {
         player.play().catch((err: any) => console.log("Autoplay prevented", err));
       } else {
@@ -134,10 +131,8 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
     <div className="h-screen w-full snap-start relative bg-black flex items-center justify-center overflow-hidden">
       <div ref={videoRef} className="h-full w-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" />
       
-      {/* Overlay UI */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
       
-      {/* Right Side Actions */}
       <div className="absolute right-4 bottom-32 flex flex-col gap-6 items-center pointer-events-auto z-20">
         <div className="flex flex-col items-center gap-1 group">
           <Button 
@@ -204,7 +199,6 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
         </div>
       </div>
 
-      {/* Bottom Info */}
       <div className="absolute bottom-10 left-6 right-20 space-y-4 pointer-events-none z-20">
         <div className="space-y-3">
           <div className="flex items-center gap-3 pointer-events-auto">
@@ -280,9 +274,9 @@ export default function BlipsPage() {
         .animate-spin-slow {
           animation: spin-slow 8s linear infinite;
         }
-        /* Custom Video.js sizing */
-        .video-js.vjs-fluid {
-          padding-top: 100vh !important;
+        .video-js.vjs-fill {
+           width: 100%;
+           height: 100%;
         }
       `}</style>
       
