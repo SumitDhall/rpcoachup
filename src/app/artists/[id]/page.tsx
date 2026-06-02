@@ -27,10 +27,51 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MediaPlayer, MediaProvider } from '@vidstack/react';
-import { DefaultVideoLayout, defaultLayoutIcons } from '@vidstack/react/player/layouts/default';
-import '@vidstack/react/player/styles/default/theme.css';
-import '@vidstack/react/player/styles/default/layouts/video.css';
+
+// Video.js imports
+import videojs from 'video.js';
+import 'video.js/dist/video-js.css';
+
+// Gallery Video Component using Video.js for consistent playback experience
+function GalleryVideo({ url }: { url: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const videoElement = document.createElement("video-js");
+    videoElement.classList.add('vjs-fill', 'vjs-big-play-centered');
+    containerRef.current.appendChild(videoElement);
+
+    const player = playerRef.current = videojs(videoElement, {
+      autoplay: false,
+      controls: true,
+      responsive: true,
+      fluid: false, 
+      loop: false,
+      muted: false,
+      preload: 'auto',
+      sources: [{
+        src: url,
+        type: 'video/mp4'
+      }]
+    });
+
+    return () => {
+      if (player) {
+        player.dispose();
+      }
+    };
+  }, [url]);
+
+  return (
+    <div 
+      ref={containerRef} 
+      className="w-full h-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" 
+    />
+  );
+}
 
 export default function ArtistDetailPage() {
   const { id } = useParams();
@@ -121,7 +162,6 @@ export default function ArtistDetailPage() {
 
   const handleSocialShare = (platform: string) => {
     const text = `Check out ${artist.name} on Dance Realm: ${shareLink}`;
-    let url = '';
     
     switch (platform) {
       case 'instagram':
@@ -138,6 +178,17 @@ export default function ArtistDetailPage() {
 
   return (
     <div className="min-h-screen bg-background relative pb-20">
+      <style jsx global>{`
+        /* Ensure Video.js tech (actual video) stretches to fill its container */
+        .vjs-tech {
+          object-fit: cover !important;
+        }
+        .video-js.vjs-fill {
+           width: 100%;
+           height: 100%;
+        }
+      `}</style>
+      
       <div className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
         <Image
           src={artist.image}
@@ -331,10 +382,7 @@ export default function ArtistDetailPage() {
             {artistVideos.map((video) => (
               <div key={video.id} className="group relative glass-card rounded-2xl overflow-hidden border-white/5 hover:border-primary/40 transition-all">
                 <div className="aspect-video relative bg-black flex items-center justify-center overflow-hidden">
-                  <MediaPlayer src={video.url} className="w-full h-full object-cover">
-                    <MediaProvider />
-                    <DefaultVideoLayout icons={defaultLayoutIcons} />
-                  </MediaPlayer>
+                  <GalleryVideo url={video.url} />
                 </div>
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
