@@ -93,7 +93,7 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
       autoplay: false,
       controls: false,
       responsive: true,
-      fluid: false, // Set to false to allow filling the container
+      fluid: false, 
       loop: true,
       muted: isMuted,
       preload: 'auto',

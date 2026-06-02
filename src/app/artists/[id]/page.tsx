@@ -28,9 +28,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MediaPlayer, MediaProvider } from '@vidstack/react';
+import { DefaultVideoLayout, defaultLayoutIcons } from '@vidstack/react/player/layouts/default';
 import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
-import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/video';
 
 export default function ArtistDetailPage() {
   const { id } = useParams();
