@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -63,7 +64,7 @@ export function AppSidebar() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Blips">
-                  <a href="/sorties" className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors">
+                  <a href="/blips" className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors">
                     <Calendar className="h-5 w-5" />
                     <span className="font-medium">Blips</span>
                   </a>

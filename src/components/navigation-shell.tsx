@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from "react";
@@ -11,10 +12,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/
-
-
-sheet";
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 export function NavigationShell({ children }: { children: React.ReactNode }) {
@@ -24,7 +22,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
 
   const navLinks = [
     { name: "Artists", href: "/artists", icon: Users },
-    { name: "Blips", href: "/sorties", icon: Calendar },
+    { name: "Blips", href: "/blips", icon: Calendar },
   ];
 
   const authLinks = [
