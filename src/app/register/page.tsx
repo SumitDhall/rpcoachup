@@ -21,13 +21,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export default function RegisterPage() {
   const [userType, setUserType] = useState<"dancer" | "artist">("dancer");
@@ -106,30 +99,13 @@ export default function RegisterPage() {
               </TabsContent>
 
               <TabsContent value="artist" className="space-y-4 m-0 animate-in fade-in slide-in-from-right-4 duration-500">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="artist-name" className="text-[10px] uppercase tracking-widest font-black text-secondary/80">Stage Name</Label>
-                    <Input 
-                      id="artist-name" 
-                      placeholder="The Virtuoso" 
-                      className="bg-black/20 border-white/5 focus:border-secondary/50 h-12"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-[10px] uppercase tracking-widest font-black text-secondary/80">Style</Label>
-                    <Select>
-                      <SelectTrigger className="bg-black/20 border-white/5 focus:border-secondary/50 h-12">
-                        <SelectValue placeholder="Select Style" />
-                      </SelectTrigger>
-                      <SelectContent className="glass-card border-white/10">
-                        <SelectItem value="contemporary">Contemporary</SelectItem>
-                        <SelectItem value="hiphop">Hip Hop</SelectItem>
-                        <SelectItem value="ballet">Ballet</SelectItem>
-                        <SelectItem value="latin">Latin</SelectItem>
-                        <SelectItem value="urban">Urban</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="artist-name" className="text-[10px] uppercase tracking-widest font-black text-secondary/80">Stage Name</Label>
+                  <Input 
+                    id="artist-name" 
+                    placeholder="The Virtuoso" 
+                    className="bg-black/20 border-white/5 focus:border-secondary/50 h-12"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="artist-bio" className="text-[10px] uppercase tracking-widest font-black text-secondary/80">Mini Bio</Label>
