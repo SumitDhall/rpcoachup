@@ -1,10 +1,12 @@
+
 'use client';
 
 import React, { useEffect, useRef, useState } from "react";
 import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import MuxPlayer from "@mux/mux-player-react";
+import videojs from 'video.js';
+import 'video.js/dist/video-js.css';
 import {
   Drawer,
   DrawerContent,
@@ -69,6 +71,7 @@ const MOCK_COMMENTS = [
 ];
 
 function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
+  const videoRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isIntersecting, setIsIntersecting] = useState(false);
@@ -76,6 +79,29 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
   const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
+    if (!videoRef.current) return;
+
+    // Initialize video.js
+    const videoElement = document.createElement("video-js");
+    videoElement.classList.add('vjs-big-play-centered');
+    videoRef.current.appendChild(videoElement);
+
+    const player = playerRef.current = videojs(videoElement, {
+      autoplay: false,
+      controls: false,
+      responsive: true,
+      fluid: true,
+      loop: true,
+      muted: true,
+      preload: 'auto',
+      sources: [{
+        src: blip.videoUrl,
+        type: 'video/mp4'
+      }]
+    }, () => {
+      // Player ready
+    });
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsIntersecting(entry.isIntersecting);
@@ -83,37 +109,30 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
       { threshold: 0.6 }
     );
 
-    if (playerRef.current) {
-      observer.observe(playerRef.current);
-    }
+    observer.observe(videoRef.current);
 
-    return () => observer.disconnect();
-  }, []);
+    return () => {
+      if (player) {
+        player.dispose();
+      }
+      observer.disconnect();
+    };
+  }, [blip.videoUrl]);
 
   useEffect(() => {
-    if (playerRef.current) {
+    const player = playerRef.current;
+    if (player) {
       if (isIntersecting) {
-        playerRef.current.play().catch((err: any) => console.log("Autoplay prevented", err));
+        player.play().catch((err: any) => console.log("Autoplay prevented", err));
       } else {
-        playerRef.current.pause();
+        player.pause();
       }
     }
   }, [isIntersecting]);
 
   return (
     <div className="h-screen w-full snap-start relative bg-black flex items-center justify-center overflow-hidden">
-      <MuxPlayer
-        ref={playerRef}
-        src={blip.videoUrl}
-        loop
-        muted
-        autoPlay="muted"
-        playsInline
-        controls={false}
-        className="h-full w-full object-cover opacity-90 pointer-events-none"
-        style={{ aspectRatio: 'unset' }}
-        onError={(e) => console.error("Mux Player Error:", e)}
-      />
+      <div ref={videoRef} className="h-full w-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" />
       
       {/* Overlay UI */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
@@ -260,6 +279,10 @@ export default function BlipsPage() {
         }
         .animate-spin-slow {
           animation: spin-slow 8s linear infinite;
+        }
+        /* Custom Video.js sizing */
+        .video-js.vjs-fluid {
+          padding-top: 100vh !important;
         }
       `}</style>
       
