@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useRef, useState } from "react";
@@ -28,7 +27,7 @@ const MOCK_BLIPS = [
     location: "Los Angeles, CA",
     date: "Oct 24, 2024",
     duration: "0:45",
-    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
   },
   {
     id: 2,
@@ -38,7 +37,7 @@ const MOCK_BLIPS = [
     location: "Miami, FL",
     date: "Sep 12, 2024",
     duration: "0:58",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
   },
   {
     id: 3,
@@ -48,7 +47,7 @@ const MOCK_BLIPS = [
     location: "New York, NY",
     date: "Aug 05, 2024",
     duration: "0:32",
-    videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
   },
   {
     id: 4,
@@ -58,7 +57,7 @@ const MOCK_BLIPS = [
     location: "London, UK",
     date: "Jul 20, 2024",
     duration: "0:55",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
   }
 ];
 
@@ -101,12 +100,6 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
     }
   }, [isIntersecting]);
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, []);
-
   return (
     <div className="h-screen w-full snap-start relative bg-black flex items-center justify-center overflow-hidden">
       <MuxPlayer
@@ -119,6 +112,7 @@ function ReelItem({ blip }: { blip: typeof MOCK_BLIPS[0] }) {
         controls={false}
         className="h-full w-full object-cover opacity-90 pointer-events-none"
         style={{ aspectRatio: 'unset' }}
+        onError={(e) => console.error("Mux Player Error:", e)}
       />
       
       {/* Overlay UI */}

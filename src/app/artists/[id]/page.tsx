@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Play, Music2, Share2, Heart, Upload, FileVideo, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Music2, Share2, Heart, Upload, FileVideo, CheckCircle2, Instagram, Facebook, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ARTISTS } from "@/lib/mock-data";
@@ -21,6 +21,16 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MediaPlayer, MediaProvider } from '@vidstack/react';
+import '@vidstack/react/player/styles/default/theme.css';
+import '@vidstack/react/player/styles/default/layouts/video.css';
+import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/video';
 
 export default function ArtistDetailPage() {
   const { id } = useParams();
@@ -34,6 +44,8 @@ export default function ArtistDetailPage() {
   const [videoCategory, setVideoCategory] = useState("performance");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [artistVideos, setArtistVideos] = useState<any[]>([]);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -105,6 +117,8 @@ export default function ArtistDetailPage() {
     }, 100);
   };
 
+  const shareLink = typeof window !== 'undefined' ? window.location.href : '';
+
   return (
     <div className="min-h-screen bg-background relative pb-20">
       <div className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
@@ -150,14 +164,42 @@ export default function ArtistDetailPage() {
             </div>
             
             <div className="flex gap-4 pt-4">
-              <Button size="icon" variant="outline" className="rounded-full h-12 w-12 border-white/10 hover:border-primary hover:text-primary transition-all">
-                <Heart className="w-5 h-5" />
+              <Button 
+                size="icon" 
+                variant="outline" 
+                onClick={() => setIsLiked(!isLiked)}
+                className={`rounded-full h-12 w-12 border-white/10 transition-all ${isLiked ? 'border-primary text-primary bg-primary/10' : 'hover:border-primary hover:text-primary'}`}
+              >
+                <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
               </Button>
-              <Button size="icon" variant="outline" className="rounded-full h-12 w-12 border-white/10 hover:border-primary hover:text-primary transition-all">
-                <Share2 className="w-5 h-5" />
-              </Button>
-              <Button className="flex-1 rounded-full h-12 font-bold uppercase tracking-widest text-xs shadow-lg shadow-primary/20">
-                Follow Artist
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="icon" variant="outline" className="rounded-full h-12 w-12 border-white/10 hover:border-primary hover:text-primary transition-all">
+                    <Share2 className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="glass-card border-white/10">
+                  <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => window.open(`https://www.instagram.com/reels/`, '_blank')}>
+                    <Instagram className="h-4 w-4" />
+                    <span>Instagram</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareLink}`, '_blank')}>
+                    <Facebook className="h-4 w-4" />
+                    <span>Facebook</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => window.open(`https://wa.me/?text=Check out this artist on Dance Realm: ${shareLink}`, '_blank')}>
+                    <MessageSquare className="h-4 w-4" />
+                    <span>WhatsApp</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Button 
+                onClick={() => setIsFollowing(!isFollowing)}
+                className={`flex-1 rounded-full h-12 font-bold uppercase tracking-widest text-xs shadow-lg transition-all ${isFollowing ? 'bg-secondary text-secondary-foreground shadow-secondary/20' : 'shadow-primary/20'}`}
+              >
+                {isFollowing ? 'Following' : 'Follow Artist'}
               </Button>
             </div>
           </div>
@@ -271,19 +313,11 @@ export default function ArtistDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {artistVideos.map((video) => (
               <div key={video.id} className="group relative glass-card rounded-2xl overflow-hidden border-white/5 hover:border-primary/40 transition-all">
-                <div className="aspect-video relative bg-black flex items-center justify-center">
-                  <video
-                    src={video.url}
-                    className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
-                    muted
-                    loop
-                    playsInline
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <div className="h-16 w-16 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center border border-primary/40 group-hover:bg-primary transition-colors">
-                      <Play className="w-6 h-6 text-white fill-white group-hover:scale-90 transition-transform" />
-                    </div>
-                  </div>
+                <div className="aspect-video relative bg-black flex items-center justify-center overflow-hidden">
+                  <MediaPlayer src={video.url} className="w-full h-full object-cover">
+                    <MediaProvider />
+                    <DefaultVideoLayout icons={defaultLayoutIcons} />
+                  </MediaPlayer>
                 </div>
                 <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
