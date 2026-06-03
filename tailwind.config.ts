@@ -1,4 +1,3 @@
-
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -13,6 +12,7 @@ export default {
       fontFamily: {
         body: ['Inter', 'sans-serif'],
         headline: ['Inter', 'sans-serif'],
+        display: ['Syncopate', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
@@ -71,10 +71,15 @@ export default {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
+        'text-shimmer': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.8' },
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'text-shimmer': 'text-shimmer 3s ease-in-out infinite',
       },
     },
   },

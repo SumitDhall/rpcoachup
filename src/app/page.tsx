@@ -20,15 +20,15 @@ export default function Page() {
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F4F7FF]/80">Rhythm is Alive</span>
           </div>
           
-          <h1 className="text-8xl md:text-[12rem] font-black tracking-tighter text-gradient italic leading-none drop-shadow-[0_0_30px_rgba(139,92,255,0.3)]">
+          <h1 className="text-5xl md:text-8xl lg:text-[10rem] font-bold font-display tracking-[0.15em] text-gradient uppercase leading-none drop-shadow-[0_0_30px_rgba(139,92,255,0.4)] animate-text-shimmer">
             DΛNCE ЯEΛLM
           </h1>
           
           <div className="space-y-3">
-            <p className="text-sm md:text-xl text-[#F4F7FF]/70 font-black uppercase tracking-[0.6em] max-w-2xl mx-auto leading-relaxed">
+            <p className="text-sm md:text-xl text-[#F4F7FF]/70 font-black uppercase tracking-[0.8em] max-w-3xl mx-auto leading-relaxed">
               Connecting Dancers Worldwide
             </p>
-            <div className="h-2 w-48 bg-vibrant-gradient mx-auto rounded-full shadow-[0_0_30px_rgba(255,79,216,0.4)] animate-pulse" />
+            <div className="h-1 w-64 bg-vibrant-gradient mx-auto rounded-full shadow-[0_0_30px_rgba(255,79,216,0.4)] animate-pulse" />
           </div>
         </div>
 
