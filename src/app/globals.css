@@ -10,7 +10,7 @@
     --card-foreground: 225 100% 98%;
     --popover: 229 64% 6%;
     --popover-foreground: 225 100% 98%;
-    --primary: 191 100% 62%; /* Cyan #3DDCFF */
+    --primary: 54 100% 50%; /* Vibrant Yellow #FFE600 */
     --primary-foreground: 229 64% 5%;
     --secondary: 257 100% 68%; /* Purple #8B5CFF */
     --secondary-foreground: 225 100% 98%;
@@ -22,7 +22,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 229 30% 12%;
     --input: 229 30% 12%;
-    --ring: 191 100% 62%;
+    --ring: 54 100% 50%;
     --radius: 1rem;
   }
 }
@@ -41,11 +41,11 @@
 }
 
 .text-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#3DDCFF] via-[#8B5CFF] to-[#FF4FD8];
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#FFE600] via-[#8B5CFF] to-[#FF4FD8];
 }
 
 .bg-vibrant-gradient {
-  @apply bg-gradient-to-br from-[#3DDCFF] via-[#8B5CFF] to-[#FF4FD8];
+  @apply bg-gradient-to-br from-[#FFE600] via-[#8B5CFF] to-[#FF4FD8];
 }
 
 .bg-radial-gradient {
@@ -57,7 +57,7 @@
   position: absolute;
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(61,220,255,0.15) 0%, rgba(139,92,255,0.05) 100%);
+  background: radial-gradient(circle, rgba(255,230,0,0.15) 0%, rgba(139,92,255,0.05) 100%);
   filter: blur(80px);
   border-radius: 50%;
   z-index: -1;
@@ -70,7 +70,7 @@
 }
 
 .blob-reverse {
-  background: radial-gradient(circle, rgba(255,79,216,0.1) 0%, rgba(61,220,255,0.05) 100%);
+  background: radial-gradient(circle, rgba(255,79,216,0.1) 0%, rgba(255,230,0,0.05) 100%);
   animation: move-reverse 30s infinite alternate ease-in-out;
 }
 
@@ -81,5 +81,5 @@
 
 /* Dance Silhouette Overlay */
 .dance-pattern {
-  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 20c2 0 4 2 4 4s-2 4-4 4-4-2-4-4 2-4 4-4zm-5 10h10v15H45zM40 30l5 5v10l-5 5M60 30l-5 5v10l5 5M45 45l-5 15M55 45l5 15' stroke='%233DDCFF' stroke-opacity='0.03' fill='none'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 20c2 0 4 2 4 4s-2 4-4 4-4-2-4-4 2-4 4-4zm-5 10h10v15H45zM40 30l5 5v10l-5 5M60 30l-5 5v10l5 5M45 45l-5 15M55 45l5 15' stroke='%23FFE600' stroke-opacity='0.03' fill='none'/%3E%3C/svg%3E");
 }

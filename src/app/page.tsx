@@ -20,7 +20,7 @@ export default function Page() {
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F4F7FF]/80">Rhythm is Alive</span>
           </div>
           
-          <h1 className="text-8xl md:text-[12rem] font-black tracking-tighter text-gradient italic leading-none drop-shadow-[0_0_30px_rgba(61,220,255,0.3)]">
+          <h1 className="text-8xl md:text-[12rem] font-black tracking-tighter text-gradient italic leading-none drop-shadow-[0_0_30px_rgba(255,230,0,0.3)]">
             DANCE REALM
           </h1>
           
@@ -28,13 +28,13 @@ export default function Page() {
             <p className="text-sm md:text-xl text-[#F4F7FF]/70 font-black uppercase tracking-[0.6em] max-w-2xl mx-auto leading-relaxed">
               Connecting Dancers Worldwide
             </p>
-            <div className="h-2 w-48 bg-vibrant-gradient mx-auto rounded-full shadow-[0_0_30px_rgba(61,220,255,0.6)] animate-pulse" />
+            <div className="h-2 w-48 bg-vibrant-gradient mx-auto rounded-full shadow-[0_0_30px_rgba(255,230,0,0.6)] animate-pulse" />
           </div>
         </div>
 
         {/* Call to Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-8 pt-8 relative z-40">
-          <Button asChild size="lg" className="h-16 px-10 rounded-full bg-vibrant-gradient text-[#050816] font-black uppercase tracking-[0.2em] hover:scale-110 transition-all duration-300 shadow-[0_0_40px_rgba(61,220,255,0.4)] border-none cursor-pointer">
+          <Button asChild size="lg" className="h-16 px-10 rounded-full bg-vibrant-gradient text-[#050816] font-black uppercase tracking-[0.2em] hover:scale-110 transition-all duration-300 shadow-[0_0_40px_rgba(255,230,0,0.4)] border-none cursor-pointer">
             <Link href="/artists" className="flex items-center gap-3">
               <Play className="w-5 h-5 fill-current" />
               Enter the Realm
