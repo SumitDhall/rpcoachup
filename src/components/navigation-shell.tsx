@@ -61,7 +61,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   className="text-gradient text-3xl font-black italic uppercase tracking-tighter"
                   onClick={handleLinkClick}
                 >
-                  Dance <span className="inline-block transform scale-x-[-1]">R</span>ealm
+                  Dance Realm
                 </Link>
               </SheetTitle>
             </SheetHeader>
@@ -114,9 +114,9 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
         <div className={cn("flex flex-col mb-12", isCollapsed ? "items-center" : "items-start")}>
           <Link href="/" className={cn("font-black text-gradient italic leading-none transition-all uppercase tracking-tighter", isCollapsed ? "text-2xl" : "text-4xl")}>
             {isCollapsed ? (
-              <>D<span className="inline-block transform scale-x-[-1]">R</span></>
+              <>DR</>
             ) : (
-              <>Dance <span className="inline-block transform scale-x-[-1]">R</span>ealm</>
+              <>Dance Realm</>
             )}
           </Link>
           {!isCollapsed && (
