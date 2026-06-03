@@ -1,3 +1,4 @@
+
 {
   "placeholderImages": [
     {
@@ -34,6 +35,12 @@
       "id": "brand-logo",
       "description": "Dance Realm Official Logo",
       "imageUrl": "/dr_logo.png",
+      "imageHint": "dance logo"
+    },
+    {
+      "id": "brand-logo-collapsed",
+      "description": "Dance Realm Icon Only Logo",
+      "imageUrl": "/dr_logo_without_content.png",
       "imageHint": "dance logo"
     }
   ]

@@ -1,7 +1,9 @@
+
 'use client';
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, Users, Calendar, ChevronLeft, ChevronRight, Zap, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { SiteFooter } from "@/components/site-footer";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export function NavigationShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -39,8 +42,8 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
     setOpen(false);
   };
 
-  // Only show footer on client after mount and if not on blips page
   const showFooter = mounted && pathname !== '/blips';
+  const collapsedLogo = PlaceHolderImages.find(img => img.id === 'brand-logo-collapsed');
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#050816]">
@@ -113,7 +116,19 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
         <div className={cn("flex flex-col mb-12", isCollapsed ? "items-center" : "items-start")}>
           <Link href="/" className={cn("font-black text-gradient italic leading-none transition-all uppercase tracking-tighter", isCollapsed ? "text-2xl" : "text-4xl")}>
             {isCollapsed ? (
-              <>DR</>
+              collapsedLogo ? (
+                <div className="relative h-12 w-12">
+                  <Image 
+                    src={collapsedLogo.imageUrl} 
+                    alt="DR Logo" 
+                    fill 
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+              ) : (
+                <>DR</>
+              )
             ) : (
               <>Dance Realm</>
             )}
