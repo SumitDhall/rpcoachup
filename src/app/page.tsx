@@ -20,9 +20,14 @@ export default function Page() {
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F4F7FF]/80">Rhythm is Alive</span>
           </div>
           
-          <h1 className="text-8xl md:text-8xl lg:text-[10rem] font-black font-display tracking-[0.1em] text-gradient uppercase leading-none drop-shadow-[0_0_30px_rgba(139,92,255,0.4)] animate-text-shimmer">
+          {/* <h1 className="text-8xl md:text-8xl lg:text-[10rem] font-black font-display tracking-[0.1em] text-gradient uppercase leading-none drop-shadow-[0_0_30px_rgba(139,92,255,0.4)] animate-text-shimmer">
+            DΛNCE ЯEΛLM
+          </h1> */}
+
+          <h1 className="text-gradient text-8xl font-black italic uppercase tracking-tighter" >
             DΛNCE ЯEΛLM
           </h1>
+                    
           
           <div className="space-y-3">
             <p className="text-sm md:text-xl text-[#F4F7FF]/70 font-black uppercase tracking-[0.8em] max-w-3xl mx-auto leading-relaxed">
