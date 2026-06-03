@@ -21,7 +21,7 @@ export function SiteFooter() {
           {/* Brand Section */}
           <div className="space-y-6 flex flex-col items-start col-span-1 sm:col-span-2 lg:col-span-1">
             <Link href="/" className="group block">
-              <div className="relative h-32 w-80 md:h-48 md:w-[400px] group-hover:scale-105 transition-transform duration-500">
+              <div className="relative h-[115px] w-[288px] md:h-[173px] md:w-[360px] group-hover:scale-105 transition-transform duration-500">
                 {brandLogo && (
                   <Image
                     src={brandLogo.imageUrl}
