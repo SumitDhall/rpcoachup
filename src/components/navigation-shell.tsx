@@ -25,8 +25,9 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  // Ensure consistent rendering between server and client
-  const showFooter = mounted && pathname !== '/blips';
+  // Ensure consistent rendering between server and client to avoid hydration errors
+  const isBlipsPage = pathname === '/blips';
+  const showFooter = mounted && !isBlipsPage;
 
   const navLinks = [
     { name: "Artists", href: "/artists", icon: Users },
@@ -60,7 +61,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   className="text-gradient text-3xl font-black italic uppercase tracking-tighter"
                   onClick={handleLinkClick}
                 >
-                  Dance Realm
+                  Dance <span className="inline-block transform scale-x-[-1]">R</span>ealm
                 </Link>
               </SheetTitle>
             </SheetHeader>
@@ -88,7 +89,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
 
       {/* Main Content Area */}
       <main className="flex-1 relative overflow-auto flex flex-col">
-        <div className="flex-1">
+        <div className="flex-1 min-h-0">
           {children}
         </div>
         {showFooter && <SiteFooter />}
@@ -112,7 +113,11 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
 
         <div className={cn("flex flex-col mb-12", isCollapsed ? "items-center" : "items-start")}>
           <Link href="/" className={cn("font-black text-gradient italic leading-none transition-all uppercase tracking-tighter", isCollapsed ? "text-2xl" : "text-4xl")}>
-            {isCollapsed ? "DR" : "Dance Realm"}
+            {isCollapsed ? (
+              <>D<span className="inline-block transform scale-x-[-1]">R</span></>
+            ) : (
+              <>Dance <span className="inline-block transform scale-x-[-1]">R</span>ealm</>
+            )}
           </Link>
           {!isCollapsed && (
             <div className="flex items-center gap-2 mt-3 animate-in fade-in slide-in-from-left-4 duration-700">

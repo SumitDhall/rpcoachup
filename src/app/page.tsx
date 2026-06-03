@@ -21,7 +21,7 @@ export default function Page() {
           </div>
           
           <h1 className="text-8xl md:text-[12rem] font-black tracking-tighter text-gradient italic leading-none drop-shadow-[0_0_30px_rgba(139,92,255,0.3)]">
-            DANCE REALM
+            DANCE <span className="inline-block transform scale-x-[-1]">R</span>EALM
           </h1>
           
           <div className="space-y-3">

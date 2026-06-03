@@ -47,7 +47,7 @@ export default function RegisterPage() {
               </div>
             </div>
             <CardTitle className="text-4xl font-black italic uppercase tracking-tighter text-gradient">
-              Join the Realm
+              Join the <span className="inline-block transform scale-x-[-1]">R</span>ealm
             </CardTitle>
             <CardDescription className="text-[10px] uppercase tracking-[0.3em] font-bold opacity-70">
               Synchronize your rhythm with the world
