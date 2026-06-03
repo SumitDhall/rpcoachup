@@ -30,6 +30,12 @@
       "description": "Professional dancer in action",
       "imageUrl": "https://picsum.photos/seed/dancepro/800/600",
       "imageHint": "professional dancer"
+    },
+    {
+      "id": "brand-logo",
+      "description": "Dance Realm Official Logo",
+      "imageUrl": "https://picsum.photos/seed/dancelogo/400/400",
+      "imageHint": "dance logo"
     }
   ]
 }

@@ -2,13 +2,17 @@
 'use client';
 
 import Link from "next/link";
-import { Zap, Mail, MapPin, Calendar, Users, DollarSign, PlusCircle, ShieldCheck, Instagram, Twitter, Youtube } from "lucide-react";
+import Image from "next/image";
+import { Mail, MapPin, Calendar, Users, DollarSign, PlusCircle, ShieldCheck, Instagram, Twitter, Youtube } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export function SiteFooter() {
+  const brandLogo = PlaceHolderImages.find(img => img.id === 'brand-logo');
+
   return (
     <footer className="bg-black/80 backdrop-blur-md border-t border-white/10 pt-16 pb-24 px-6 md:px-12 mt-auto relative z-10 overflow-visible">
-      {/* Background Glows - Simplified for performance and visibility */}
+      {/* Background Glows */}
       <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/10 blur-[120px] rounded-full pointer-events-none opacity-50" />
       <div className="absolute -top-24 -right-24 w-96 h-96 bg-secondary/10 blur-[120px] rounded-full pointer-events-none opacity-50" />
 
@@ -16,11 +20,18 @@ export function SiteFooter() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
           {/* Brand Section */}
           <div className="space-y-6 flex flex-col items-start col-span-1 sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="h-12 w-12 shrink-0 rounded-2xl bg-vibrant-gradient flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-500 shadow-primary/30">
-                <Zap className="h-6 w-6 text-[#050816] fill-current" />
+            <Link href="/" className="group block">
+              <div className="relative h-16 w-48 group-hover:scale-105 transition-transform duration-500">
+                {brandLogo && (
+                  <Image
+                    src={brandLogo.imageUrl}
+                    alt="Dance Realm Logo"
+                    fill
+                    className="object-contain object-left"
+                    data-ai-hint="dance logo"
+                  />
+                )}
               </div>
-              <span className="text-3xl font-black italic uppercase tracking-tighter text-gradient">Dance Realm</span>
             </Link>
             <p className="text-[#F4F7FF]/70 text-sm leading-relaxed max-w-sm">
               The global home of rhythm and movement. Discover artists, sessions, and festivals - connect with the dancers shaping the realm.
@@ -44,7 +55,7 @@ export function SiteFooter() {
           {/* Discover Section */}
           <div className="space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-primary">Discover</h4>
-            <nav className="flex flex-col gap-4">
+            <nav className="grid grid-cols-2 sm:flex sm:flex-col gap-4">
               <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                 <Calendar className="h-4 w-4 group-hover:text-primary transition-colors" /> Events
               </Link>
@@ -63,7 +74,7 @@ export function SiteFooter() {
           {/* For Organizers Section */}
           <div className="space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-secondary">For Organizers</h4>
-            <nav className="flex flex-col gap-4">
+            <nav className="grid grid-cols-2 sm:flex sm:flex-col gap-4">
               <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                 <PlusCircle className="h-4 w-4 group-hover:text-secondary transition-colors" /> Create Event
               </Link>
@@ -76,7 +87,7 @@ export function SiteFooter() {
           {/* Support Section */}
           <div className="space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-accent">Support</h4>
-            <nav className="flex flex-col gap-4">
+            <nav className="grid grid-cols-2 sm:flex sm:flex-col gap-4">
               <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                 <Mail className="h-4 w-4 group-hover:text-accent transition-colors" /> Contact
               </Link>
