@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, Users, Calendar, ChevronLeft, ChevronRight, Zap, LogIn, UserPlus } from "lucide-react";
@@ -19,10 +19,14 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  // usePathname is SSR-safe in Next.js 13+, so we can use it directly 
-  // without a 'mounted' check to determine footer visibility.
-  const showFooter = pathname !== '/blips';
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Ensure consistent rendering between server and client
+  const showFooter = mounted && pathname !== '/blips';
 
   const navLinks = [
     { name: "Artists", href: "/artists", icon: Users },
