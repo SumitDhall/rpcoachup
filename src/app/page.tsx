@@ -16,11 +16,11 @@ export default function Page() {
       <div className="text-center space-y-12 animate-in fade-in zoom-in duration-1000 relative z-30">
         <div className="space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-4 animate-bounce">
-            <Flame className="w-4 h-4 text-primary fill-primary" />
+            <Flame className="w-4 h-4 text-[#FF4FD8] fill-[#FF4FD8]" />
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F4F7FF]/80">Rhythm is Alive</span>
           </div>
           
-          <h1 className="text-8xl md:text-[12rem] font-black tracking-tighter text-gradient italic leading-none drop-shadow-[0_0_30px_rgba(255,230,0,0.3)]">
+          <h1 className="text-8xl md:text-[12rem] font-black tracking-tighter text-gradient italic leading-none drop-shadow-[0_0_30px_rgba(139,92,255,0.3)]">
             DANCE REALM
           </h1>
           
@@ -28,13 +28,13 @@ export default function Page() {
             <p className="text-sm md:text-xl text-[#F4F7FF]/70 font-black uppercase tracking-[0.6em] max-w-2xl mx-auto leading-relaxed">
               Connecting Dancers Worldwide
             </p>
-            <div className="h-2 w-48 bg-vibrant-gradient mx-auto rounded-full shadow-[0_0_30px_rgba(255,230,0,0.6)] animate-pulse" />
+            <div className="h-2 w-48 bg-vibrant-gradient mx-auto rounded-full shadow-[0_0_30px_rgba(255,79,216,0.4)] animate-pulse" />
           </div>
         </div>
 
         {/* Call to Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-8 pt-8 relative z-40">
-          <Button asChild size="lg" className="h-16 px-10 rounded-full bg-vibrant-gradient text-[#050816] font-black uppercase tracking-[0.2em] hover:scale-110 transition-all duration-300 shadow-[0_0_40px_rgba(255,230,0,0.4)] border-none cursor-pointer">
+          <Button asChild size="lg" className="h-16 px-10 rounded-full bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] hover:scale-110 transition-all duration-300 shadow-[0_0_40px_rgba(255,79,216,0.3)] border-none cursor-pointer">
             <Link href="/artists" className="flex items-center gap-3">
               <Play className="w-5 h-5 fill-current" />
               Enter the Realm
@@ -49,7 +49,7 @@ export default function Page() {
               </Link>
             </Button>
             
-            <Button asChild variant="outline" className="h-14 px-8 rounded-full border-secondary/40 glass-card hover:bg-secondary hover:text-white text-xs font-black uppercase tracking-widest transition-all cursor-pointer">
+            <Button asChild variant="outline" className="h-14 px-8 rounded-full border-secondary/40 glass-card hover:bg-secondary/10 text-xs font-black uppercase tracking-widest transition-all cursor-pointer">
               <Link href="/register" className="flex items-center gap-2">
                 <UserPlus className="w-4 h-4 text-secondary" />
                 Register
