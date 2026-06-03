@@ -21,7 +21,7 @@ export default function Page() {
           </div>
           
           <h1 className="text-8xl md:text-[12rem] font-black tracking-tighter text-gradient italic leading-none drop-shadow-[0_0_30px_rgba(139,92,255,0.3)]">
-            DANCE REALM
+            DΛNCE ЯEΛLM
           </h1>
           
           <div className="space-y-3">
