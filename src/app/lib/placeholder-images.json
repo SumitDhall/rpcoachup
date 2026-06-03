@@ -34,7 +34,7 @@
     {
       "id": "brand-logo",
       "description": "Dance Realm Official Logo",
-      "imageUrl": "https://picsum.photos/seed/dancelogo/400/400",
+      "imageUrl": "/dr_logo.png",
       "imageHint": "dance logo"
     }
   ]

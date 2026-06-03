@@ -29,6 +29,7 @@ export function SiteFooter() {
                     fill
                     className="object-contain object-left"
                     data-ai-hint="dance logo"
+                    priority
                   />
                 )}
               </div>
