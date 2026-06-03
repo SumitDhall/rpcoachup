@@ -25,10 +25,6 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  // Ensure consistent rendering between server and client to avoid hydration errors
-  const isBlipsPage = pathname === '/blips';
-  const showFooter = mounted && !isBlipsPage;
-
   const navLinks = [
     { name: "Artists", href: "/artists", icon: Users },
     { name: "Blips", href: "/blips", icon: Calendar },
@@ -42,6 +38,9 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
   const handleLinkClick = () => {
     setOpen(false);
   };
+
+  // Only show footer on client after mount and if not on blips page
+  const showFooter = mounted && pathname !== '/blips';
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#050816]">
@@ -89,7 +88,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
 
       {/* Main Content Area */}
       <main className="flex-1 relative overflow-auto flex flex-col">
-        <div className="flex-1 min-h-0">
+        <div className="flex-1">
           {children}
         </div>
         {showFooter && <SiteFooter />}

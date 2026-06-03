@@ -49,14 +49,14 @@
 
 /* Updated gradients with smooth transitions - Mixing 30% Purple, 30% Magenta, then Orange/Yellow */
 .text-gradient {
-  background: linear-gradient(to right, #8B5CFF 0%, #8B5CFF 15%, #FF4FD8 45%, #FF5F2E 75%, #FFE600 100%);
+  background: linear-gradient(to right, #8B5CFF 0%, #8B5CFF 30%, #FF4FD8 60%, #FF5F2E 85%, #FFE600 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .bg-vibrant-gradient {
-  background: linear-gradient(135deg, #8B5CFF 0%, #8B5CFF 15%, #FF4FD8 45%, #FF5F2E 75%, #FFE600 100%);
+  background: linear-gradient(135deg, #8B5CFF 0%, #8B5CFF 30%, #FF4FD8 60%, #FF5F2E 85%, #FFE600 100%);
 }
 
 .bg-radial-gradient {
