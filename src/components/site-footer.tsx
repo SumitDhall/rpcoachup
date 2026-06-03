@@ -7,96 +7,95 @@ import { Badge } from "@/components/ui/badge";
 
 export function SiteFooter() {
   return (
-    <footer className="bg-black/40 border-t border-white/5 pt-20 pb-10 px-8 md:px-12 mt-auto relative z-10 overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-secondary/5 blur-[120px] rounded-full pointer-events-none" />
+    <footer className="bg-black/80 backdrop-blur-md border-t border-white/10 pt-16 pb-24 px-6 md:px-12 mt-auto relative z-10 overflow-visible">
+      {/* Background Glows - Simplified for performance and visibility */}
+      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/10 blur-[120px] rounded-full pointer-events-none opacity-50" />
+      <div className="absolute -top-24 -right-24 w-96 h-96 bg-secondary/10 blur-[120px] rounded-full pointer-events-none opacity-50" />
 
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-20">
+      <div className="max-w-7xl mx-auto relative z-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
           {/* Brand Section */}
-          <div className="space-y-8">
+          <div className="space-y-6 flex flex-col items-start col-span-1 sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="h-12 w-12 rounded-2xl bg-vibrant-gradient flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-500 shadow-primary/20">
+              <div className="h-12 w-12 shrink-0 rounded-2xl bg-vibrant-gradient flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-500 shadow-primary/30">
                 <Zap className="h-6 w-6 text-[#050816] fill-current" />
               </div>
               <span className="text-3xl font-black italic uppercase tracking-tighter text-gradient">Dance Realm</span>
             </Link>
-            <p className="text-[#F4F7FF]/60 text-sm leading-relaxed max-w-sm">
-              The global home of rhythm and movement. Discover artists, sessions, and festivals - and connect with the dancers shaping the realm.
+            <p className="text-[#F4F7FF]/70 text-sm leading-relaxed max-w-sm">
+              The global home of rhythm and movement. Discover artists, sessions, and festivals - connect with the dancers shaping the realm.
             </p>
             <div className="flex gap-4">
-              <Link href="#" className="h-10 w-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/5 hover:border-primary/50 transition-all text-[#F4F7FF]/40 hover:text-primary">
+              <Link href="#" className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF]/60 hover:text-primary">
                 <Instagram className="h-4 w-4" />
               </Link>
-              <Link href="#" className="h-10 w-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/5 hover:border-primary/50 transition-all text-[#F4F7FF]/40 hover:text-primary">
+              <Link href="#" className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF]/60 hover:text-primary">
                 <Twitter className="h-4 w-4" />
               </Link>
-              <Link href="#" className="h-10 w-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/5 hover:border-primary/50 transition-all text-[#F4F7FF]/40 hover:text-primary">
+              <Link href="#" className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF]/60 hover:text-primary">
                 <Youtube className="h-4 w-4" />
               </Link>
             </div>
-            <Badge variant="outline" className="border-white/5 text-[10px] font-black uppercase tracking-[0.3em] px-4 py-1.5 text-[#F4F7FF]/40 bg-white/[0.02]">
-              Crafted in the Realm
+            <Badge variant="outline" className="border-white/10 text-[10px] font-black uppercase tracking-[0.3em] px-4 py-1.5 text-[#F4F7FF]/60 bg-white/[0.05]">
+              Synchronized 2024
             </Badge>
           </div>
 
           {/* Discover Section */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-primary">Discover</h4>
-            <nav className="flex flex-col gap-5">
-              <Link href="#" className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/60 hover:text-white transition-colors group">
+            <nav className="flex flex-col gap-4">
+              <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                 <Calendar className="h-4 w-4 group-hover:text-primary transition-colors" /> Events
               </Link>
-              <Link href="/artists" className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/60 hover:text-white transition-colors group">
+              <Link href="/artists" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                 <Users className="h-4 w-4 group-hover:text-primary transition-colors" /> Artists
               </Link>
-              <Link href="#" className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/60 hover:text-white transition-colors group">
+              <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                 <MapPin className="h-4 w-4 group-hover:text-primary transition-colors" /> Maps
               </Link>
-              <Link href="#" className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/60 hover:text-white transition-colors group">
+              <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                 <DollarSign className="h-4 w-4 group-hover:text-primary transition-colors" /> Pricing
               </Link>
             </nav>
           </div>
 
           {/* For Organizers Section */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-secondary">For Organizers</h4>
-            <nav className="flex flex-col gap-5">
-              <Link href="#" className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/60 hover:text-white transition-colors group">
+            <nav className="flex flex-col gap-4">
+              <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                 <PlusCircle className="h-4 w-4 group-hover:text-secondary transition-colors" /> Create Event
               </Link>
-              <Link href="#" className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/60 hover:text-white transition-colors group">
+              <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                 <ShieldCheck className="h-4 w-4 group-hover:text-secondary transition-colors" /> Plans
               </Link>
             </nav>
           </div>
 
           {/* Support Section */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-accent">Support</h4>
-            <nav className="flex flex-col gap-5">
-              <Link href="#" className="flex items-center gap-4 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/60 hover:text-white transition-colors group">
+            <nav className="flex flex-col gap-4">
+              <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                 <Mail className="h-4 w-4 group-hover:text-accent transition-colors" /> Contact
               </Link>
-              <Link href="#" className="text-xs font-black uppercase tracking-widest text-[#F4F7FF]/60 hover:text-white transition-colors">Privacy Policy</Link>
-              <Link href="#" className="text-xs font-black uppercase tracking-widest text-[#F4F7FF]/60 hover:text-white transition-colors">Terms of Use</Link>
-              <Link href="#" className="text-xs font-black uppercase tracking-widest text-[#F4F7FF]/60 hover:text-white transition-colors">Cookie Settings</Link>
-              <Link href="#" className="text-xs font-black uppercase tracking-widest text-[#F4F7FF]/60 hover:text-white transition-colors">Transparency Report</Link>
+              <Link href="#" className="text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors">Privacy Policy</Link>
+              <Link href="#" className="text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors">Terms of Use</Link>
+              <Link href="#" className="text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors">Transparency</Link>
             </nav>
           </div>
         </div>
 
         {/* Bottom Credits */}
-        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F4F7FF]/30">
+        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F4F7FF]/40 text-center md:text-left">
             © 2024 Dance Realm. All rhythms reserved.
           </p>
-          <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.3em] text-[#F4F7FF]/30">
+          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 text-[10px] font-black uppercase tracking-[0.3em] text-[#F4F7FF]/40">
             <span>Built by <span className="text-primary hover:text-primary/80 cursor-pointer">Inteleforge</span></span>
-            <span className="hidden md:inline h-1 w-1 bg-white/20 rounded-full" />
-            <span>Secure payments by <span className="text-[#F4F7FF]/60">Stripe</span></span>
+            <span className="hidden md:inline h-1.5 w-1.5 bg-white/10 rounded-full" />
+            <span>Secure by <span className="text-[#F4F7FF]/80">Stripe</span></span>
           </div>
         </div>
       </div>
