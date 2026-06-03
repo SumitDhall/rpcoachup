@@ -17,11 +17,11 @@ export function SiteFooter() {
       <div className="absolute -top-24 -right-24 w-96 h-96 bg-secondary/10 blur-[120px] rounded-full pointer-events-none opacity-50" />
 
       <div className="max-w-7xl mx-auto relative z-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-x-12 gap-y-16 mb-16">
           {/* Brand Section */}
-          <div className="space-y-6 flex flex-col items-start col-span-1 sm:col-span-2 lg:col-span-1">
+          <div className="space-y-6 flex flex-col items-start col-span-1 sm:col-span-2 xl:col-span-1">
             <Link href="/" className="group block">
-              <div className="relative h-[115px] w-[288px] md:h-[173px] md:w-[360px] group-hover:scale-105 transition-transform duration-500">
+              <div className="relative h-[103.5px] w-[259.2px] md:h-[155.7px] md:w-[324px] group-hover:scale-105 transition-transform duration-500">
                 {brandLogo && (
                   <Image
                     src={brandLogo.imageUrl}
@@ -39,12 +39,15 @@ export function SiteFooter() {
             </p>
             <div className="flex gap-4">
               <Link href="#" className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF]/60 hover:text-primary">
+                <span className="sr-only">Instagram</span>
                 <Instagram className="h-4 w-4" />
               </Link>
               <Link href="#" className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF]/60 hover:text-primary">
+                <span className="sr-only">Twitter</span>
                 <Twitter className="h-4 w-4" />
               </Link>
               <Link href="#" className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF]/60 hover:text-primary">
+                <span className="sr-only">Youtube</span>
                 <Youtube className="h-4 w-4" />
               </Link>
             </div>
@@ -56,7 +59,7 @@ export function SiteFooter() {
           {/* Discover Section */}
           <div className="space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-primary">Discover</h4>
-            <nav className="grid grid-cols-2 sm:flex sm:flex-col gap-4">
+            <nav className="flex flex-col gap-4">
               <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                 <Calendar className="h-4 w-4 group-hover:text-primary transition-colors" /> Events
               </Link>
@@ -75,7 +78,7 @@ export function SiteFooter() {
           {/* For Organizers Section */}
           <div className="space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-secondary">For Organizers</h4>
-            <nav className="grid grid-cols-2 sm:flex sm:flex-col gap-4">
+            <nav className="flex flex-col gap-4">
               <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                 <PlusCircle className="h-4 w-4 group-hover:text-secondary transition-colors" /> Create Event
               </Link>
@@ -88,7 +91,7 @@ export function SiteFooter() {
           {/* Support Section */}
           <div className="space-y-6">
             <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-accent">Support</h4>
-            <nav className="grid grid-cols-2 sm:flex sm:flex-col gap-4">
+            <nav className="flex flex-col gap-4">
               <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                 <Mail className="h-4 w-4 group-hover:text-accent transition-colors" /> Contact
               </Link>
