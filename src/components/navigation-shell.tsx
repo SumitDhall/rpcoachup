@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from "react";
@@ -13,11 +14,15 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { SiteFooter } from "@/components/site-footer";
 
 export function NavigationShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  // Hide footer only on the Blips page
+  const showFooter = pathname !== '/blips';
 
   const navLinks = [
     { name: "Artists", href: "/artists", icon: Users },
@@ -78,8 +83,11 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 relative overflow-auto">
-        {children}
+      <main className="flex-1 relative overflow-auto flex flex-col">
+        <div className="flex-1">
+          {children}
+        </div>
+        {showFooter && <SiteFooter />}
       </main>
 
       {/* Desktop Persistent Sidebar */}
