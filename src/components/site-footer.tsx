@@ -34,7 +34,7 @@ export function SiteFooter() {
               </div>
             </Link>
             <p className="text-[#F4F7FF]/70 text-sm leading-relaxed max-w-sm">
-              The global home of rhythm and movement. Discover artists, sessions, and festivals - connect with the dancers shaping the realm.
+            World's stage for dancers and artists. Learn from renowned creators anywhere. Share your Blips and be part of a global community, creativity, and expression.
             </p>
             <div className="flex gap-4">
               <Link href="#" className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF]/60 hover:text-primary">
@@ -51,7 +51,7 @@ export function SiteFooter() {
               </Link>
             </div>
             <Badge variant="outline" className="border-white/10 text-[10px] font-black uppercase tracking-[0.3em] px-4 py-1.5 text-[#F4F7FF]/60 bg-white/[0.05]">
-              Synchronized 2024
+              Synchronized 2026
             </Badge>
           </div>
 
@@ -67,9 +67,9 @@ export function SiteFooter() {
                 <Link href="/artists" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                   <Users className="h-4 w-4 group-hover:text-primary transition-colors" /> Artists
                 </Link>
-                <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
+                {/* <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                   <MapPin className="h-4 w-4 group-hover:text-primary transition-colors" /> Maps
-                </Link>
+                </Link> */}
                 <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                   <DollarSign className="h-4 w-4 group-hover:text-primary transition-colors" /> Pricing
                 </Link>
@@ -77,7 +77,7 @@ export function SiteFooter() {
             </div>
 
             {/* For Organizers Section */}
-            <div className="space-y-6">
+            {/* <div className="space-y-6">
               <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-secondary">For Organizers</h4>
               <nav className="flex flex-col gap-4">
                 <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
@@ -87,7 +87,7 @@ export function SiteFooter() {
                   <ShieldCheck className="h-4 w-4 group-hover:text-secondary transition-colors" /> Plans
                 </Link>
               </nav>
-            </div>
+            </div> */}
 
             {/* Support Section */}
             <div className="space-y-6">
@@ -107,10 +107,10 @@ export function SiteFooter() {
         {/* Bottom Credits */}
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F4F7FF]/40 text-center md:text-left">
-            © 2024 Dance Realm. All rhythms reserved.
+            © 2026 Dance Realm. All rights reserved.
           </p>
           <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 text-[10px] font-black uppercase tracking-[0.3em] text-[#F4F7FF]/40">
-            <span>Built by <span className="text-primary hover:text-primary/80 cursor-pointer">Inteleforge</span></span>
+            <span>Built by <span className="text-primary hover:text-primary/80 cursor-pointer">sk group</span></span>
             <span className="hidden md:inline h-1.5 w-1.5 bg-white/10 rounded-full" />
             <span>Secure by <span className="text-[#F4F7FF]/80">Stripe</span></span>
           </div>
