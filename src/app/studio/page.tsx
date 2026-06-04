@@ -89,6 +89,9 @@ function StudioVideo({ url, poster }: { url: string; poster?: string }) {
       if (player) {
         player.dispose();
       }
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
     };
   }, [url, poster]);
 
@@ -121,7 +124,6 @@ export default function ArtistStudioPage() {
   const ITEMS_PER_PAGE = 10;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'artist')) {
@@ -260,8 +262,7 @@ export default function ArtistStudioPage() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handlePageChange = (e: React.MouseEvent, newPage: number) => {
-    e.preventDefault();
+  const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
   };
 
@@ -425,7 +426,7 @@ export default function ArtistStudioPage() {
       </div>
 
       {/* Channel Content Section */}
-      <section className="space-y-8" ref={contentRef}>
+      <section className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-6 gap-4">
           <div className="flex items-center gap-3">
             <LayoutGrid className="w-6 h-6 text-primary" />
@@ -436,7 +437,6 @@ export default function ArtistStudioPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            {/* Filter by Type */}
             <div className="flex items-center gap-2">
               <Filter className="w-3.5 h-3.5 text-muted-foreground" />
               <Select value={filterType} onValueChange={(v) => { setFilterType(v); setCurrentPage(1); }}>
@@ -452,7 +452,6 @@ export default function ArtistStudioPage() {
               </Select>
             </div>
 
-            {/* Sort Controls */}
             <div className="flex items-center gap-2">
               <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
               <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setCurrentPage(1); }}>
@@ -470,17 +469,15 @@ export default function ArtistStudioPage() {
           </div>
         </div>
         
-        {/* Content Container with min-height to prevent jumping */}
-        <div className="flex flex-col gap-6 min-h-[800px]">
+        {/* Stable Content Area */}
+        <div className="flex flex-col gap-6 min-h-[1000px] transition-all duration-300">
           {paginatedUploads.map((upload) => (
-            <Card key={upload.id} className="glass-card border-white/5 hover:border-primary/20 transition-all overflow-hidden group">
+            <Card key={upload.id} className="glass-card border-white/5 hover:border-primary/20 transition-all overflow-hidden group animate-in fade-in duration-500">
               <div className="flex flex-col md:flex-row">
-                {/* Video Tile */}
                 <div className="w-full md:w-80 aspect-video relative bg-black shrink-0 border-b md:border-b-0 md:border-r border-white/5">
                   <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
                 </div>
 
-                {/* Details Content */}
                 <div className="flex-1 p-6 flex flex-col justify-between gap-6">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -542,7 +539,7 @@ export default function ArtistStudioPage() {
               type="button"
               className="rounded-xl border-white/10 hover:border-primary/50" 
               disabled={currentPage === 1}
-              onClick={(e) => handlePageChange(e, Math.max(1, currentPage - 1))}
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -554,10 +551,10 @@ export default function ArtistStudioPage() {
                   type="button"
                   variant={currentPage === i + 1 ? "default" : "ghost"}
                   className={cn(
-                    "w-10 h-10 rounded-xl font-black",
-                    currentPage === i + 1 ? "bg-primary text-primary-foreground" : "hover:bg-white/5"
+                    "w-10 h-10 rounded-xl font-black transition-all",
+                    currentPage === i + 1 ? "bg-primary text-primary-foreground scale-110" : "hover:bg-white/5"
                   )}
-                  onClick={(e) => handlePageChange(e, i + 1)}
+                  onClick={() => handlePageChange(i + 1)}
                 >
                   {i + 1}
                 </Button>
@@ -569,7 +566,7 @@ export default function ArtistStudioPage() {
               type="button"
               className="rounded-xl border-white/10 hover:border-primary/50" 
               disabled={currentPage === totalPages}
-              onClick={(e) => handlePageChange(e, Math.min(totalPages, currentPage + 1))}
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
             >
               <ChevronRight className="w-5 h-5" />
             </Button>
