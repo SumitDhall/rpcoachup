@@ -175,7 +175,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
           {isCollapsed ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
         </Button>
 
-        <div className={cn("flex flex-col mb-12", isCollapsed ? "items-center" : "items-start")}>
+        <div className={cn("flex flex-col mb-12 items-center text-center")}>
           <Link href="/" className={cn("font-black text-gradient italic leading-none transition-all uppercase tracking-tighter", isCollapsed ? "text-2xl" : "text-4xl")}>
             {isCollapsed ? (
               collapsedLogo ? (
@@ -192,15 +192,15 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                 <>DR</>
               )
             ) : (
-              <>Dance Realm</>
+              <>DANCE REALM</>
             )}
           </Link>
           {!isCollapsed && (
-            <div className="flex items-center gap-2 mt-3 animate-in fade-in slide-in-from-left-4 duration-700">
-              <Zap className="h-3 w-3 text-secondary fill-secondary" />
-              <span className="text-[10px] uppercase tracking-[0.4em] font-black text-[#F4F7FF]/40 whitespace-nowrap">
+            <div className="space-y-4 mt-4 flex flex-col items-center w-full animate-in fade-in slide-in-from-top-4 duration-700">
+              <p className="text-[10px] text-[#F4F7FF]/70 font-black uppercase tracking-[0.4em] leading-relaxed text-center">
                 Connecting Dancers Worldwide
-              </span>
+              </p>
+              <div className="h-0.5 w-full bg-vibrant-gradient rounded-full shadow-[0_0_20px_rgba(255,79,216,0.3)] animate-pulse" />
             </div>
           )}
         </div>
