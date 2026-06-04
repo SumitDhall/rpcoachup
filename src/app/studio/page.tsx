@@ -211,7 +211,7 @@ export default function ArtistStudioPage() {
           setSelectedFile(null);
           setVideoTitle("");
           setIsDialogOpen(false); 
-          setCurrentPage(1); // Reset to first page to see the new upload
+          setCurrentPage(1);
           
           toast({
             title: "Masterpiece Synchronized!",
@@ -222,7 +222,6 @@ export default function ArtistStudioPage() {
     }, 150);
   };
 
-  // Helper to parse view count strings like "12.5K" to numbers for sorting
   const parseViews = (viewStr: string) => {
     if (viewStr.endsWith('K')) {
       return parseFloat(viewStr.replace('K', '')) * 1000;
@@ -233,16 +232,11 @@ export default function ArtistStudioPage() {
     return parseFloat(viewStr);
   };
 
-  // Filter and Sort Logic
   const processedUploads = useMemo(() => {
     let result = [...uploads];
-
-    // Filtering
     if (filterType !== "All") {
       result = result.filter(u => u.type === filterType);
     }
-
-    // Sorting
     result.sort((a, b) => {
       switch (sortBy) {
         case "date-desc":
@@ -257,22 +251,18 @@ export default function ArtistStudioPage() {
           return 0;
       }
     });
-
     return result;
   }, [uploads, filterType, sortBy]);
 
-  // Pagination Logic
   const totalPages = Math.ceil(processedUploads.length / ITEMS_PER_PAGE);
   const paginatedUploads = processedUploads.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handlePageChange = (newPage: number) => {
+  const handlePageChange = (e: React.MouseEvent, newPage: number) => {
+    e.preventDefault();
     setCurrentPage(newPage);
-    // Smooth scroll back to the top of the content list if preferred,
-    // or simply keep focus. The user wants to "stay at the same point".
-    // We avoid triggering a global window scroll here.
   };
 
   if (isLoading || !user || user.role !== 'artist') {
@@ -480,7 +470,8 @@ export default function ArtistStudioPage() {
           </div>
         </div>
         
-        <div className="flex flex-col gap-6 min-h-[400px]">
+        {/* Content Container with min-height to prevent jumping */}
+        <div className="flex flex-col gap-6 min-h-[800px]">
           {paginatedUploads.map((upload) => (
             <Card key={upload.id} className="glass-card border-white/5 hover:border-primary/20 transition-all overflow-hidden group">
               <div className="flex flex-col md:flex-row">
@@ -542,7 +533,7 @@ export default function ArtistStudioPage() {
           )}
         </div>
 
-        {/* Functional Pagination */}
+        {/* Stable Pagination UI */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-4 pt-8">
             <Button 
@@ -551,7 +542,7 @@ export default function ArtistStudioPage() {
               type="button"
               className="rounded-xl border-white/10 hover:border-primary/50" 
               disabled={currentPage === 1}
-              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+              onClick={(e) => handlePageChange(e, Math.max(1, currentPage - 1))}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -566,7 +557,7 @@ export default function ArtistStudioPage() {
                     "w-10 h-10 rounded-xl font-black",
                     currentPage === i + 1 ? "bg-primary text-primary-foreground" : "hover:bg-white/5"
                   )}
-                  onClick={() => handlePageChange(i + 1)}
+                  onClick={(e) => handlePageChange(e, i + 1)}
                 >
                   {i + 1}
                 </Button>
@@ -578,7 +569,7 @@ export default function ArtistStudioPage() {
               type="button"
               className="rounded-xl border-white/10 hover:border-primary/50" 
               disabled={currentPage === totalPages}
-              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+              onClick={(e) => handlePageChange(e, Math.min(totalPages, currentPage + 1))}
             >
               <ChevronRight className="w-5 h-5" />
             </Button>
@@ -586,7 +577,7 @@ export default function ArtistStudioPage() {
         )}
       </section>
 
-      {/* Creator Goal - Vertically stacked below content */}
+      {/* Creator Goal */}
       <section className="space-y-6 pt-12 border-t border-white/5">
         <div className="flex items-center gap-3">
           <TrendingUp className="w-6 h-6 text-primary" />
