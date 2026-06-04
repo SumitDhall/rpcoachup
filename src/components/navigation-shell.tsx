@@ -55,7 +55,8 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
     setOpen(false);
   };
 
-  const showFooter = mounted && !['/blips', '/studio', '/dashboard'].includes(pathname);
+  // Footer is now shown on all pages except for the immersive Blips reel
+  const showFooter = mounted && !['/blips'].includes(pathname);
   const collapsedLogo = PlaceHolderImages.find(img => img.id === 'brand-logo-collapsed');
 
   if (!mounted) return null;
@@ -78,7 +79,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   className="text-gradient text-3xl font-black italic uppercase tracking-tighter block w-full mb-2"
                   onClick={handleLinkClick}
                 >
-                  DANCE REALM
+                  DΛNCE ЯEΛLM
                 </Link>
 
                 <div className="space-y-4 mt-2 flex flex-col items-center w-full">
@@ -192,17 +193,17 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                 <>DR</>
               )
             ) : (
-              <>DANCE REALM</>
+              <>DΛNCE ЯEΛLM</>
             )}
           </Link>
-          {!isCollapsed && (
-            <div className="space-y-4 mt-4 flex flex-col items-center w-full animate-in fade-in slide-in-from-top-4 duration-700">
+          <div className="space-y-4 mt-4 flex flex-col items-center w-full animate-in fade-in slide-in-from-top-4 duration-700">
+            {!isCollapsed && (
               <p className="text-[10px] text-[#F4F7FF]/70 font-black uppercase tracking-[0.4em] leading-relaxed text-center">
                 Connecting Dancers Worldwide
               </p>
-              <div className="h-0.5 w-full bg-vibrant-gradient rounded-full shadow-[0_0_20px_rgba(255,79,216,0.3)] animate-pulse" />
-            </div>
-          )}
+            )}
+            <div className="h-0.5 w-full bg-vibrant-gradient rounded-full shadow-[0_0_20px_rgba(255,79,216,0.3)] animate-pulse" />
+          </div>
         </div>
 
         <nav className="flex-1 flex flex-col gap-3">
