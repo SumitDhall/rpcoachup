@@ -78,8 +78,15 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   className="text-gradient text-3xl font-black italic uppercase tracking-tighter"
                   onClick={handleLinkClick}
                 >
-                  Dance Realm
+                  DANCE REALM
                 </Link>
+
+                <div className="space-y-3 mt-2">
+                  <p className="text-[9px] text-[#F4F7FF]/70 font-black uppercase tracking-[0.4em] leading-relaxed">
+                    Connecting Dancers Worldwide
+                  </p>
+                  <div className="h-0.5 w-32 bg-vibrant-gradient rounded-full shadow-[0_0_20px_rgba(255,79,216,0.3)] animate-pulse" />
+                </div>
               </SheetTitle>
             </SheetHeader>
             <nav className="flex flex-col gap-4">

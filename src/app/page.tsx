@@ -25,7 +25,7 @@ export default function Page() {
           </h1> */}
 
           <h1 className="text-gradient text-9xl font-black italic uppercase tracking-tighter" >
-            DANCE  ЯEALM
+            DANCE ЯEALM
           </h1>
                     
           
