@@ -82,58 +82,70 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                 </Link>
 
                 <div className="space-y-4 mt-2 flex flex-col items-center w-full">
-                  <p className="text-[9px] text-[#F4F7FF]/70 font-black uppercase tracking-[0.4em] leading-relaxed text-center">
+                  <p className="text-[10px] text-[#F4F7FF]/70 font-black uppercase tracking-[0.4em] leading-relaxed text-center">
                     Connecting Dancers Worldwide
                   </p>
                   <div className="h-0.5 w-full bg-vibrant-gradient rounded-full shadow-[0_0_20px_rgba(255,79,216,0.3)] animate-pulse" />
                 </div>
               </SheetTitle>
             </SheetHeader>
-            <nav className="flex flex-col gap-4">
-              {activeLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={handleLinkClick}
-                  className={cn(
-                    "flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-sm transition-all",
-                    pathname === link.href 
-                      ? "bg-vibrant-gradient text-[#050816] shadow-xl shadow-primary/30" 
-                      : "hover:bg-white/5 text-[#F4F7FF]/60 hover:text-white"
-                  )}
-                >
-                  <link.icon className="h-5 w-5" />
-                  {link.name}
-                </Link>
-              ))}
+            <nav className="flex flex-col gap-6">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.5em] text-[#F4F7FF]/20 font-black px-4 mb-4">
+                  Explore
+                </div>
+                <div className="flex flex-col gap-3">
+                  {activeLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      href={link.href}
+                      onClick={handleLinkClick}
+                      className={cn(
+                        "flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] transition-all",
+                        pathname === link.href 
+                          ? "bg-vibrant-gradient text-[#050816] shadow-xl shadow-primary/30" 
+                          : "hover:bg-white/5 text-[#F4F7FF]/50 hover:text-white"
+                      )}
+                    >
+                      <link.icon className="h-5 w-5" />
+                      {link.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
 
-              {!user && authLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={handleLinkClick}
-                  className={cn(
-                    "flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-sm transition-all",
-                    pathname === link.href 
-                      ? "bg-vibrant-gradient text-[#050816] shadow-xl shadow-primary/30" 
-                      : "hover:bg-white/5 text-[#F4F7FF]/60 hover:text-white"
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.5em] text-[#F4F7FF]/20 font-black px-4 mb-4">
+                  Account
+                </div>
+                <div className="flex flex-col gap-3">
+                  {!user ? authLinks.map((link) => (
+                    <Link
+                      key={link.name}
+                      href={link.href}
+                      onClick={handleLinkClick}
+                      className={cn(
+                        "flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] transition-all",
+                        pathname === link.href 
+                          ? "bg-vibrant-gradient text-[#050816] shadow-xl shadow-primary/30" 
+                          : "hover:bg-white/5 text-[#F4F7FF]/50 hover:text-white"
+                      )}
+                    >
+                      <link.icon className="h-5 w-5" />
+                      {link.name}
+                    </Link>
+                  )) : (
+                    <Button 
+                      onClick={() => { logout(); handleLinkClick(); }}
+                      variant="ghost" 
+                      className="flex items-center justify-start gap-4 px-6 py-4 h-auto rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      Sign Out
+                    </Button>
                   )}
-                >
-                  <link.icon className="h-5 w-5" />
-                  {link.name}
-                </Link>
-              ))}
-
-              {user && (
-                <Button 
-                  onClick={() => { logout(); handleLinkClick(); }}
-                  variant="ghost" 
-                  className="flex items-center justify-start gap-4 px-6 py-8 rounded-2xl font-black uppercase tracking-[0.2em] text-sm text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
-                >
-                  <LogOut className="h-5 w-5" />
-                  Sign Out
-                </Button>
-              )}
+                </div>
+              </div>
             </nav>
           </SheetContent>
         </Sheet>
