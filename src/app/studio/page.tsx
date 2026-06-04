@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Upload, 
@@ -14,12 +14,14 @@ import {
   Eye,
   Calendar,
   Clock,
-  LayoutGrid
+  LayoutGrid,
+  Filter,
+  ArrowUpDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { STUDIO_STATS, STUDIO_UPLOADS } from "@/lib/mock-data";
+import { STUDIO_STATS } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/context/auth-context";
 import {
@@ -41,6 +43,22 @@ import { cn } from "@/lib/utils";
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
+// Expanded Mock Data for Pagination Demo
+const INITIAL_UPLOADS = [
+  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
+  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performance", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
+  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
+  { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performance", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
+  { id: "u5", title: "Hip Hop Foundations", date: "Aug 05, 2024", views: "21.1K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
+  { id: "u6", title: "Latin Heat Rehearsal", date: "Jul 20, 2024", views: "1.5K", status: "Draft", type: "Rehearsal", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
+  { id: "u7", title: "Jazz Fusion Routine", date: "Jun 15, 2024", views: "15.7K", status: "Published", type: "Performance", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
+  { id: "u8", title: "Breaking Level 1", date: "May 22, 2024", views: "5.4K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
+  { id: "u9", title: "Popping Controls", date: "Apr 10, 2024", views: "10.2K", status: "Published", type: "Tutorial", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
+  { id: "u10", title: "World of Dance Prep", date: "Mar 30, 2024", views: "30.5K", status: "Published", type: "Performance", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
+  { id: "u11", title: "Locking & Loading", date: "Feb 14, 2024", views: "2.8K", status: "Published", type: "Tutorial", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
+  { id: "u12", title: "Vogue Intro", date: "Jan 02, 2024", views: "7.1K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
+];
+
 function StudioVideo({ url }: { url: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
@@ -58,7 +76,7 @@ function StudioVideo({ url }: { url: string }) {
       responsive: true,
       fluid: false, 
       loop: false,
-      muted: true, // Muted by default for studio previews
+      muted: true,
       preload: 'none',
       sources: [{
         src: url,
@@ -86,7 +104,7 @@ export default function ArtistStudioPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const [uploads, setUploads] = useState(STUDIO_UPLOADS);
+  const [uploads, setUploads] = useState(INITIAL_UPLOADS);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -94,6 +112,13 @@ export default function ArtistStudioPage() {
   const [videoTitle, setVideoTitle] = useState("");
   const [videoCategory, setVideoCategory] = useState("Performance");
   const [isDragging, setIsDragging] = useState(false);
+  
+  // Sorting and Filtering State
+  const [filterType, setFilterType] = useState("All");
+  const [sortBy, setSortBy] = useState("date-desc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -183,6 +208,7 @@ export default function ArtistStudioPage() {
           setSelectedFile(null);
           setVideoTitle("");
           setIsDialogOpen(false); 
+          setCurrentPage(1); // Reset to first page to see the new upload
           
           toast({
             title: "Masterpiece Synchronized!",
@@ -192,6 +218,52 @@ export default function ArtistStudioPage() {
       }
     }, 150);
   };
+
+  // Helper to parse view count strings like "12.5K" to numbers for sorting
+  const parseViews = (viewStr: string) => {
+    if (viewStr.endsWith('K')) {
+      return parseFloat(viewStr.replace('K', '')) * 1000;
+    }
+    if (viewStr.endsWith('M')) {
+      return parseFloat(viewStr.replace('M', '')) * 1000000;
+    }
+    return parseFloat(viewStr);
+  };
+
+  // Filter and Sort Logic
+  const processedUploads = useMemo(() => {
+    let result = [...uploads];
+
+    // Filtering
+    if (filterType !== "All") {
+      result = result.filter(u => u.type === filterType);
+    }
+
+    // Sorting
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case "date-desc":
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        case "date-asc":
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        case "views-desc":
+          return parseViews(b.views) - parseViews(a.views);
+        case "views-asc":
+          return parseViews(a.views) - parseViews(b.views);
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [uploads, filterType, sortBy]);
+
+  // Pagination Logic
+  const totalPages = Math.ceil(processedUploads.length / ITEMS_PER_PAGE);
+  const paginatedUploads = processedUploads.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   if (isLoading || !user || user.role !== 'artist') {
     return (
@@ -205,14 +277,8 @@ export default function ArtistStudioPage() {
   return (
     <div className="min-h-screen p-8 max-w-5xl mx-auto space-y-12 animate-in fade-in duration-700">
       <style jsx global>{`
-        /* Ensure Video.js tech (actual video) stretches to fill its container */
-        .vjs-tech {
-          object-fit: cover !important;
-        }
-        .video-js.vjs-fill {
-           width: 100%;
-           height: 100%;
-        }
+        .vjs-tech { object-fit: cover !important; }
+        .video-js.vjs-fill { width: 100%; height: 100%; }
       `}</style>
 
       {/* Header section */}
@@ -358,20 +424,54 @@ export default function ArtistStudioPage() {
         ))}
       </div>
 
-      {/* Channel Content Tiles */}
+      {/* Channel Content Section */}
       <section className="space-y-8">
-        <div className="flex items-center justify-between border-b border-white/5 pb-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-6 gap-4">
           <div className="flex items-center gap-3">
             <LayoutGrid className="w-6 h-6 text-primary" />
             <h2 className="text-3xl font-black italic uppercase tracking-tighter">Channel Content</h2>
+            <Badge variant="outline" className="border-primary/20 text-primary font-black uppercase tracking-widest text-[10px] ml-2">
+              {uploads.length} Masters
+            </Badge>
           </div>
-          <Badge variant="outline" className="border-primary/20 text-primary font-black uppercase tracking-widest text-[10px]">
-            {uploads.length} Masters
-          </Badge>
+
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Filter by Type */}
+            <div className="flex items-center gap-2">
+              <Filter className="w-3.5 h-3.5 text-muted-foreground" />
+              <Select value={filterType} onValueChange={(v) => { setFilterType(v); setCurrentPage(1); }}>
+                <SelectTrigger className="w-[130px] h-9 bg-black/20 border-white/5 text-[10px] font-black uppercase tracking-widest">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent className="glass-card border-white/10">
+                  <SelectItem value="All">All Types</SelectItem>
+                  <SelectItem value="Performance">Performance</SelectItem>
+                  <SelectItem value="Tutorial">Tutorial</SelectItem>
+                  <SelectItem value="Rehearsal">Rehearsal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Sort Controls */}
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
+              <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setCurrentPage(1); }}>
+                <SelectTrigger className="w-[160px] h-9 bg-black/20 border-white/5 text-[10px] font-black uppercase tracking-widest">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent className="glass-card border-white/10">
+                  <SelectItem value="date-desc">Newest First</SelectItem>
+                  <SelectItem value="date-asc">Oldest First</SelectItem>
+                  <SelectItem value="views-desc">Most Views</SelectItem>
+                  <SelectItem value="views-asc">Least Views</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
         
         <div className="flex flex-col gap-6">
-          {uploads.map((upload) => (
+          {paginatedUploads.map((upload) => (
             <Card key={upload.id} className="glass-card border-white/5 hover:border-primary/20 transition-all overflow-hidden group">
               <div className="flex flex-col md:flex-row">
                 {/* Video Tile */}
@@ -422,25 +522,58 @@ export default function ArtistStudioPage() {
               </div>
             </Card>
           ))}
+          
+          {paginatedUploads.length === 0 && (
+            <div className="py-20 text-center glass-card border-dashed border-white/10 rounded-3xl">
+              <p className="text-muted-foreground font-black uppercase tracking-widest text-xs italic">
+                No masterpieces found matching your filters.
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Pagination */}
-        <div className="flex items-center justify-center gap-4 pt-8">
-          <Button variant="outline" size="icon" className="rounded-xl border-white/10 hover:border-primary/50" disabled>
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-          <div className="flex gap-2">
-            <Button size="sm" className="w-10 h-10 rounded-xl bg-primary text-primary-foreground font-black">1</Button>
-            <Button size="sm" variant="ghost" className="w-10 h-10 rounded-xl font-black hover:bg-white/5">2</Button>
-            <Button size="sm" variant="ghost" className="w-10 h-10 rounded-xl font-black hover:bg-white/5">3</Button>
+        {/* Functional Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 pt-8">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="rounded-xl border-white/10 hover:border-primary/50" 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <div className="flex gap-2">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <Button 
+                  key={i}
+                  size="sm" 
+                  variant={currentPage === i + 1 ? "default" : "ghost"}
+                  className={cn(
+                    "w-10 h-10 rounded-xl font-black",
+                    currentPage === i + 1 ? "bg-primary text-primary-foreground" : "hover:bg-white/5"
+                  )}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+            </div>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="rounded-xl border-white/10 hover:border-primary/50" 
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </Button>
           </div>
-          <Button variant="outline" size="icon" className="rounded-xl border-white/10 hover:border-primary/50">
-            <ChevronRight className="w-5 h-5" />
-          </Button>
-        </div>
+        )}
       </section>
 
-      {/* Creator Goal - Now vertical stacking below Content */}
+      {/* Creator Goal - Vertically stacked below content */}
       <section className="space-y-6 pt-12 border-t border-white/5">
         <div className="flex items-center gap-3">
           <TrendingUp className="w-6 h-6 text-primary" />
