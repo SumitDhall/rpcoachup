@@ -71,21 +71,21 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="glass-card border-l border-white/10 w-80 bg-[#050816]/95">
-            <SheetHeader className="mb-8">
-              <SheetTitle className="text-left">
+            <SheetHeader className="mb-12">
+              <SheetTitle className="text-center flex flex-col items-center">
                 <Link 
                   href="/" 
-                  className="text-gradient text-3xl font-black italic uppercase tracking-tighter"
+                  className="text-gradient text-3xl font-black italic uppercase tracking-tighter block w-full mb-2"
                   onClick={handleLinkClick}
                 >
                   DANCE REALM
                 </Link>
 
-                <div className="space-y-3 mt-2">
-                  <p className="text-[9px] text-[#F4F7FF]/70 font-black uppercase tracking-[0.4em] leading-relaxed">
+                <div className="space-y-4 mt-2 flex flex-col items-center w-full">
+                  <p className="text-[9px] text-[#F4F7FF]/70 font-black uppercase tracking-[0.4em] leading-relaxed text-center">
                     Connecting Dancers Worldwide
                   </p>
-                  <div className="h-0.5 w-32 bg-vibrant-gradient rounded-full shadow-[0_0_20px_rgba(255,79,216,0.3)] animate-pulse" />
+                  <div className="h-0.5 w-full bg-vibrant-gradient rounded-full shadow-[0_0_20px_rgba(255,79,216,0.3)] animate-pulse" />
                 </div>
               </SheetTitle>
             </SheetHeader>
