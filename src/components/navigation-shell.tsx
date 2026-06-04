@@ -1,11 +1,10 @@
-
 'use client';
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, Users, Calendar, ChevronLeft, ChevronRight, Zap, LogIn, UserPlus, LayoutDashboard, Palette } from "lucide-react";
+import { Menu, Users, Calendar, ChevronLeft, ChevronRight, Zap, LogIn, UserPlus, LayoutDashboard, Palette, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -17,9 +16,11 @@ import {
 import { cn } from "@/lib/utils";
 import { SiteFooter } from "@/components/site-footer";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { useAuth } from "@/context/auth-context";
 
 export function NavigationShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user, logout, isLoading } = useAuth();
   const [open, setOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -28,10 +29,18 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  const navLinks = [
+  const publicLinks = [
     { name: "Artists", href: "/artists", icon: Users },
     { name: "Blips", href: "/blips", icon: Calendar },
+  ];
+
+  const dancerLinks = [
+    ...publicLinks,
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  ];
+
+  const artistLinks = [
+    ...publicLinks,
     { name: "Studio", href: "/studio", icon: Palette },
   ];
 
@@ -40,12 +49,16 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
     { name: "Register", href: "/register", icon: UserPlus },
   ];
 
+  const activeLinks = user?.role === 'artist' ? artistLinks : user?.role === 'dancer' ? dancerLinks : publicLinks;
+
   const handleLinkClick = () => {
     setOpen(false);
   };
 
   const showFooter = mounted && !['/blips', '/studio', '/dashboard'].includes(pathname);
   const collapsedLogo = PlaceHolderImages.find(img => img.id === 'brand-logo-collapsed');
+
+  if (!mounted) return null;
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#050816]">
@@ -70,7 +83,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
               </SheetTitle>
             </SheetHeader>
             <nav className="flex flex-col gap-4">
-              {[...navLinks, ...authLinks].map((link) => (
+              {activeLinks.map((link) => (
                 <Link
                   key={link.name}
                   href={link.href}
@@ -86,6 +99,34 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   {link.name}
                 </Link>
               ))}
+
+              {!user && authLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={handleLinkClick}
+                  className={cn(
+                    "flex items-center gap-4 px-6 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-sm transition-all",
+                    pathname === link.href 
+                      ? "bg-vibrant-gradient text-[#050816] shadow-xl shadow-primary/30" 
+                      : "hover:bg-white/5 text-[#F4F7FF]/60 hover:text-white"
+                  )}
+                >
+                  <link.icon className="h-5 w-5" />
+                  {link.name}
+                </Link>
+              ))}
+
+              {user && (
+                <Button 
+                  onClick={() => { logout(); handleLinkClick(); }}
+                  variant="ghost" 
+                  className="flex items-center justify-start gap-4 px-6 py-8 rounded-2xl font-black uppercase tracking-[0.2em] text-sm text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                >
+                  <LogOut className="h-5 w-5" />
+                  Sign Out
+                </Button>
+              )}
             </nav>
           </SheetContent>
         </Sheet>
@@ -148,10 +189,10 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 flex flex-col gap-3">
           {!isCollapsed && (
             <div className="text-[10px] uppercase tracking-[0.5em] text-[#F4F7FF]/20 font-black px-4 mb-4">
-              Menu
+              Explore
             </div>
           )}
-          {navLinks.map((link) => (
+          {activeLinks.map((link) => (
             <Link
               key={link.name}
               href={link.href}
@@ -176,7 +217,8 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                 Account
               </div>
             )}
-            {authLinks.map((link) => (
+            
+            {!user ? authLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
@@ -193,15 +235,33 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   <span className="animate-in slide-in-from-left-4 duration-500">{link.name}</span>
                 )}
               </Link>
-            ))}
+            )) : (
+              <Button
+                variant="ghost"
+                onClick={() => logout()}
+                className={cn(
+                  "flex items-center transition-all font-black uppercase tracking-[0.2em] text-[11px] text-rose-500 hover:text-rose-400 hover:bg-rose-500/10",
+                  isCollapsed ? "justify-center p-4 h-auto rounded-2xl" : "gap-5 px-6 py-4 h-auto rounded-2xl justify-start"
+                )}
+              >
+                <LogOut className={cn("shrink-0", isCollapsed ? "h-6 w-6" : "h-5 w-5")} />
+                {!isCollapsed && (
+                  <span className="animate-in slide-in-from-left-4 duration-500">Sign Out</span>
+                )}
+              </Button>
+            )}
           </div>
         </nav>
 
         {!isCollapsed && (
           <div className="pt-8 border-t border-white/5 mt-auto animate-in fade-in duration-1000">
             <div className="rounded-3xl bg-gradient-to-br from-white/5 to-transparent p-6 border border-white/5 relative overflow-hidden group">
-              <div className="absolute -top-10 -right-10 w-24 h-24 bg-primary/20 blur-3xl group-hover:bg-accent/30 transition-all" />
-              <p className="text-[10px] font-black text-accent uppercase tracking-[0.3em] mb-2">Live Status</p>
+              {user && (
+                <div className="mb-4">
+                  <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-1">Signed in as</p>
+                  <p className="text-xs font-bold text-white truncate">{user.name}</p>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]" />
                 <p className="text-[10px] font-bold text-[#F4F7FF]/60">Realm Synchronized</p>

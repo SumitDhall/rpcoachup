@@ -1,7 +1,7 @@
-
 'use client';
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { 
   BarChart3, 
   Upload, 
@@ -14,15 +14,35 @@ import {
   MessageCircle,
   TrendingUp,
   FileVideo,
-  Music2
+  Music2,
+  Lock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { STUDIO_STATS, STUDIO_UPLOADS } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/context/auth-context";
 
 export default function ArtistStudioPage() {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && (!user || user.role !== 'artist')) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading || !user || user.role !== 'artist') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+        <Lock className="h-12 w-12 text-secondary animate-pulse" />
+        <h2 className="text-2xl font-black italic uppercase tracking-tighter">Accessing Creator Core...</h2>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-8 max-w-7xl mx-auto space-y-12 animate-in fade-in duration-700">
       {/* Header section */}
@@ -32,7 +52,7 @@ export default function ArtistStudioPage() {
             Artist Studio
           </h1>
           <p className="text-[10px] uppercase tracking-[0.5em] font-black text-muted-foreground">
-            Command your Rhythmic Empire
+            Master: {user.name}
           </p>
         </div>
         <div className="flex gap-4">

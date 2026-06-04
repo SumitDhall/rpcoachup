@@ -1,15 +1,17 @@
-
 'use client';
 
 import React from "react";
 import Link from "next/link";
-import { LogIn, ArrowLeft } from "lucide-react";
+import { LogIn, ArrowLeft, User, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { useAuth } from "@/context/auth-context";
 
 export default function LoginPage() {
+  const { login } = useAuth();
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-background relative overflow-hidden">
       {/* Background decoration */}
@@ -30,35 +32,69 @@ export default function LoginPage() {
               Login
             </CardTitle>
             <CardDescription className="text-xs uppercase tracking-[0.2em] font-bold opacity-70">
-              Welcome back to the rhythm
+              Select a Demo Role to Enter
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="dancer@realm.com" 
-                className="bg-black/20 border-white/5 focus:border-primary/50"
-              />
+          <CardContent className="space-y-6 pt-4">
+            <div className="grid grid-cols-1 gap-4">
+              <Button 
+                onClick={() => login('dancer')}
+                className="h-20 rounded-2xl bg-white/5 border border-white/10 hover:border-primary/50 hover:bg-primary/5 group transition-all"
+                variant="outline"
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <User className="h-6 w-6 text-primary" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Demo Dancer</span>
+                </div>
+              </Button>
+              
+              <Button 
+                onClick={() => login('artist')}
+                className="h-20 rounded-2xl bg-white/5 border border-white/10 hover:border-secondary/50 hover:bg-secondary/5 group transition-all"
+                variant="outline"
+              >
+                <div className="flex flex-col items-center gap-2">
+                  <Sparkles className="h-6 w-6 text-secondary" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Demo Artist</span>
+                </div>
+              </Button>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Password</Label>
-                <Link href="#" className="text-[10px] text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest font-bold">Forgot?</Link>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-white/5" />
               </div>
-              <Input 
-                id="password" 
-                type="password" 
-                placeholder="••••••••" 
-                className="bg-black/20 border-white/5 focus:border-primary/50"
-              />
+              <div className="relative flex justify-center text-[8px] uppercase font-black tracking-widest">
+                <span className="bg-[#050816] px-4 text-muted-foreground">OR LOGIN WITH EMAIL</span>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Email</Label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="dancer@realm.com" 
+                  className="bg-black/20 border-white/5 focus:border-primary/50"
+                  disabled
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Password</Label>
+                <Input 
+                  id="password" 
+                  type="password" 
+                  placeholder="••••••••" 
+                  className="bg-black/20 border-white/5 focus:border-primary/50"
+                  disabled
+                />
+              </div>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4 pt-4">
-            <Button className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-black uppercase tracking-widest hover:scale-[1.02] transition-transform">
-              Sign In
+            <Button disabled className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-black uppercase tracking-widest opacity-50 cursor-not-allowed">
+              Sign In (Demo Only)
             </Button>
             <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-bold">
               New to the Realm?{" "}

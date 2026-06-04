@@ -1,9 +1,9 @@
-
 'use client';
 
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
   Play, 
   Plus, 
@@ -14,15 +14,35 @@ import {
   Music2, 
   User, 
   ChevronRight,
-  Flame
+  Flame,
+  Lock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DANCER_CONTENT, ARTISTS } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/context/auth-context";
 
 export default function DancerDashboardPage() {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && (!user || user.role !== 'dancer')) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading || !user || user.role !== 'dancer') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+        <Lock className="h-12 w-12 text-primary animate-pulse" />
+        <h2 className="text-2xl font-black italic uppercase tracking-tighter">Synchronizing Realm...</h2>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen pb-20 space-y-12 animate-in fade-in duration-700">
       {/* Hero / Welcome Section */}
@@ -44,11 +64,11 @@ export default function DancerDashboardPage() {
             <Flame className="w-3 h-3 text-primary fill-primary" />
             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Level 12 Rhythm Master</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter leading-none">
-            Welcome to <span className="text-gradient">the Realm</span>
+          <h1 className="text-gradient text-9xl font-black italic uppercase tracking-tighter" style={{ fontFamily: 'Cinzel, serif' }}>
+            Welcome <span className="text-[#F4F7FF]">to the</span> Realm
           </h1>
           <p className="text-sm text-muted-foreground font-medium max-w-md leading-relaxed">
-            Ready to synchronize? You have 2 tutorials in progress and 5 new artists trending in your style.
+            Ready to synchronize, {user.name}? You have 2 tutorials in progress and 5 new artists trending in your style.
           </p>
           <div className="flex gap-4">
             <Button className="h-12 px-8 rounded-xl bg-vibrant-gradient font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20">

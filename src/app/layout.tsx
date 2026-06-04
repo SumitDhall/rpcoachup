@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { NavigationShell } from "@/components/navigation-shell";
 import { Toaster } from "@/components/ui/toaster";
+import { MockAuthProvider } from "@/context/auth-context";
 
 export const metadata: Metadata = {
   title: "Dance Realm | Connecting Dancers Worldwide",
@@ -21,10 +22,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cinzel:wght@400;700;900&family=Syncopate:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased bg-background text-foreground min-h-screen" suppressHydrationWarning>
-        <NavigationShell>
-          {children}
-        </NavigationShell>
-        <Toaster />
+        <MockAuthProvider>
+          <NavigationShell>
+            {children}
+          </NavigationShell>
+          <Toaster />
+        </MockAuthProvider>
       </body>
     </html>
   );
