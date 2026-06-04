@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
   BarChart3, 
@@ -16,7 +16,8 @@ import {
   TrendingUp,
   FileVideo,
   Music2,
-  Lock
+  Lock,
+  CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -24,6 +25,19 @@ import { Badge } from "@/components/ui/badge";
 import { STUDIO_STATS, STUDIO_UPLOADS } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/context/auth-context";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 // Video.js imports
 import videojs from 'video.js';
@@ -72,12 +86,77 @@ function StudioVideo({ url }: { url: string }) {
 export default function ArtistStudioPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
+
+  const [uploads, setUploads] = useState(STUDIO_UPLOADS);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [videoTitle, setVideoTitle] = useState("");
+  const [videoCategory, setVideoCategory] = useState("Performance");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'artist')) {
       router.push('/login');
     }
   }, [user, isLoading, router]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleUpload = () => {
+    if (!selectedFile) {
+      toast({
+        variant: "destructive",
+        title: "No file selected",
+        description: "Please choose a masterpiece to upload.",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      setUploadProgress(progress);
+      if (progress >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
+          const newVideoUrl = URL.createObjectURL(selectedFile);
+          const newUpload = {
+            id: `u-new-${Date.now()}`,
+            title: videoTitle || selectedFile.name.split('.')[0],
+            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            views: "0",
+            status: "Published",
+            type: videoCategory,
+            videoUrl: newVideoUrl
+          };
+
+          setUploads((prev) => [newUpload, ...prev]);
+          setIsUploading(false);
+          setUploadProgress(0);
+          setSelectedFile(null);
+          setVideoTitle("");
+          setIsDialogOpen(false); 
+          
+          toast({
+            title: "Masterpiece Synchronized!",
+            description: "Your content is now live in the Artist Studio.",
+          });
+        }, 500);
+      }
+    }, 150);
+  };
 
   if (isLoading || !user || user.role !== 'artist') {
     return (
@@ -104,7 +183,7 @@ export default function ArtistStudioPage() {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
-          <h1 className="text-5xl font-black italic uppercase tracking-tighter text-gradient">
+          <h1 className="text-5xl font-black italic uppercase tracking-tighter text-gradient" style={{ fontFamily: 'Cinzel, serif' }}>
             Artist Studio
           </h1>
           <p className="text-[10px] uppercase tracking-[0.5em] font-black text-muted-foreground">
@@ -112,10 +191,105 @@ export default function ArtistStudioPage() {
           </p>
         </div>
         <div className="flex gap-4">
-          <Button className="h-12 rounded-xl bg-vibrant-gradient text-white font-black uppercase tracking-widest text-[10px] px-8 hover:scale-105 transition-transform shadow-xl shadow-primary/20">
-            <Upload className="w-4 h-4 mr-2" />
-            Upload Masterpiece
-          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="h-12 rounded-xl bg-vibrant-gradient text-white font-black uppercase tracking-widest text-[10px] px-8 hover:scale-105 transition-transform shadow-xl shadow-primary/20">
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Masterpiece
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="glass-card border-white/10 sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">New Masterpiece</DialogTitle>
+                <DialogDescription className="text-xs uppercase tracking-widest font-bold opacity-70">
+                  Synchronize your creation with the global realm
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-6 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="video-title" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Title</Label>
+                    <Input 
+                      id="video-title" 
+                      placeholder="Enter title..." 
+                      className="bg-black/20 border-white/10 h-11" 
+                      value={videoTitle}
+                      onChange={(e) => setVideoTitle(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Type</Label>
+                    <Select value={videoCategory} onValueChange={setVideoCategory}>
+                      <SelectTrigger className="bg-black/20 border-white/10 h-11">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent className="glass-card border-white/10">
+                        <SelectItem value="Performance">Performance</SelectItem>
+                        <SelectItem value="Tutorial">Tutorial</SelectItem>
+                        <SelectItem value="Rehearsal">Rehearsal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Video File</Label>
+                  <div 
+                    onClick={triggerFileInput}
+                    className="border-2 border-dashed border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 bg-black/10 hover:bg-black/20 transition-all cursor-pointer group relative"
+                  >
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      className="hidden" 
+                      accept="video/*" 
+                      onChange={handleFileChange}
+                    />
+                    {selectedFile ? (
+                      <div className="flex flex-col items-center gap-2 animate-in zoom-in duration-300">
+                        <CheckCircle2 className="h-10 w-10 text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary">Selected</span>
+                        <span className="text-[10px] font-bold text-muted-foreground truncate max-w-[200px]">
+                          {selectedFile.name}
+                        </span>
+                      </div>
+                    ) : (
+                      <>
+                        <FileVideo className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest text-center px-4">
+                          Select or Drag Masterpiece
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {isUploading && (
+                  <div className="space-y-2 animate-in fade-in duration-300">
+                    <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-primary">
+                      <span>Syncing to Realm...</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-primary transition-all duration-300" 
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button 
+                  onClick={handleUpload} 
+                  disabled={isUploading || !selectedFile}
+                  className="w-full h-12 rounded-xl font-black uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all"
+                >
+                  {isUploading ? "Syncing..." : "Publish to Realm"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -166,7 +340,7 @@ export default function ArtistStudioPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {STUDIO_UPLOADS.map((upload) => (
+                    {uploads.map((upload) => (
                       <tr key={upload.id} className="hover:bg-white/[0.02] transition-colors group">
                         <td className="p-6">
                           <div className="flex items-center gap-4">
@@ -213,11 +387,17 @@ export default function ArtistStudioPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="p-6 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-primary/40 hover:bg-white/5 transition-all cursor-pointer">
+              <div 
+                onClick={triggerFileInput}
+                className="p-6 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-4 hover:border-primary/40 hover:bg-white/5 transition-all cursor-pointer"
+              >
                 <FileVideo className="w-10 h-10 text-muted-foreground" />
                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Drop Video Here</span>
               </div>
-              <Button className="w-full h-12 rounded-xl border border-primary/40 bg-transparent text-primary hover:bg-primary/5 font-black uppercase tracking-widest text-[10px]">
+              <Button 
+                onClick={() => setIsDialogOpen(true)}
+                className="w-full h-12 rounded-xl border border-primary/40 bg-transparent text-primary hover:bg-primary/5 font-black uppercase tracking-widest text-[10px]"
+              >
                 Open Blip Creator
               </Button>
             </CardContent>
