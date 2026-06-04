@@ -1,6 +1,7 @@
+
 'use client';
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -24,6 +25,51 @@ import { DANCER_CONTENT, ARTISTS } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/context/auth-context";
 
+// Video.js imports
+import videojs from 'video.js';
+import 'video.js/dist/video-js.css';
+
+function DashboardVideo({ url, thumbnail }: { url: string; thumbnail?: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const videoElement = document.createElement("video-js");
+    videoElement.classList.add('vjs-fill', 'vjs-big-play-centered');
+    containerRef.current.appendChild(videoElement);
+
+    const player = playerRef.current = videojs(videoElement, {
+      autoplay: false,
+      controls: true,
+      responsive: true,
+      fluid: false, 
+      loop: false,
+      muted: false,
+      preload: 'none', // Set to none to avoid heavy initial load
+      poster: thumbnail,
+      sources: [{
+        src: url,
+        type: 'video/mp4'
+      }]
+    });
+
+    return () => {
+      if (player) {
+        player.dispose();
+      }
+    };
+  }, [url, thumbnail]);
+
+  return (
+    <div 
+      ref={containerRef} 
+      className="w-full h-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" 
+    />
+  );
+}
+
 export default function DancerDashboardPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
@@ -45,6 +91,17 @@ export default function DancerDashboardPage() {
 
   return (
     <div className="min-h-screen pb-20 space-y-12 animate-in fade-in duration-700">
+      <style jsx global>{`
+        /* Ensure Video.js tech (actual video) stretches to fill its container */
+        .vjs-tech {
+          object-fit: cover !important;
+        }
+        .video-js.vjs-fill {
+           width: 100%;
+           height: 100%;
+        }
+      `}</style>
+
       {/* Hero / Welcome Section */}
       <section className="relative min-h-[50vh] w-full flex items-end p-8 md:p-16 md:pt-32 overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -67,7 +124,7 @@ export default function DancerDashboardPage() {
           
           <div className="space-y-2">
             <h2 className="text-sm font-black uppercase tracking-[0.5em] text-[#F4F7FF]/60 mb-2">Welcome Back, {user.name}</h2>
-            <h1 className="text-gradient text-7xl md:text-8xl lg:text-9xl font-black italic uppercase tracking-tighter leading-none" style={{ fontFamily: 'Cinzel, serif' }}>
+            <h1 className="text-gradient text-7xl md:text-8xl lg:text-9xl font-black italic uppercase tracking-tighter leading-none" style={{ fontFamily: 'Cinzel, serif', fontWeight: 900 }}>
               DΛNCE ЯEΛLM
             </h1>
           </div>
@@ -102,12 +159,7 @@ export default function DancerDashboardPage() {
             {DANCER_CONTENT.continueWatching.map((item) => (
               <Card key={item.id} className="glass-card border-white/5 hover:border-primary/20 transition-all overflow-hidden group">
                 <div className="aspect-video relative overflow-hidden bg-black">
-                  <Image src={item.thumbnail} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
-                      <Play className="w-5 h-5 text-white fill-current" />
-                    </div>
-                  </div>
+                  <DashboardVideo url={item.videoUrl} thumbnail={item.thumbnail} />
                 </div>
                 <CardContent className="p-6 space-y-4">
                   <div className="space-y-1">
@@ -134,10 +186,10 @@ export default function DancerDashboardPage() {
             <h2 className="text-2xl font-black italic uppercase tracking-tighter">Your Collections</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {DANCER_CONTENT.saved.map((item) => (
-                <div key={item.id} className="group relative glass-card rounded-2xl overflow-hidden border-white/5 h-48">
-                  <Image src={item.thumbnail} alt={item.title} fill className="object-cover opacity-60 group-hover:scale-110 transition-transform duration-1000" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-                  <div className="absolute bottom-6 left-6 right-6">
+                <div key={item.id} className="group relative glass-card rounded-2xl overflow-hidden border-white/5 h-48 bg-black">
+                  <DashboardVideo url={item.videoUrl} thumbnail={item.thumbnail} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none" />
+                  <div className="absolute bottom-6 left-6 right-6 pointer-events-none">
                     <Badge className="bg-primary/20 text-primary border-primary/30 mb-2 uppercase tracking-widest text-[8px] font-black">Saved</Badge>
                     <h3 className="text-lg font-black uppercase italic tracking-tighter text-white">{item.title}</h3>
                     <p className="text-[9px] font-bold text-white/60 uppercase tracking-widest">{item.artist}</p>

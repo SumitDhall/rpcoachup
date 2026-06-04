@@ -96,7 +96,7 @@ export const ARTISTS = [
     image: "https://picsum.photos/seed/artist1/800/800",
     videos: [
       { id: "v1", title: "Samba Soul", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v2", title: "Cha Cha Champions", url: "https://www.w3schools.com/html/movie.mp4" }
+      { id: "v2", title: "Cha Cha Champions", url: "https://vjs.zencdn.net/v/oceans.mp4" }
     ]
   },
   { 
@@ -106,7 +106,7 @@ export const ARTISTS = [
     description: "Emmy Award-winning choreographer and New York Times Best Selling author, Derek Hough is a powerhouse of creative expression and technical excellence.",
     image: "https://picsum.photos/seed/artist2/800/800",
     videos: [
-      { id: "v3", title: "Emotional Flow", url: "https://www.w3schools.com/html/movie.mp4" },
+      { id: "v3", title: "Emotional Flow", url: "https://vjs.zencdn.net/v/oceans.mp4" },
       { id: "v4", title: "Modern Masterpiece", url: "https://www.w3schools.com/html/mov_bbb.mp4" }
     ]
   },
@@ -127,7 +127,7 @@ export const ARTISTS = [
     description: "Larry and Laurent Bourgeois are world-renowned creators, entertainers, and dancers recognized for their innovative freestyle technique.",
     image: "https://picsum.photos/seed/artist4/800/800",
     videos: [
-      { id: "v6", title: "New Style Session", url: "https://www.w3schools.com/html/movie.mp4" }
+      { id: "v6", title: "New Style Session", url: "https://vjs.zencdn.net/v/oceans.mp4" }
     ]
   },
   { 
@@ -147,7 +147,7 @@ export const ARTISTS = [
     description: "Creator of the 'Polyswagg' style, Parris is the visionary behind some of the most iconic music video choreographies in modern history.",
     image: "https://picsum.photos/seed/artist6/800/800",
     videos: [
-      { id: "v8", title: "Urban Pulse", url: "https://www.w3schools.com/html/movie.mp4" }
+      { id: "v8", title: "Urban Pulse", url: "https://vjs.zencdn.net/v/oceans.mp4" }
     ]
   }
 ];
@@ -160,21 +160,21 @@ export const STUDIO_STATS = [
 ];
 
 export const STUDIO_UPLOADS = [
-  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial" },
-  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performance" },
-  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial" },
+  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
+  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performance", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
+  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
 ];
 
 export const DANCER_CONTENT = {
   continueWatching: [
-    { id: "cw1", title: "Advanced Salsa Patterns", artist: "Derek Hough", progress: 65, thumbnail: "https://picsum.photos/seed/salsa/400/225" },
-    { id: "cw2", title: "Hip Hop Fundamentals", artist: "Les Twins", progress: 30, thumbnail: "https://picsum.photos/seed/hiphop/400/225" },
+    { id: "cw1", title: "Advanced Salsa Patterns", artist: "Derek Hough", progress: 65, thumbnail: "https://picsum.photos/seed/salsa/400/225", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
+    { id: "cw2", title: "Hip Hop Fundamentals", artist: "Les Twins", progress: 30, thumbnail: "https://picsum.photos/seed/hiphop/400/225", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
   ],
   saved: [
-    { id: "s1", title: "Contemporary Expression", artist: "Travis Wall", thumbnail: "https://picsum.photos/seed/contemp/400/225" },
-    { id: "s2", title: "Urban Pulse", artist: "Parris Goebel", thumbnail: "https://picsum.photos/seed/urban/400/225" },
+    { id: "s1", title: "Contemporary Expression", artist: "Travis Wall", thumbnail: "https://picsum.photos/seed/contemp/400/225", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
+    { id: "s2", title: "Urban Pulse", artist: "Parris Goebel", thumbnail: "https://picsum.photos/seed/urban/400/225", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
   ],
   purchased: [
-    { id: "p1", title: "The Art of Ballroom", artist: "Julianne Hough", date: "Sep 2024", thumbnail: "https://picsum.photos/seed/ballroom/400/225" },
+    { id: "p1", title: "The Art of Ballroom", artist: "Julianne Hough", date: "Sep 2024", thumbnail: "https://picsum.photos/seed/ballroom/400/225", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
   ]
 };

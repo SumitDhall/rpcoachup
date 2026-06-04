@@ -1,6 +1,7 @@
+
 'use client';
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { 
   BarChart3, 
@@ -24,6 +25,50 @@ import { STUDIO_STATS, STUDIO_UPLOADS } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/context/auth-context";
 
+// Video.js imports
+import videojs from 'video.js';
+import 'video.js/dist/video-js.css';
+
+function StudioVideo({ url }: { url: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const videoElement = document.createElement("video-js");
+    videoElement.classList.add('vjs-fill', 'vjs-big-play-centered');
+    containerRef.current.appendChild(videoElement);
+
+    const player = playerRef.current = videojs(videoElement, {
+      autoplay: false,
+      controls: true,
+      responsive: true,
+      fluid: false, 
+      loop: false,
+      muted: true, // Muted by default for studio previews
+      preload: 'none',
+      sources: [{
+        src: url,
+        type: 'video/mp4'
+      }]
+    });
+
+    return () => {
+      if (player) {
+        player.dispose();
+      }
+    };
+  }, [url]);
+
+  return (
+    <div 
+      ref={containerRef} 
+      className="w-full h-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" 
+    />
+  );
+}
+
 export default function ArtistStudioPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
@@ -45,6 +90,17 @@ export default function ArtistStudioPage() {
 
   return (
     <div className="min-h-screen p-8 max-w-7xl mx-auto space-y-12 animate-in fade-in duration-700">
+      <style jsx global>{`
+        /* Ensure Video.js tech (actual video) stretches to fill its container */
+        .vjs-tech {
+          object-fit: cover !important;
+        }
+        .video-js.vjs-fill {
+           width: 100%;
+           height: 100%;
+        }
+      `}</style>
+
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-2">
@@ -114,8 +170,12 @@ export default function ArtistStudioPage() {
                       <tr key={upload.id} className="hover:bg-white/[0.02] transition-colors group">
                         <td className="p-6">
                           <div className="flex items-center gap-4">
-                            <div className="h-12 w-20 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
-                              <Video className="w-4 h-4 text-muted-foreground" />
+                            <div className="h-12 w-20 rounded-lg bg-black border border-white/10 flex items-center justify-center overflow-hidden">
+                              {upload.videoUrl ? (
+                                <StudioVideo url={upload.videoUrl} />
+                              ) : (
+                                <Video className="w-4 h-4 text-muted-foreground" />
+                              )}
                             </div>
                             <span className="text-xs font-bold uppercase tracking-wide truncate max-w-[150px]">
                               {upload.title}
