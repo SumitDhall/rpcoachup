@@ -46,7 +46,7 @@ export default function DancerDashboardPage() {
   return (
     <div className="min-h-screen pb-20 space-y-12 animate-in fade-in duration-700">
       {/* Hero / Welcome Section */}
-      <section className="relative h-[45vh] w-full flex items-end p-8 md:p-16 overflow-hidden">
+      <section className="relative min-h-[50vh] w-full flex items-end p-8 md:p-16 md:pt-32 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image 
             src="https://picsum.photos/seed/hero/1200/800"
@@ -59,18 +59,23 @@ export default function DancerDashboardPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/20 to-transparent" />
         </div>
         
-        <div className="relative z-10 max-w-2xl space-y-6">
+        <div className="relative z-10 max-w-4xl space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md">
             <Flame className="w-3 h-3 text-primary fill-primary" />
             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Level 12 Rhythm Master</span>
           </div>
-          <h1 className="text-gradient text-9xl font-black italic uppercase tracking-tighter" style={{ fontFamily: 'Cinzel, serif' }}>
-            Welcome <span className="text-[#F4F7FF]">to the</span> Realm
-          </h1>
+          
+          <div className="space-y-2">
+            <h2 className="text-sm font-black uppercase tracking-[0.5em] text-[#F4F7FF]/60 mb-2">Welcome Back, {user.name}</h2>
+            <h1 className="text-gradient text-7xl md:text-8xl lg:text-9xl font-black italic uppercase tracking-tighter leading-none" style={{ fontFamily: 'Cinzel, serif' }}>
+              DΛNCE ЯEΛLM
+            </h1>
+          </div>
+          
           <p className="text-sm text-muted-foreground font-medium max-w-md leading-relaxed">
-            Ready to synchronize, {user.name}? You have 2 tutorials in progress and 5 new artists trending in your style.
+            Ready to synchronize? You have 2 tutorials in progress and 5 new artists trending in your style.
           </p>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             <Button className="h-12 px-8 rounded-xl bg-vibrant-gradient font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20">
               <Play className="w-4 h-4 mr-2 fill-current" />
               Resume Journey
@@ -83,7 +88,7 @@ export default function DancerDashboardPage() {
       </section>
 
       {/* Content Rows */}
-      <div className="px-8 md:px-16 space-y-16 -mt-12 relative z-20">
+      <div className="px-8 md:px-16 space-y-16 relative z-20">
         
         {/* Continue Watching */}
         <section className="space-y-6">
@@ -165,7 +170,7 @@ export default function DancerDashboardPage() {
         </div>
 
         {/* Activity Section */}
-        <section className="space-y-6">
+        <section className="space-y-6 pb-20">
           <h2 className="text-2xl font-black italic uppercase tracking-tighter">Platform Pulse</h2>
           <Card className="glass-card border-white/5">
             <CardContent className="p-8">
