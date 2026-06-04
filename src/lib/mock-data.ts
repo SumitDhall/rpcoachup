@@ -151,3 +151,30 @@ export const ARTISTS = [
     ]
   }
 ];
+
+export const STUDIO_STATS = [
+  { label: "Total Views", value: "1.2M", change: "+14%", trend: "up" },
+  { label: "Subscribers", value: "85.4K", change: "+8%", trend: "up" },
+  { label: "Watch Time (Hrs)", value: "45.2K", change: "+22%", trend: "up" },
+  { label: "Revenue", value: "$12,450", change: "+5%", trend: "up" },
+];
+
+export const STUDIO_UPLOADS = [
+  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial" },
+  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performance" },
+  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial" },
+];
+
+export const DANCER_CONTENT = {
+  continueWatching: [
+    { id: "cw1", title: "Advanced Salsa Patterns", artist: "Derek Hough", progress: 65, thumbnail: "https://picsum.photos/seed/salsa/400/225" },
+    { id: "cw2", title: "Hip Hop Fundamentals", artist: "Les Twins", progress: 30, thumbnail: "https://picsum.photos/seed/hiphop/400/225" },
+  ],
+  saved: [
+    { id: "s1", title: "Contemporary Expression", artist: "Travis Wall", thumbnail: "https://picsum.photos/seed/contemp/400/225" },
+    { id: "s2", title: "Urban Pulse", artist: "Parris Goebel", thumbnail: "https://picsum.photos/seed/urban/400/225" },
+  ],
+  purchased: [
+    { id: "p1", title: "The Art of Ballroom", artist: "Julianne Hough", date: "Sep 2024", thumbnail: "https://picsum.photos/seed/ballroom/400/225" },
+  ]
+};

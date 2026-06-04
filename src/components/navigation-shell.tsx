@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, Users, Calendar, ChevronLeft, ChevronRight, Zap, LogIn, UserPlus } from "lucide-react";
+import { Menu, Users, Calendar, ChevronLeft, ChevronRight, Zap, LogIn, UserPlus, LayoutDashboard, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -31,6 +31,8 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
   const navLinks = [
     { name: "Artists", href: "/artists", icon: Users },
     { name: "Blips", href: "/blips", icon: Calendar },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Studio", href: "/studio", icon: Palette },
   ];
 
   const authLinks = [
@@ -42,7 +44,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
     setOpen(false);
   };
 
-  const showFooter = mounted && pathname !== '/blips';
+  const showFooter = mounted && !['/blips', '/studio', '/dashboard'].includes(pathname);
   const collapsedLogo = PlaceHolderImages.find(img => img.id === 'brand-logo-collapsed');
 
   return (
