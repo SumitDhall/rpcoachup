@@ -45,21 +45,21 @@ import 'video.js/dist/video-js.css';
 
 // Expanded Mock Data for Pagination Demo
 const INITIAL_UPLOADS = [
-  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performance", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
-  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
-  { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performance", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
-  { id: "u5", title: "Hip Hop Foundations", date: "Aug 05, 2024", views: "21.1K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-  { id: "u6", title: "Latin Heat Rehearsal", date: "Jul 20, 2024", views: "1.5K", status: "Draft", type: "Rehearsal", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
-  { id: "u7", title: "Jazz Fusion Routine", date: "Jun 15, 2024", views: "15.7K", status: "Published", type: "Performance", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
-  { id: "u8", title: "Breaking Level 1", date: "May 22, 2024", views: "5.4K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-  { id: "u9", title: "Popping Controls", date: "Apr 10, 2024", views: "10.2K", status: "Published", type: "Tutorial", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
-  { id: "u10", title: "World of Dance Prep", date: "Mar 30, 2024", views: "30.5K", status: "Published", type: "Performance", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
-  { id: "u11", title: "Locking & Loading", date: "Feb 14, 2024", views: "2.8K", status: "Published", type: "Tutorial", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
-  { id: "u12", title: "Vogue Intro", date: "Jan 02, 2024", views: "7.1K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
+  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
+  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performance", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4", thumbnail: "https://picsum.photos/seed/urban/800/450" },
+  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/movie.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
+  { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performance", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4", thumbnail: "https://picsum.photos/seed/contemp/800/450" },
+  { id: "u5", title: "Hip Hop Foundations", date: "Aug 05, 2024", views: "21.1K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", thumbnail: "https://picsum.photos/seed/hiphop/800/450" },
+  { id: "u6", title: "Latin Heat Rehearsal", date: "Jul 20, 2024", views: "1.5K", status: "Draft", type: "Rehearsal", videoUrl: "https://www.w3schools.com/html/movie.mp4", thumbnail: "https://picsum.photos/seed/latin/800/450" },
+  { id: "u7", title: "Jazz Fusion Routine", date: "Jun 15, 2024", views: "15.7K", status: "Published", type: "Performance", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4", thumbnail: "https://picsum.photos/seed/jazz/800/450" },
+  { id: "u8", title: "Breaking Level 1", date: "May 22, 2024", views: "5.4K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", thumbnail: "https://picsum.photos/seed/break/800/450" },
+  { id: "u9", title: "Popping Controls", date: "Apr 10, 2024", views: "10.2K", status: "Published", type: "Tutorial", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4", thumbnail: "https://picsum.photos/seed/pop/800/450" },
+  { id: "u10", title: "World of Dance Prep", date: "Mar 30, 2024", views: "30.5K", status: "Published", type: "Performance", videoUrl: "https://www.w3schools.com/html/movie.mp4", thumbnail: "https://picsum.photos/seed/prep/800/450" },
+  { id: "u11", title: "Locking & Loading", date: "Feb 14, 2024", views: "2.8K", status: "Published", type: "Tutorial", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4", thumbnail: "https://picsum.photos/seed/lock/800/450" },
+  { id: "u12", title: "Vogue Intro", date: "Jan 02, 2024", views: "7.1K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", thumbnail: "https://picsum.photos/seed/vogue/800/450" },
 ];
 
-function StudioVideo({ url }: { url: string }) {
+function StudioVideo({ url, poster }: { url: string; poster?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
 
@@ -78,6 +78,7 @@ function StudioVideo({ url }: { url: string }) {
       loop: false,
       muted: true,
       preload: 'none',
+      poster: poster,
       sources: [{
         src: url,
         type: 'video/mp4'
@@ -89,7 +90,7 @@ function StudioVideo({ url }: { url: string }) {
         player.dispose();
       }
     };
-  }, [url]);
+  }, [url, poster]);
 
   return (
     <div 
@@ -120,6 +121,7 @@ export default function ArtistStudioPage() {
   const ITEMS_PER_PAGE = 10;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'artist')) {
@@ -199,7 +201,8 @@ export default function ArtistStudioPage() {
             views: "0",
             status: "Published",
             type: videoCategory,
-            videoUrl: newVideoUrl
+            videoUrl: newVideoUrl,
+            thumbnail: "https://picsum.photos/seed/new-upload/800/450"
           };
 
           setUploads((prev) => [newUpload, ...prev]);
@@ -264,6 +267,13 @@ export default function ArtistStudioPage() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    // Smooth scroll back to the top of the content list if preferred,
+    // or simply keep focus. The user wants to "stay at the same point".
+    // We avoid triggering a global window scroll here.
+  };
 
   if (isLoading || !user || user.role !== 'artist') {
     return (
@@ -425,13 +435,13 @@ export default function ArtistStudioPage() {
       </div>
 
       {/* Channel Content Section */}
-      <section className="space-y-8">
+      <section className="space-y-8" ref={contentRef}>
         <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-6 gap-4">
           <div className="flex items-center gap-3">
             <LayoutGrid className="w-6 h-6 text-primary" />
             <h2 className="text-3xl font-black italic uppercase tracking-tighter">Channel Content</h2>
             <Badge variant="outline" className="border-primary/20 text-primary font-black uppercase tracking-widest text-[10px] ml-2">
-              {uploads.length} Masters
+              {processedUploads.length} Masters
             </Badge>
           </div>
 
@@ -470,13 +480,13 @@ export default function ArtistStudioPage() {
           </div>
         </div>
         
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 min-h-[400px]">
           {paginatedUploads.map((upload) => (
             <Card key={upload.id} className="glass-card border-white/5 hover:border-primary/20 transition-all overflow-hidden group">
               <div className="flex flex-col md:flex-row">
                 {/* Video Tile */}
                 <div className="w-full md:w-80 aspect-video relative bg-black shrink-0 border-b md:border-b-0 md:border-r border-white/5">
-                  <StudioVideo url={upload.videoUrl} />
+                  <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
                 </div>
 
                 {/* Details Content */}
@@ -538,9 +548,10 @@ export default function ArtistStudioPage() {
             <Button 
               variant="outline" 
               size="icon" 
+              type="button"
               className="rounded-xl border-white/10 hover:border-primary/50" 
               disabled={currentPage === 1}
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -549,12 +560,13 @@ export default function ArtistStudioPage() {
                 <Button 
                   key={i}
                   size="sm" 
+                  type="button"
                   variant={currentPage === i + 1 ? "default" : "ghost"}
                   className={cn(
                     "w-10 h-10 rounded-xl font-black",
                     currentPage === i + 1 ? "bg-primary text-primary-foreground" : "hover:bg-white/5"
                   )}
-                  onClick={() => setCurrentPage(i + 1)}
+                  onClick={() => handlePageChange(i + 1)}
                 >
                   {i + 1}
                 </Button>
@@ -563,9 +575,10 @@ export default function ArtistStudioPage() {
             <Button 
               variant="outline" 
               size="icon" 
+              type="button"
               className="rounded-xl border-white/10 hover:border-primary/50" 
               disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
             >
               <ChevronRight className="w-5 h-5" />
             </Button>
