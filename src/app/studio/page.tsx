@@ -266,6 +266,7 @@ export default function ArtistStudioPage() {
     setCurrentPage(newPage);
   };
 
+
   if (isLoading || !user || user.role !== 'artist') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
@@ -432,7 +433,7 @@ export default function ArtistStudioPage() {
             <LayoutGrid className="w-6 h-6 text-primary" />
             <h2 className="text-3xl font-black italic uppercase tracking-tighter">Channel Content</h2>
             <Badge variant="outline" className="border-primary/20 text-primary font-black uppercase tracking-widest text-[10px] ml-2">
-              {processedUploads.length} Masters
+              {processedUploads.length} videos
             </Badge>
           </div>
 
