@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useRef } from "react";
@@ -47,7 +46,7 @@ function DashboardVideo({ url, thumbnail }: { url: string; thumbnail?: string })
       fluid: false, 
       loop: false,
       muted: false,
-      preload: 'none', // Set to none to avoid heavy initial load
+      preload: 'none',
       poster: thumbnail,
       sources: [{
         src: url,
@@ -92,7 +91,6 @@ export default function DancerDashboardPage() {
   return (
     <div className="min-h-screen pb-20 space-y-12 animate-in fade-in duration-700">
       <style jsx global>{`
-        /* Ensure Video.js tech (actual video) stretches to fill its container */
         .vjs-tech {
           object-fit: cover !important;
         }
@@ -103,7 +101,7 @@ export default function DancerDashboardPage() {
       `}</style>
 
       {/* Hero / Welcome Section */}
-      <section className="relative min-h-[50vh] w-full flex items-end p-8 md:p-16 md:pt-32 overflow-hidden">
+      <section className="relative min-h-[50vh] w-full flex items-end p-8 md:p-16 pt-24 md:pt-40 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image 
             src="https://picsum.photos/seed/hero/1200/800"
@@ -124,7 +122,7 @@ export default function DancerDashboardPage() {
           
           <div className="space-y-2">
             <h2 className="text-sm font-black uppercase tracking-[0.5em] text-[#F4F7FF]/60 mb-2">Welcome Back, {user.name}</h2>
-            <h1 className="text-gradient text-7xl md:text-8xl lg:text-9xl font-black italic uppercase tracking-tighter leading-none" style={{ fontFamily: 'Cinzel, serif', fontWeight: 900 }}>
+            <h1 className="text-gradient text-7xl md:text-8xl lg:text-9xl font-black italic uppercase tracking-tighter leading-none font-display">
               DΛNCE ЯEΛLM
             </h1>
           </div>
