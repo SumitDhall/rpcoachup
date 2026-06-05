@@ -101,7 +101,7 @@ export default function DancerDashboardPage() {
       `}</style>
 
       {/* Hero / Welcome Section */}
-      <section className="relative min-h-[50vh] w-full flex items-end p-8 md:p-16 pt-24 md:pt-40 overflow-hidden">
+      <section className="relative min-h-[60vh] w-full flex items-end p-8 md:p-16 pt-32 md:pt-48 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image 
             src="https://picsum.photos/seed/hero/1200/800"
@@ -122,8 +122,8 @@ export default function DancerDashboardPage() {
           
           <div className="space-y-2">
             <h2 className="text-sm font-black uppercase tracking-[0.5em] text-[#F4F7FF]/60 mb-2">Welcome Back, {user.name}</h2>
-            <h1 className="text-gradient text-7xl md:text-8xl lg:text-9xl font-black italic uppercase tracking-tighter leading-none font-display">
-              DΛNCE ЯEΛLM
+            <h1 className="text-gradient text-7xl md:text-8xl lg:text-9xl font-black italic uppercase tracking-tighter leading-[0.85] py-4">
+              DΛNCE<br />ЯEΛLM
             </h1>
           </div>
           

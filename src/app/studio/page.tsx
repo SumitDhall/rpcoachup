@@ -284,9 +284,9 @@ export default function ArtistStudioPage() {
       `}</style>
 
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-12">
         <div className="space-y-2 text-center md:text-left">
-          <h1 className="text-5xl font-black italic uppercase tracking-tighter text-gradient" style={{ fontFamily: 'Cinzel, serif' }}>
+          <h1 className="text-5xl font-black italic uppercase tracking-tighter text-gradient">
             Artist Studio
           </h1>
           <p className="text-[10px] uppercase tracking-[0.5em] font-black text-muted-foreground">
