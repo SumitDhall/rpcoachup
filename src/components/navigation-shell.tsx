@@ -79,7 +79,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   className="text-gradient text-3xl font-black italic uppercase tracking-tighter block w-full mb-2"
                   onClick={handleLinkClick}
                 >
-                  DΛNCE ЯEΛLM
+                  DANCE ЯEALM
                 </Link>
 
                 <div className="space-y-4 mt-2 flex flex-col items-center w-full">
@@ -193,7 +193,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                 <>DR</>
               )
             ) : (
-              <>DΛNCE ЯEΛLM</>
+              <>DANCE ЯEALM</>
             )}
           </Link>
           <div className="space-y-4 mt-4 flex flex-col items-center w-full animate-in fade-in slide-in-from-top-4 duration-700">

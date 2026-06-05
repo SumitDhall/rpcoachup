@@ -123,7 +123,7 @@ export default function DancerDashboardPage() {
           <div className="space-y-2">
             <h2 className="text-sm font-black uppercase tracking-[0.5em] text-[#F4F7FF]/60 mb-2">Welcome Back, {user.name}</h2>
             <h1 className="text-gradient text-7xl md:text-8xl lg:text-9xl font-black italic uppercase tracking-tighter leading-[0.85] py-4">
-              DΛNCE<br />ЯEΛLM
+              DANCE<br />ЯEALM
             </h1>
           </div>
           
