@@ -4,23 +4,11 @@ import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Music2, Share2, Heart, Upload, FileVideo, CheckCircle2, Instagram, Facebook, MessageSquare } from "lucide-react";
+import { ArrowLeft, Music2, Share2, Heart, Instagram, Facebook, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ARTISTS } from "@/lib/mock-data";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -79,17 +67,9 @@ export default function ArtistDetailPage() {
   const artist = ARTISTS.find((a) => a.id === id);
   const { toast } = useToast();
   
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [videoTitle, setVideoTitle] = useState("");
-  const [videoCategory, setVideoCategory] = useState("performance");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [artistVideos, setArtistVideos] = useState<any[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (artist) {
@@ -107,94 +87,6 @@ export default function ArtistDetailPage() {
       </div>
     );
   }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      if (file.type.startsWith('video/')) {
-        setSelectedFile(file);
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Invalid file type",
-          description: "Please upload a video file.",
-        });
-      }
-    }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleUpload = () => {
-    if (!selectedFile) {
-      toast({
-        variant: "destructive",
-        title: "No file selected",
-        description: "Please choose a video file to upload.",
-      });
-      return;
-    }
-
-    setIsUploading(true);
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(progress);
-      if (progress >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          const newVideoUrl = URL.createObjectURL(selectedFile);
-          const newVideo = {
-            id: `v-new-${Date.now()}`,
-            title: videoTitle || selectedFile.name.split('.')[0],
-            url: newVideoUrl,
-            category: videoCategory
-          };
-
-          setArtistVideos((prev) => [newVideo, ...prev]);
-          setIsUploading(false);
-          setUploadProgress(0);
-          setSelectedFile(null);
-          setVideoTitle("");
-          setIsDialogOpen(false); 
-          
-          toast({
-            title: "Performance Synced!",
-            description: "Your masterpiece is now live in the Realm gallery.",
-          });
-        }, 500);
-      }
-    }, 100);
-  };
 
   const shareLink = typeof window !== 'undefined' ? window.location.href : '';
 
@@ -331,113 +223,6 @@ export default function ArtistDetailPage() {
           <div className="lg:col-span-2 space-y-8">
             <div className="flex items-center justify-between">
               <h2 className="text-3xl font-black italic uppercase tracking-tighter">Performances</h2>
-              
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="h-10 px-4 rounded-full border-primary/40 text-primary hover:bg-primary/5 font-black uppercase tracking-widest text-[10px]">
-                    <Upload className="w-3.5 h-3.5 mr-2" />
-                    Add New Video
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="glass-card border-white/10 sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Upload for Dance Realm</DialogTitle>
-                    <DialogDescription className="text-xs uppercase tracking-widest font-bold opacity-70">
-                      Sync a new masterpiece to the global stage
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-6 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="video-title" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Title</Label>
-                        <Input 
-                          id="video-title" 
-                          placeholder="Midnight Samba" 
-                          className="bg-black/20 border-white/10 h-11" 
-                          value={videoTitle}
-                          onChange={(e) => setVideoTitle(e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Type</Label>
-                        <Select value={videoCategory} onValueChange={setVideoCategory}>
-                          <SelectTrigger className="bg-black/20 border-white/10 h-11">
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent className="glass-card border-white/10">
-                            <SelectItem value="performance">Performance</SelectItem>
-                            <SelectItem value="rehearsal">Rehearsal</SelectItem>
-                            <SelectItem value="tutorial">Tutorial</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Video File</Label>
-                      <div 
-                        onClick={triggerFileInput}
-                        onDragOver={handleDragOver}
-                        onDragEnter={handleDragEnter}
-                        onDragLeave={handleDragLeave}
-                        onDrop={handleDrop}
-                        className={cn(
-                          "border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 bg-black/10 transition-all cursor-pointer group relative",
-                          isDragging ? "border-primary bg-primary/5" : "border-white/10 hover:bg-black/20"
-                        )}
-                      >
-                        <input 
-                          type="file" 
-                          ref={fileInputRef} 
-                          className="hidden" 
-                          accept="video/*" 
-                          onChange={handleFileChange}
-                        />
-                        {selectedFile ? (
-                          <div className="flex flex-col items-center gap-2 animate-in zoom-in duration-300">
-                            <CheckCircle2 className="h-10 w-10 text-primary" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-primary">Selected</span>
-                            <span className="text-[10px] font-bold text-muted-foreground truncate max-w-[200px]">
-                              {selectedFile.name}
-                            </span>
-                          </div>
-                        ) : (
-                          <>
-                            <FileVideo className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors" />
-                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest text-center px-4">
-                              Select Video File
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {isUploading && (
-                      <div className="space-y-2 animate-in fade-in duration-300">
-                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-primary">
-                          <span>Syncing to Realm...</span>
-                          <span>{uploadProgress}%</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-primary transition-all duration-300" 
-                            style={{ width: `${uploadProgress}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <DialogFooter>
-                    <Button 
-                      onClick={handleUpload} 
-                      disabled={isUploading || !selectedFile}
-                      className="w-full h-12 rounded-xl font-black uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all"
-                    >
-                      {isUploading ? "Syncing..." : "Finish Upload"}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
