@@ -23,7 +23,7 @@ export default function ArtistsPage() {
       {/* Desktop Background */}
       <div className="fixed inset-0 z-0 hidden md:block">
         <Image
-          src="/images/dance-realm_dash2_desktop.png"
+          src="/images/dance-realm_background_image_without_dancers.png"
           alt="Dance Realm Background"
           fill
           priority
@@ -35,7 +35,7 @@ export default function ArtistsPage() {
       {/* Mobile Background */}
       <div className="fixed inset-0 z-0 block md:hidden">
         <Image
-          src="/images/dance-realm_dash2_mobile.png"
+          src="/images/dance-realm_background_image_without_dancers.png"
           alt="Dance Realm Background"
           fill
           priority
