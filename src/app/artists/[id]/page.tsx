@@ -15,7 +15,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
 
 // Video.js imports
 import videojs from 'video.js';
@@ -136,7 +135,8 @@ export default function ArtistDetailPage() {
       
       {/* Page Content Layer 3 */}
       <div className="relative z-20">
-        <div className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
+        {/* Increased height on mobile to prevent collision with buttons */}
+        <div className="relative h-[65vh] min-h-[500px] md:h-[50vh] w-full overflow-hidden">
           <Image
             src={artist.image}
             alt={artist.name}
@@ -148,32 +148,33 @@ export default function ArtistDetailPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
           
           <div className="absolute top-8 left-8 z-10">
-            <Button asChild variant="ghost" className="rounded-full bg-black/20 backdrop-blur-md hover:bg-white/10">
-              <Link href="/artists" className="flex items-center gap-2">
+            <Button asChild variant="ghost" className="rounded-full bg-black/40 backdrop-blur-md hover:bg-white/10 border border-white/10">
+              <Link href="/artists" className="flex items-center gap-2 px-4">
                 <ArrowLeft className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-widest">Back</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">Back</span>
               </Link>
             </Button>
           </div>
 
-          <div className="absolute bottom-12 left-8 right-8 space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <div className="space-y-1">
+          {/* Adjusted positioning of the artist name container */}
+          <div className="absolute bottom-20 md:bottom-12 left-8 right-8 space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <div className="space-y-2">
               <Badge variant="outline" className="text-primary border-primary/40 bg-primary/10 uppercase tracking-[0.2em] px-3 py-1 text-[10px] font-black">
                 {artist.style}
               </Badge>
-              <h1 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter text-white drop-shadow-2xl">
+              <h1 className="text-5xl sm:text-6xl md:text-8xl font-black italic uppercase tracking-tighter text-white drop-shadow-2xl leading-none">
                 {artist.name}
               </h1>
             </div>
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-3 gap-12 -mt-8 relative z-10">
+        <div className="max-w-6xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-3 gap-12 -mt-12 md:-mt-8 relative z-10">
           <div className="lg:col-span-1 space-y-8">
-            <div className="glass-card p-8 rounded-3xl space-y-6 border-white/5">
+            <div className="glass-card p-8 rounded-3xl space-y-6 border-white/5 shadow-2xl">
               <div className="space-y-4">
-                <h2 className="text-xs font-black uppercase tracking-[0.3em] text-primary">About</h2>
-                <p className="text-muted-foreground leading-relaxed">
+                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">About</h2>
+                <p className="text-muted-foreground leading-relaxed text-sm">
                   {artist.description}
                 </p>
               </div>
@@ -212,7 +213,7 @@ export default function ArtistDetailPage() {
 
                 <Button 
                   onClick={() => setIsFollowing(!isFollowing)}
-                  className={`flex-1 rounded-full h-12 font-bold uppercase tracking-widest text-xs shadow-lg transition-all ${isFollowing ? 'bg-secondary text-secondary-foreground shadow-secondary/20' : 'shadow-primary/20'}`}
+                  className={`flex-1 rounded-full h-12 font-black uppercase tracking-widest text-[10px] shadow-lg transition-all ${isFollowing ? 'bg-secondary text-secondary-foreground shadow-secondary/20' : 'bg-primary text-primary-foreground shadow-primary/20'}`}
                 >
                   {isFollowing ? 'Following' : 'Follow Artist'}
                 </Button>
