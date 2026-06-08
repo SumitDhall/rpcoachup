@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from "react";
@@ -77,16 +76,14 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
             side="right" 
             className={cn(
               navStyles.panel, 
-              "w-80 p-0 border-none bg-black/80" // Slightly darker bg for mobile drawer readability
+              "w-80 p-0 border-none bg-black/80" 
             )}
           >
-            {/* Accessibility Titles (Hidden from view) */}
             <SheetHeader className="sr-only">
               <SheetTitle>Dance Realm Navigation</SheetTitle>
               <SheetDescription>Access your dashboard and the global dance community.</SheetDescription>
             </SheetHeader>
 
-            {/* Background Glows for Mobile Drawer */}
             <div className={navStyles.glowContainer}>
               <div className={navStyles.primaryGlow} />
               <div className={navStyles.secondaryGlow} />
@@ -95,7 +92,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
             <div className="p-8 h-full flex flex-col">
               <div className={navStyles.branding.container}>
                 <Link href="/" onClick={handleLinkClick} className={cn(navStyles.branding.title, "text-3xl")}>
-                  DANCE ЯEALM
+                  DΛNCE ЯEΛLM
                 </Link>
                 <div className="space-y-4 mt-4 w-full">
                   <p className={navStyles.branding.subtitle}>
@@ -179,11 +176,10 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
         className={cn(
           navStyles.panel,
           navStyles.sidebarLayout,
-          "hidden md:flex transition-all duration-500",
+          "hidden md:flex transition-all duration-500 overflow-visible",
           isCollapsed ? "w-24" : "w-80"
         )}
       >
-        {/* Background Glows for Sidebar */}
         <div className={navStyles.glowContainer}>
           <div className={navStyles.primaryGlow} />
           {!isCollapsed && <div className={navStyles.secondaryGlow} />}
@@ -195,7 +191,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="absolute -left-5 top-12 h-10 w-10 rounded-full bg-card border border-white/20 text-primary shadow-2xl hover:bg-primary hover:text-background transition-all z-50"
         >
-          {isCollapsed ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+          {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
         </Button>
 
         <div className={cn(navStyles.branding.container, "mb-12")}>
@@ -206,7 +202,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
                   <Image src={collapsedLogo.imageUrl} alt="DR Logo" fill className="object-contain" priority />
                 </div>
               ) : "DR"
-            ) : "DANCE ЯEALM"}
+            ) : "DΛNCE ЯEΛLM"}
           </Link>
           <div className="space-y-4 mt-4 w-full animate-in fade-in slide-in-from-top-4 duration-700">
             {!isCollapsed && (
