@@ -141,7 +141,7 @@ export default function ArtistDetailPage() {
             src={artist.image}
             alt={artist.name}
             fill
-            className="object-cover opacity-40 grayscale hover:grayscale-0 transition-all duration-1000"
+            className="object-cover transition-all duration-1000"
             priority
             data-ai-hint="professional dancer"
           />
