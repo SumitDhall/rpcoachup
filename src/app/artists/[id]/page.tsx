@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Music2, Share2, Heart, Instagram, Facebook, MessageSquare } from "lucide-react";
+import { ArrowLeft, Music2, Share2, Heart, Instagram, Facebook, MessageSquare, ChevronRight, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ARTISTS } from "@/lib/mock-data";
@@ -15,6 +15,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 // Video.js imports
 import videojs from 'video.js';
@@ -61,20 +68,74 @@ function GalleryVideo({ url }: { url: string }) {
   );
 }
 
+interface VideoSectionProps {
+  title: string;
+  videos: any[];
+}
+
+function VideoCarouselSection({ title, videos }: VideoSectionProps) {
+  if (videos.length === 0) return null;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between px-2">
+        <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">{title}</h3>
+        <Button variant="link" className="text-primary font-black uppercase tracking-widest text-[10px] group">
+          View All <ChevronRight className="w-3 h-3 ml-1 transition-transform group-hover:translate-x-1" />
+        </Button>
+      </div>
+
+      <Carousel
+        opts={{
+          align: "start",
+          loop: false,
+        }}
+        className="w-full"
+      >
+        <CarouselContent className="-ml-4">
+          {videos.map((video, idx) => (
+            <CarouselItem key={`${video.id}-${idx}`} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+              <div className="group relative glass-card rounded-2xl overflow-hidden border-white/5 hover:border-primary/40 transition-all h-full flex flex-col">
+                <div className="aspect-video relative bg-black flex items-center justify-center overflow-hidden">
+                  <GalleryVideo url={video.url} />
+                </div>
+                <div className="p-4 flex-1 flex flex-col justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <Music2 className="w-5 h-5" />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-bold text-sm uppercase tracking-wider truncate">{video.title}</span>
+                      <span className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/60">HD Quality</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                     <Badge variant="secondary" className="bg-white/5 text-[10px] font-bold">4K READY</Badge>
+                     <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full hover:bg-primary/20 hover:text-primary">
+                        <PlayCircle className="w-4 h-4" />
+                     </Button>
+                  </div>
+                </div>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <div className="hidden md:block">
+          <CarouselPrevious className="-left-12 bg-black/40 border-white/10 hover:bg-primary hover:text-white" />
+          <CarouselNext className="-right-12 bg-black/40 border-white/10 hover:bg-primary hover:text-white" />
+        </div>
+      </Carousel>
+    </div>
+  );
+}
+
 export default function ArtistDetailPage() {
   const { id } = useParams();
   const artist = ARTISTS.find((a) => a.id === id);
   const { toast } = useToast();
   
-  const [artistVideos, setArtistVideos] = useState<any[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
-
-  useEffect(() => {
-    if (artist) {
-      setArtistVideos(artist.videos);
-    }
-  }, [artist]);
 
   if (!artist) {
     return (
@@ -105,10 +166,17 @@ export default function ArtistDetailPage() {
     }
   };
 
+  // Mock categorizing videos for the UI demonstration
+  const categories = {
+    Demos: artist.videos, // For demo purposes, reuse current videos
+    Performances: [...artist.videos].reverse(),
+    Tutorials: artist.videos,
+    Podcasts: [...artist.videos].reverse(),
+  };
+
   return (
-    <div className="min-h-screen relative pb-20">
+    <div className="min-h-screen relative pb-32">
       <style jsx global>{`
-        /* Ensure Video.js tech (actual video) stretches to fill its container */
         .vjs-tech {
           object-fit: cover !important;
         }
@@ -118,7 +186,7 @@ export default function ArtistDetailPage() {
         }
       `}</style>
 
-      {/* Background Layer 1: Images */}
+      {/* Background Layer 1: Image */}
       <div className="fixed inset-0 z-0">
         <Image
           src="/images/dance-realm_background_image_without_dancers.png"
@@ -135,7 +203,7 @@ export default function ArtistDetailPage() {
       
       {/* Page Content Layer 3 */}
       <div className="relative z-20">
-        {/* Increased height on mobile to prevent collision with buttons */}
+        {/* Hero Section */}
         <div className="relative h-[65vh] min-h-[500px] md:h-[50vh] w-full overflow-hidden">
           <Image
             src={artist.image}
@@ -156,7 +224,6 @@ export default function ArtistDetailPage() {
             </Button>
           </div>
 
-          {/* Adjusted positioning of the artist name container */}
           <div className="absolute bottom-20 md:bottom-12 left-8 right-8 space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
             <div className="space-y-2">
               <Badge variant="outline" className="text-primary border-primary/40 bg-primary/10 uppercase tracking-[0.2em] px-3 py-1 text-[10px] font-black">
@@ -169,86 +236,71 @@ export default function ArtistDetailPage() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-3 gap-12 -mt-12 md:-mt-8 relative z-10">
-          <div className="lg:col-span-1 space-y-8">
-            <div className="glass-card p-8 rounded-3xl space-y-6 border-white/5 shadow-2xl">
-              <div className="space-y-4">
-                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">About</h2>
-                <p className="text-muted-foreground leading-relaxed text-sm">
-                  {artist.description}
-                </p>
-              </div>
-              
-              <div className="flex gap-4 pt-4">
-                <Button 
-                  size="icon" 
-                  variant="outline" 
-                  onClick={() => setIsLiked(!isLiked)}
-                  className={`rounded-full h-12 w-12 border-white/10 transition-all ${isLiked ? 'border-primary text-primary bg-primary/10' : 'hover:border-primary hover:text-primary'}`}
-                >
-                  <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-                </Button>
+        {/* Content Body */}
+        <div className="max-w-7xl mx-auto px-8 space-y-24 -mt-12 md:-mt-8 relative z-10">
+          
+          {/* About Section - Full Width */}
+          <div className="glass-card p-8 md:p-12 rounded-[2.5rem] border-white/5 shadow-2xl relative overflow-hidden group">
+            <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/5 blur-[100px] rounded-full pointer-events-none group-hover:bg-primary/10 transition-colors duration-700" />
+            <div className="relative z-10 space-y-8">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div className="space-y-4 max-w-3xl">
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">About the Master</h2>
+                  <p className="text-white/80 leading-relaxed text-lg md:text-xl font-medium italic">
+                    "{artist.description}"
+                  </p>
+                </div>
                 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button size="icon" variant="outline" className="rounded-full h-12 w-12 border-white/10 hover:border-primary hover:text-primary transition-all">
-                      <Share2 className="w-5 h-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="glass-card border-white/10">
-                    <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('instagram')}>
-                      <Instagram className="h-4 w-4" />
-                      <span>Instagram</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('facebook')}>
-                      <Facebook className="h-4 w-4" />
-                      <span>Facebook</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('whatsapp')}>
-                      <MessageSquare className="h-4 w-4" />
-                      <span>WhatsApp</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex flex-wrap gap-4 shrink-0">
+                  <Button 
+                    size="icon" 
+                    variant="outline" 
+                    onClick={() => setIsLiked(!isLiked)}
+                    className={`rounded-full h-14 w-14 border-white/10 transition-all ${isLiked ? 'border-primary text-primary bg-primary/10' : 'hover:border-primary hover:text-primary'}`}
+                  >
+                    <Heart className={`w-6 h-6 ${isLiked ? 'fill-current' : ''}`} />
+                  </Button>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="icon" variant="outline" className="rounded-full h-14 w-14 border-white/10 hover:border-primary hover:text-primary transition-all">
+                        <Share2 className="w-6 h-6" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="glass-card border-white/10">
+                      <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('instagram')}>
+                        <Instagram className="h-4 w-4" />
+                        <span>Instagram</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('facebook')}>
+                        <Facebook className="h-4 w-4" />
+                        <span>Facebook</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('whatsapp')}>
+                        <MessageSquare className="h-4 w-4" />
+                        <span>WhatsApp</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-                <Button 
-                  onClick={() => setIsFollowing(!isFollowing)}
-                  className={`flex-1 rounded-full h-12 font-black uppercase tracking-widest text-[10px] shadow-lg transition-all ${isFollowing ? 'bg-secondary text-secondary-foreground shadow-secondary/20' : 'bg-primary text-primary-foreground shadow-primary/20'}`}
-                >
-                  {isFollowing ? 'Following' : 'Follow Artist'}
-                </Button>
+                  <Button 
+                    onClick={() => setIsFollowing(!isFollowing)}
+                    size="lg"
+                    className={`rounded-full h-14 px-8 font-black uppercase tracking-widest text-[11px] shadow-lg transition-all ${isFollowing ? 'bg-secondary text-secondary-foreground shadow-secondary/20' : 'bg-primary text-primary-foreground shadow-primary/20'}`}
+                  >
+                    {isFollowing ? 'Following Artist' : 'Follow Master'}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="lg:col-span-2 space-y-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-3xl font-black italic uppercase tracking-tighter">Performances</h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {artistVideos.map((video) => (
-                <div key={video.id} className="group relative glass-card rounded-2xl overflow-hidden border-white/5 hover:border-primary/40 transition-all">
-                  <div className="aspect-video relative bg-black flex items-center justify-center overflow-hidden">
-                    <GalleryVideo url={video.url} />
-                  </div>
-                  <div className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                        <Music2 className="w-5 h-5" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-sm uppercase tracking-wider">{video.title}</span>
-                        {video.category && (
-                          <span className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/60">{video.category}</span>
-                        )}
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="bg-white/5 text-[10px] font-bold">HD</Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
+          {/* Video Categories Sections */}
+          <div className="space-y-24">
+            <VideoCarouselSection title="Demos" videos={categories.Demos} />
+            <VideoCarouselSection title="Performances" videos={categories.Performances} />
+            <VideoCarouselSection title="Tutorials" videos={categories.Tutorials} />
+            <VideoCarouselSection title="Podcasts" videos={categories.Podcasts} />
           </div>
         </div>
       </div>
