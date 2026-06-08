@@ -73,14 +73,20 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
               <Menu className="h-6 w-6 text-[#050816]" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className={cn(navStyles.panel, "w-80 p-0 border-none")}>
-            {/* Accessibility Titles */}
+          <SheetContent 
+            side="right" 
+            className={cn(
+              navStyles.panel, 
+              "w-80 p-0 border-none bg-black/80" // Slightly darker bg for mobile drawer readability
+            )}
+          >
+            {/* Accessibility Titles (Hidden from view) */}
             <SheetHeader className="sr-only">
               <SheetTitle>Dance Realm Navigation</SheetTitle>
-              <SheetDescription>Access your dashboard, artists, and blips</SheetDescription>
+              <SheetDescription>Access your dashboard and the global dance community.</SheetDescription>
             </SheetHeader>
 
-            {/* Background Glows */}
+            {/* Background Glows for Mobile Drawer */}
             <div className={navStyles.glowContainer}>
               <div className={navStyles.primaryGlow} />
               <div className={navStyles.secondaryGlow} />
@@ -172,11 +178,12 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
       <aside 
         className={cn(
           navStyles.panel,
-          "hidden md:flex flex-col p-6 transition-all duration-500 z-40 h-full border-none",
+          navStyles.sidebarLayout,
+          "hidden md:flex transition-all duration-500",
           isCollapsed ? "w-24" : "w-80"
         )}
       >
-        {/* Background Glows */}
+        {/* Background Glows for Sidebar */}
         <div className={navStyles.glowContainer}>
           <div className={navStyles.primaryGlow} />
           {!isCollapsed && <div className={navStyles.secondaryGlow} />}
