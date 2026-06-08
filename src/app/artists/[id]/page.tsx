@@ -117,8 +117,8 @@ function VideoCarouselSection({ title, videos }: VideoSectionProps) {
                        </Button>
                     </div>
                     
-                    {/* Learn Moves link for Tutorials */}
-                    {title === "Tutorials" && (
+                    {/* Learn Moves link for Tutorial Demos */}
+                    {title === "Tutorial Demos" && (
                       <div className="pt-2 border-t border-white/5 mt-1">
                         <Link 
                           href="#" 
@@ -181,11 +181,10 @@ export default function ArtistDetailPage() {
     }
   };
 
-  // Sections: Demos, Performances, Tutorials, Podcasts
+  // Sections: Tutorial Demos, Performances, Podcasts
   const categories = {
-    Demos: artist.videos,
+    TutorialDemos: artist.videos,
     Performances: [...artist.videos].reverse(),
-    Tutorials: [...artist.videos],
     Podcasts: [...artist.videos].reverse(),
   };
 
@@ -312,9 +311,8 @@ export default function ArtistDetailPage() {
 
           {/* Video Categories Sections */}
           <div className="space-y-24">
-            <VideoCarouselSection title="Demos" videos={categories.Demos} />
+            <VideoCarouselSection title="Tutorial Demos" videos={categories.TutorialDemos} />
             <VideoCarouselSection title="Performances" videos={categories.Performances} />
-            <VideoCarouselSection title="Tutorials" videos={categories.Tutorials} />
             <VideoCarouselSection title="Podcasts" videos={categories.Podcasts} />
           </div>
         </div>
