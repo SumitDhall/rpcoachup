@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { UserPlus, ArrowLeft, Music2, User, Zap, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,11 +28,27 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-background relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -z-10" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[120px] -z-10" />
+      {/* Background Layer 1: Image */}
+      <div className="fixed inset-0 z-0">
+        <Image
+          src="/images/dance-realm_background_image_without_dancers.png"
+          alt="Dance Realm Background"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover brightness-110 contrast-110"
+        />
+      </div>
 
-      <div className="w-full max-w-xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Background Layer 2: Dark Overlay */}
+      <div className="fixed inset-0 z-10 bg-[#050816]/75 pointer-events-none" />
+
+      {/* Background decoration */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] z-10" />
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[120px] z-10" />
+
+      {/* Page Content Layer 3 */}
+      <div className="relative z-20 w-full max-w-xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <Button asChild variant="ghost" className="mb-2 text-muted-foreground hover:text-primary transition-colors">
           <Link href="/" className="flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" />

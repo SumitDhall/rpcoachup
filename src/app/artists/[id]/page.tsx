@@ -215,7 +215,7 @@ export default function ArtistDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background relative pb-20">
+    <div className="min-h-screen relative pb-20">
       <style jsx global>{`
         /* Ensure Video.js tech (actual video) stretches to fill its container */
         .vjs-tech {
@@ -226,225 +226,243 @@ export default function ArtistDetailPage() {
            height: 100%;
         }
       `}</style>
-      
-      <div className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
-        <Image
-          src={artist.image}
-          alt={artist.name}
-          fill
-          className="object-cover opacity-40 grayscale hover:grayscale-0 transition-all duration-1000"
-          priority
-          data-ai-hint="professional dancer"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-        
-        <div className="absolute top-8 left-8 z-10">
-          <Button asChild variant="ghost" className="rounded-full bg-black/20 backdrop-blur-md hover:bg-white/10">
-            <Link href="/artists" className="flex items-center gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              <span className="text-xs font-bold uppercase tracking-widest">Back</span>
-            </Link>
-          </Button>
-        </div>
 
-        <div className="absolute bottom-12 left-8 right-8 space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <div className="space-y-1">
-            <Badge variant="outline" className="text-primary border-primary/40 bg-primary/10 uppercase tracking-[0.2em] px-3 py-1 text-[10px] font-black">
-              {artist.style}
-            </Badge>
-            <h1 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter text-white drop-shadow-2xl">
-              {artist.name}
-            </h1>
-          </div>
-        </div>
+      {/* Background Layer 1: Images */}
+      <div className="fixed inset-0 z-0">
+        <Image
+          src="/images/dance-realm_background_image_without_dancers.png"
+          alt="Dance Realm Background"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover brightness-110 contrast-110"
+        />
       </div>
 
-      <div className="max-w-6xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-3 gap-12 -mt-8 relative z-10">
-        <div className="lg:col-span-1 space-y-8">
-          <div className="glass-card p-8 rounded-3xl space-y-6 border-white/5">
-            <div className="space-y-4">
-              <h2 className="text-xs font-black uppercase tracking-[0.3em] text-primary">About</h2>
-              <p className="text-muted-foreground leading-relaxed">
-                {artist.description}
-              </p>
-            </div>
-            
-            <div className="flex gap-4 pt-4">
-              <Button 
-                size="icon" 
-                variant="outline" 
-                onClick={() => setIsLiked(!isLiked)}
-                className={`rounded-full h-12 w-12 border-white/10 transition-all ${isLiked ? 'border-primary text-primary bg-primary/10' : 'hover:border-primary hover:text-primary'}`}
-              >
-                <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-              </Button>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="icon" variant="outline" className="rounded-full h-12 w-12 border-white/10 hover:border-primary hover:text-primary transition-all">
-                    <Share2 className="w-5 h-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="glass-card border-white/10">
-                  <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('instagram')}>
-                    <Instagram className="h-4 w-4" />
-                    <span>Instagram</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('facebook')}>
-                    <Facebook className="h-4 w-4" />
-                    <span>Facebook</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('whatsapp')}>
-                    <MessageSquare className="h-4 w-4" />
-                    <span>WhatsApp</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+      {/* Background Layer 2: Dark Overlay */}
+      <div className="fixed inset-0 z-10 bg-[#050816]/75 pointer-events-none" />
+      
+      {/* Page Content Layer 3 */}
+      <div className="relative z-20">
+        <div className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
+          <Image
+            src={artist.image}
+            alt={artist.name}
+            fill
+            className="object-cover opacity-40 grayscale hover:grayscale-0 transition-all duration-1000"
+            priority
+            data-ai-hint="professional dancer"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+          
+          <div className="absolute top-8 left-8 z-10">
+            <Button asChild variant="ghost" className="rounded-full bg-black/20 backdrop-blur-md hover:bg-white/10">
+              <Link href="/artists" className="flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-xs font-bold uppercase tracking-widest">Back</span>
+              </Link>
+            </Button>
+          </div>
 
-              <Button 
-                onClick={() => setIsFollowing(!isFollowing)}
-                className={`flex-1 rounded-full h-12 font-bold uppercase tracking-widest text-xs shadow-lg transition-all ${isFollowing ? 'bg-secondary text-secondary-foreground shadow-secondary/20' : 'shadow-primary/20'}`}
-              >
-                {isFollowing ? 'Following' : 'Follow Artist'}
-              </Button>
+          <div className="absolute bottom-12 left-8 right-8 space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <div className="space-y-1">
+              <Badge variant="outline" className="text-primary border-primary/40 bg-primary/10 uppercase tracking-[0.2em] px-3 py-1 text-[10px] font-black">
+                {artist.style}
+              </Badge>
+              <h1 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter text-white drop-shadow-2xl">
+                {artist.name}
+              </h1>
             </div>
           </div>
         </div>
 
-        <div className="lg:col-span-2 space-y-8">
-          <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-black italic uppercase tracking-tighter">Performances</h2>
-            
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="h-10 px-4 rounded-full border-primary/40 text-primary hover:bg-primary/5 font-black uppercase tracking-widest text-[10px]">
-                  <Upload className="w-3.5 h-3.5 mr-2" />
-                  Add New Video
+        <div className="max-w-6xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-3 gap-12 -mt-8 relative z-10">
+          <div className="lg:col-span-1 space-y-8">
+            <div className="glass-card p-8 rounded-3xl space-y-6 border-white/5">
+              <div className="space-y-4">
+                <h2 className="text-xs font-black uppercase tracking-[0.3em] text-primary">About</h2>
+                <p className="text-muted-foreground leading-relaxed">
+                  {artist.description}
+                </p>
+              </div>
+              
+              <div className="flex gap-4 pt-4">
+                <Button 
+                  size="icon" 
+                  variant="outline" 
+                  onClick={() => setIsLiked(!isLiked)}
+                  className={`rounded-full h-12 w-12 border-white/10 transition-all ${isLiked ? 'border-primary text-primary bg-primary/10' : 'hover:border-primary hover:text-primary'}`}
+                >
+                  <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="glass-card border-white/10 sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Upload for Dance Realm</DialogTitle>
-                  <DialogDescription className="text-xs uppercase tracking-widest font-bold opacity-70">
-                    Sync a new masterpiece to the global stage
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-6 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="video-title" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Title</Label>
-                      <Input 
-                        id="video-title" 
-                        placeholder="Midnight Samba" 
-                        className="bg-black/20 border-white/10 h-11" 
-                        value={videoTitle}
-                        onChange={(e) => setVideoTitle(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Type</Label>
-                      <Select value={videoCategory} onValueChange={setVideoCategory}>
-                        <SelectTrigger className="bg-black/20 border-white/10 h-11">
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent className="glass-card border-white/10">
-                          <SelectItem value="performance">Performance</SelectItem>
-                          <SelectItem value="rehearsal">Rehearsal</SelectItem>
-                          <SelectItem value="tutorial">Tutorial</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="icon" variant="outline" className="rounded-full h-12 w-12 border-white/10 hover:border-primary hover:text-primary transition-all">
+                      <Share2 className="w-5 h-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="glass-card border-white/10">
+                    <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('instagram')}>
+                      <Instagram className="h-4 w-4" />
+                      <span>Instagram</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('facebook')}>
+                      <Facebook className="h-4 w-4" />
+                      <span>Facebook</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="gap-3 cursor-pointer" onClick={() => handleSocialShare('whatsapp')}>
+                      <MessageSquare className="h-4 w-4" />
+                      <span>WhatsApp</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-                  <div className="space-y-2">
-                    <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Video File</Label>
-                    <div 
-                      onClick={triggerFileInput}
-                      onDragOver={handleDragOver}
-                      onDragEnter={handleDragEnter}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                      className={cn(
-                        "border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 bg-black/10 transition-all cursor-pointer group relative",
-                        isDragging ? "border-primary bg-primary/5" : "border-white/10 hover:bg-black/20"
-                      )}
-                    >
-                      <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        className="hidden" 
-                        accept="video/*" 
-                        onChange={handleFileChange}
-                      />
-                      {selectedFile ? (
-                        <div className="flex flex-col items-center gap-2 animate-in zoom-in duration-300">
-                          <CheckCircle2 className="h-10 w-10 text-primary" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-primary">Selected</span>
-                          <span className="text-[10px] font-bold text-muted-foreground truncate max-w-[200px]">
-                            {selectedFile.name}
-                          </span>
-                        </div>
-                      ) : (
-                        <>
-                          <FileVideo className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors" />
-                          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest text-center px-4">
-                            Select Video File
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {isUploading && (
-                    <div className="space-y-2 animate-in fade-in duration-300">
-                      <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-primary">
-                        <span>Syncing to Realm...</span>
-                        <span>{uploadProgress}%</span>
-                      </div>
-                      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-primary transition-all duration-300" 
-                          style={{ width: `${uploadProgress}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <DialogFooter>
-                  <Button 
-                    onClick={handleUpload} 
-                    disabled={isUploading || !selectedFile}
-                    className="w-full h-12 rounded-xl font-black uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all"
-                  >
-                    {isUploading ? "Syncing..." : "Finish Upload"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                <Button 
+                  onClick={() => setIsFollowing(!isFollowing)}
+                  className={`flex-1 rounded-full h-12 font-bold uppercase tracking-widest text-xs shadow-lg transition-all ${isFollowing ? 'bg-secondary text-secondary-foreground shadow-secondary/20' : 'shadow-primary/20'}`}
+                >
+                  {isFollowing ? 'Following' : 'Follow Artist'}
+                </Button>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {artistVideos.map((video) => (
-              <div key={video.id} className="group relative glass-card rounded-2xl overflow-hidden border-white/5 hover:border-primary/40 transition-all">
-                <div className="aspect-video relative bg-black flex items-center justify-center overflow-hidden">
-                  <GalleryVideo url={video.url} />
-                </div>
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                      <Music2 className="w-5 h-5" />
+          <div className="lg:col-span-2 space-y-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter">Performances</h2>
+              
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="h-10 px-4 rounded-full border-primary/40 text-primary hover:bg-primary/5 font-black uppercase tracking-widest text-[10px]">
+                    <Upload className="w-3.5 h-3.5 mr-2" />
+                    Add New Video
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="glass-card border-white/10 sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Upload for Dance Realm</DialogTitle>
+                    <DialogDescription className="text-xs uppercase tracking-widest font-bold opacity-70">
+                      Sync a new masterpiece to the global stage
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-6 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="video-title" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Title</Label>
+                        <Input 
+                          id="video-title" 
+                          placeholder="Midnight Samba" 
+                          className="bg-black/20 border-white/10 h-11" 
+                          value={videoTitle}
+                          onChange={(e) => setVideoTitle(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Type</Label>
+                        <Select value={videoCategory} onValueChange={setVideoCategory}>
+                          <SelectTrigger className="bg-black/20 border-white/10 h-11">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent className="glass-card border-white/10">
+                            <SelectItem value="performance">Performance</SelectItem>
+                            <SelectItem value="rehearsal">Rehearsal</SelectItem>
+                            <SelectItem value="tutorial">Tutorial</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="font-bold text-sm uppercase tracking-wider">{video.title}</span>
-                      {video.category && (
-                        <span className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/60">{video.category}</span>
-                      )}
+
+                    <div className="space-y-2">
+                      <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Video File</Label>
+                      <div 
+                        onClick={triggerFileInput}
+                        onDragOver={handleDragOver}
+                        onDragEnter={handleDragEnter}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={cn(
+                          "border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 bg-black/10 transition-all cursor-pointer group relative",
+                          isDragging ? "border-primary bg-primary/5" : "border-white/10 hover:bg-black/20"
+                        )}
+                      >
+                        <input 
+                          type="file" 
+                          ref={fileInputRef} 
+                          className="hidden" 
+                          accept="video/*" 
+                          onChange={handleFileChange}
+                        />
+                        {selectedFile ? (
+                          <div className="flex flex-col items-center gap-2 animate-in zoom-in duration-300">
+                            <CheckCircle2 className="h-10 w-10 text-primary" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-primary">Selected</span>
+                            <span className="text-[10px] font-bold text-muted-foreground truncate max-w-[200px]">
+                              {selectedFile.name}
+                            </span>
+                          </div>
+                        ) : (
+                          <>
+                            <FileVideo className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest text-center px-4">
+                              Select Video File
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
+
+                    {isUploading && (
+                      <div className="space-y-2 animate-in fade-in duration-300">
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-primary">
+                          <span>Syncing to Realm...</span>
+                          <span>{uploadProgress}%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary transition-all duration-300" 
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <Badge variant="secondary" className="bg-white/5 text-[10px] font-bold">HD</Badge>
+                  <DialogFooter>
+                    <Button 
+                      onClick={handleUpload} 
+                      disabled={isUploading || !selectedFile}
+                      className="w-full h-12 rounded-xl font-black uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all"
+                    >
+                      {isUploading ? "Syncing..." : "Finish Upload"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {artistVideos.map((video) => (
+                <div key={video.id} className="group relative glass-card rounded-2xl overflow-hidden border-white/5 hover:border-primary/40 transition-all">
+                  <div className="aspect-video relative bg-black flex items-center justify-center overflow-hidden">
+                    <GalleryVideo url={video.url} />
+                  </div>
+                  <div className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        <Music2 className="w-5 h-5" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-sm uppercase tracking-wider">{video.title}</span>
+                        {video.category && (
+                          <span className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/60">{video.category}</span>
+                        )}
+                      </div>
+                    </div>
+                    <Badge variant="secondary" className="bg-white/5 text-[10px] font-bold">HD</Badge>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>
