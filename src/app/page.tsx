@@ -57,6 +57,9 @@ export default function Page() {
     className="
       object-cover
       object-center
+       md:object-[58%_center]
+      lg:object-[55%_center]
+      xl:object-center
       brightness-110
       contrast-110
     "
