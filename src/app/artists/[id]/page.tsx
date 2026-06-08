@@ -109,11 +109,26 @@ function VideoCarouselSection({ title, videos }: VideoSectionProps) {
                       <span className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/60">HD Quality</span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                     <Badge variant="secondary" className="bg-white/5 text-[10px] font-bold">4K READY</Badge>
-                     <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full hover:bg-primary/20 hover:text-primary">
-                        <PlayCircle className="w-4 h-4" />
-                     </Button>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                       <Badge variant="secondary" className="bg-white/5 text-[10px] font-bold">4K READY</Badge>
+                       <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full hover:bg-primary/20 hover:text-primary">
+                          <PlayCircle className="w-4 h-4" />
+                       </Button>
+                    </div>
+                    
+                    {/* Learn Moves link for Tutorials */}
+                    {title === "Tutorials" && (
+                      <div className="pt-2 border-t border-white/5 mt-1">
+                        <Link 
+                          href="#" 
+                          className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 flex items-center gap-1 group/link"
+                        >
+                          Learn Moves
+                          <ChevronRight className="w-2.5 h-2.5 transition-transform group-hover/link:translate-x-0.5" />
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -166,11 +181,11 @@ export default function ArtistDetailPage() {
     }
   };
 
-  // Mock categorizing videos for the UI demonstration
+  // Sections: Demos, Performances, Tutorials, Podcasts
   const categories = {
-    Demos: artist.videos, // For demo purposes, reuse current videos
+    Demos: artist.videos,
     Performances: [...artist.videos].reverse(),
-    Tutorials: artist.videos,
+    Tutorials: [...artist.videos],
     Podcasts: [...artist.videos].reverse(),
   };
 
@@ -209,7 +224,7 @@ export default function ArtistDetailPage() {
             src={artist.image}
             alt={artist.name}
             fill
-            className="object-cover transition-all duration-1000"
+            className="object-cover transition-all duration-1000 opacity-100"
             priority
             data-ai-hint="professional dancer"
           />
@@ -224,7 +239,7 @@ export default function ArtistDetailPage() {
             </Button>
           </div>
 
-          <div className="absolute bottom-20 md:bottom-12 left-8 right-8 space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <div className="absolute bottom-24 md:bottom-16 left-8 right-8 space-y-4 animate-in fade-in slide-in-from-bottom-8 duration-700">
             <div className="space-y-2">
               <Badge variant="outline" className="text-primary border-primary/40 bg-primary/10 uppercase tracking-[0.2em] px-3 py-1 text-[10px] font-black">
                 {artist.style}
