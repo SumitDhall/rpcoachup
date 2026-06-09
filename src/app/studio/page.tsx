@@ -20,7 +20,9 @@ import {
   Filter,
   ArrowUpDown,
   Sparkles,
-  Play
+  Play,
+  Camera,
+  Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -103,16 +105,18 @@ export default function ArtistStudioPage() {
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [masterMovesFile, setMasterMovesFile] = useState<File | null>(null);
+  const [coverImage, setCoverImage] = useState<string | null>(null);
   
   const [videoTitle, setVideoTitle] = useState("");
-  const [videoCategory, setVideoCategory] = useState("Tutorial Demo");
+  const [videoCategory, setVideoCategory] = useState("Tutorial Preview");
   
-  const [filterType, setFilterType] = useState("Tutorial Demo");
+  const [filterType, setFilterType] = useState("Tutorial Preview");
   const [sortBy, setSortBy] = useState("date-desc");
   const [currentPage, setCurrentPage] = useState(1);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const masterMovesInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'artist')) {
@@ -123,9 +127,9 @@ export default function ArtistStudioPage() {
   // Initial mock data load
   useEffect(() => {
     const baseMockData = [
-      { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
+      { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial Preview", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
       { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/urban/800/450" },
-      { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
+      { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial Preview", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
       { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/contemp/800/450" },
       { id: "u5", title: "Rhythm & Pulse Podcast #1", date: "Sep 05, 2024", views: "1.5K", status: "Published", type: "Podcast", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/podcast/800/450" },
       { id: "u6", title: "Quick Grooves", date: "Oct 28, 2024", views: "2.1K", status: "Published", type: "Blips", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/blips/800/450" },
@@ -161,11 +165,31 @@ export default function ArtistStudioPage() {
     }
   };
 
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const url = URL.createObjectURL(e.target.files[0]);
+      setCoverImage(url);
+      toast({
+        title: "Cover Updated",
+        description: "Your studio looks legendary.",
+      });
+    }
+  };
+
+  const deleteCover = () => {
+    setCoverImage(null);
+    toast({
+      title: "Cover Removed",
+      description: "Back to original synchronicity.",
+    });
+  };
+
   const triggerFileInput = () => fileInputRef.current?.click();
   const triggerMasterMovesInput = () => masterMovesInputRef.current?.click();
+  const triggerCoverInput = () => coverInputRef.current?.click();
 
   const isPublishEnabled = useMemo(() => {
-    if (videoCategory === "Tutorial Demo") {
+    if (videoCategory === "Tutorial Preview") {
       return !!selectedFile && !!masterMovesFile;
     }
     return !!selectedFile;
@@ -186,7 +210,6 @@ export default function ArtistStudioPage() {
   const handleUpload = async () => {
     if (!selectedFile) return;
 
-    // Validation for Blips: max 30 seconds
     if (videoCategory === "Blips") {
       const duration = await getVideoDuration(selectedFile);
       if (duration > 30) {
@@ -290,12 +313,13 @@ export default function ArtistStudioPage() {
   }
 
   return (
-    <div className="min-h-screen relative p-8 animate-in fade-in duration-700">
+    <div className="min-h-screen relative animate-in fade-in duration-700">
       <style jsx global>{`
         .vjs-tech { object-fit: cover !important; }
         .video-js.vjs-fill { width: 100%; height: 100%; }
       `}</style>
 
+      {/* Persistent Background */}
       <div className="fixed inset-0 z-0">
         <Image
           src="/images/dance-realm_background_image_without_dancers.png"
@@ -306,284 +330,349 @@ export default function ArtistStudioPage() {
           className="object-cover brightness-110 contrast-110"
         />
       </div>
-
       <div className="fixed inset-0 z-10 bg-[#050816]/75 pointer-events-none" />
 
-      <div className="relative z-20 max-w-5xl mx-auto space-y-12">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-12">
-          <div className="space-y-2 text-center md:text-left">
-            <h1 className="text-5xl font-black italic uppercase tracking-tighter text-gradient">
-              Artist Studio
-            </h1>
-            <p className="text-[10px] uppercase tracking-[0.5em] font-black text-muted-foreground">
-              Master: {user.name}
-            </p>
-          </div>
-          <div className="flex justify-center">
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="h-12 rounded-xl bg-vibrant-gradient text-white font-black uppercase tracking-widest text-[10px] px-8 hover:scale-105 transition-transform shadow-xl shadow-primary/20">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload Masterpiece
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="glass-card border-white/10 sm:max-w-md max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">New Masterpiece</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-6 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Title</Label>
-                      <input 
-                        placeholder="Enter title..." 
-                        className="flex h-11 w-full rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
-                        value={videoTitle}
-                        onChange={(e) => setVideoTitle(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Type</Label>
-                      <Select value={videoCategory} onValueChange={setVideoCategory}>
-                        <SelectTrigger className="bg-black/20 border-white/10 h-11">
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent className="glass-card border-white/10">
-                          <SelectItem value="Tutorial Demo">Tutorial Demo</SelectItem>
-                          <SelectItem value="Performances">Performances</SelectItem>
-                          <SelectItem value="Podcast">Podcast</SelectItem>
-                          <SelectItem value="Blips">Blips (Max 30s)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">
-                      {videoCategory === "Blips" ? "Blip Video (Max 30s)" : "Tutorial Demo Video"}
-                    </Label>
-                    <div onClick={triggerFileInput} className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 cursor-pointer hover:border-primary/50 transition-colors">
-                      <input type="file" ref={fileInputRef} className="hidden" accept="video/*" onChange={handleFileChange} />
-                      {selectedFile ? (
-                        <div className="flex flex-col items-center gap-1">
-                          <span className="text-[9px] font-bold text-primary truncate max-w-[200px]">{selectedFile.name}</span>
-                          <span className="text-[8px] opacity-50 uppercase font-black">Ready to Sync</span>
-                        </div>
-                      ) : <FileVideo className="h-8 w-8 text-muted-foreground" />}
-                    </div>
-                  </div>
-
-                  {videoCategory === "Tutorial Demo" && (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-top-4">
-                      <Label className="text-[10px] uppercase tracking-widest font-black text-secondary/80">Master the Moves Video</Label>
-                      <div onClick={triggerMasterMovesInput} className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 cursor-pointer hover:border-secondary/50 transition-colors">
-                        <input type="file" ref={masterMovesInputRef} className="hidden" accept="video/*" onChange={handleMasterMovesChange} />
-                        {masterMovesFile ? (
-                          <div className="flex flex-col items-center gap-1">
-                            <span className="text-[9px] font-bold text-secondary truncate max-w-[200px]">{masterMovesFile.name}</span>
-                            <span className="text-[8px] opacity-50 uppercase font-black">Linked Loop Ready</span>
-                          </div>
-                        ) : <FileVideo className="h-8 w-8 text-muted-foreground" />}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <DialogFooter className="flex flex-col gap-2">
-                  <Button onClick={handleUpload} disabled={isUploading || !isPublishEnabled} className="w-full bg-primary text-primary-foreground font-black uppercase tracking-widest text-[11px] h-12 rounded-xl">
-                    {isUploading ? "Syncing to Realm..." : "Publish to Realm"}
-                  </Button>
-                  {isUploading && (
-                    <div className="w-full space-y-1">
-                      <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-primary">
-                        <span>Synchronizing</span>
-                        <span>{uploadProgress}%</span>
-                      </div>
-                      <Progress value={uploadProgress} className="h-1 bg-white/5" />
-                    </div>
-                  )}
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          {STUDIO_STATS.map((stat, idx) => (
-            <Card key={idx} className="glass-card border-white/5">
-              <CardHeader className="pb-2 p-4">
-                <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</CardDescription>
-                <CardTitle className="text-2xl font-black tracking-tighter">{stat.value}</CardTitle>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
-
-        {/* Filter & Sort Bar */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 bg-black/30 backdrop-blur-md p-4 rounded-[2rem] border border-white/5">
-          <div className="flex items-center gap-2 flex-1 w-full">
-            <Filter className="w-4 h-4 text-primary" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Filter:</span>
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-full sm:w-[180px] bg-white/5 border-none h-10 rounded-xl text-[10px] font-black uppercase tracking-widest">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent className="glass-card border-white/10">
-                <SelectItem value="All">All Categories</SelectItem>
-                <SelectItem value="Tutorial Demo">Tutorial Demos</SelectItem>
-                <SelectItem value="Performances">Performances</SelectItem>
-                <SelectItem value="Podcast">Podcasts</SelectItem>
-                <SelectItem value="Blips">Blips</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-2 flex-1 w-full justify-end">
-            <ArrowUpDown className="w-4 h-4 text-secondary" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sort:</span>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-[180px] bg-white/5 border-none h-10 rounded-xl text-[10px] font-black uppercase tracking-widest">
-                <SelectValue placeholder="Sort Order" />
-              </SelectTrigger>
-              <SelectContent className="glass-card border-white/10">
-                <SelectItem value="date-desc">Newest First</SelectItem>
-                <SelectItem value="date-asc">Oldest First</SelectItem>
-                <SelectItem value="views-desc">Most Viewed</SelectItem>
-                <SelectItem value="views-asc">Least Viewed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <section className="space-y-8">
-          <div className="flex items-center gap-3 border-b border-white/5 pb-6">
-            <LayoutGrid className="w-6 h-6 text-primary" />
-            <h2 className="text-3xl font-black italic uppercase tracking-tighter">Channel Content</h2>
-          </div>
+      {/* Studio Content */}
+      <div className="relative z-20">
+        
+        {/* Hero Cover Section */}
+        <section className="relative h-[40vh] md:h-[45vh] w-full overflow-hidden group">
+          {coverImage ? (
+            <Image 
+              src={coverImage} 
+              alt="Studio Cover" 
+              fill 
+              className="object-cover" 
+              priority
+            />
+          ) : (
+            <div className="w-full h-full bg-vibrant-gradient opacity-30" />
+          )}
           
-          <div className="flex flex-col gap-8">
-            {paginatedUploads.map((upload) => (
-              <Card key={upload.id} className="glass-card border-white/5 overflow-hidden group">
-                {upload.type === "Tutorial Demo" ? (
-                  <div className="p-6 space-y-6">
-                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                      <div className="space-y-1">
-                        <h3 className="text-2xl font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">{upload.title}</h3>
-                        <div className="flex items-center gap-3">
-                           <Badge variant="outline" className="text-primary border-primary/20 uppercase tracking-widest text-[9px] font-black">{upload.type}</Badge>
-                           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
-                             <Eye className="w-3 h-3" /> {upload.views} Views
-                           </span>
-                           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
-                             <Calendar className="w-3 h-3" /> {upload.date}
-                           </span>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050816] via-transparent to-transparent" />
+          
+          {/* Cover Management Controls */}
+          <div className="absolute bottom-6 right-6 flex items-center gap-3">
+            <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={handleCoverChange} />
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={triggerCoverInput}
+              className="bg-black/40 backdrop-blur-md border-white/10 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest px-4 h-10 rounded-xl"
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              {coverImage ? 'Change Cover' : 'Upload Cover'}
+            </Button>
+            {coverImage && (
+              <Button 
+                size="icon" 
+                variant="destructive" 
+                onClick={deleteCover}
+                className="h-10 w-10 rounded-xl bg-red-500/80 hover:bg-red-600 backdrop-blur-md border-none"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+
+          {/* Header Overlay (Title, Name, Upload Masterpiece) */}
+          <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 lg:px-24">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="space-y-2">
+                <h1 className="text-5xl sm:text-6xl md:text-7xl font-black italic uppercase tracking-tighter text-gradient leading-none drop-shadow-2xl">
+                  Artist Studio
+                </h1>
+                <p className="text-[10px] sm:text-xs uppercase tracking-[0.5em] font-black text-white/70 drop-shadow-lg">
+                  Master: {user.name}
+                </p>
+              </div>
+
+              <div className="shrink-0">
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="h-14 rounded-2xl bg-vibrant-gradient text-white font-black uppercase tracking-widest text-[11px] px-10 hover:scale-105 transition-all shadow-2xl shadow-primary/40 border-none">
+                      <Upload className="w-5 h-5 mr-3" />
+                      Upload Masterpiece
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="glass-card border-white/10 sm:max-w-md max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">New Masterpiece</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-6 py-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Title</Label>
+                          <input 
+                            placeholder="Enter title..." 
+                            className="flex h-11 w-full rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
+                            value={videoTitle}
+                            onChange={(e) => setVideoTitle(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Type</Label>
+                          <Select value={videoCategory} onValueChange={setVideoCategory}>
+                            <SelectTrigger className="bg-black/20 border-white/10 h-11">
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent className="glass-card border-white/10">
+                              <SelectItem value="Tutorial Preview">Tutorial Preview</SelectItem>
+                              <SelectItem value="Performances">Performances</SelectItem>
+                              <SelectItem value="Podcast">Podcast</SelectItem>
+                              <SelectItem value="Blips">Blips (Max 30s)</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">
+                          {videoCategory === "Blips" ? "Blip Video (Max 30s)" : "Main Video File"}
+                        </Label>
+                        <div onClick={triggerFileInput} className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 cursor-pointer hover:border-primary/50 transition-colors">
+                          <input type="file" ref={fileInputRef} className="hidden" accept="video/*" onChange={handleFileChange} />
+                          {selectedFile ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="text-[9px] font-bold text-primary truncate max-w-[200px]">{selectedFile.name}</span>
+                              <span className="text-[8px] opacity-50 uppercase font-black">Ready to Sync</span>
+                            </div>
+                          ) : <FileVideo className="h-8 w-8 text-muted-foreground" />}
+                        </div>
+                      </div>
+
+                      {videoCategory === "Tutorial Preview" && (
+                        <div className="space-y-2 animate-in fade-in slide-in-from-top-4">
+                          <Label className="text-[10px] uppercase tracking-widest font-black text-secondary/80">Master the Moves Video</Label>
+                          <div onClick={triggerMasterMovesInput} className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 cursor-pointer hover:border-secondary/50 transition-colors">
+                            <input type="file" ref={masterMovesInputRef} className="hidden" accept="video/*" onChange={handleMasterMovesChange} />
+                            {masterMovesFile ? (
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="text-[9px] font-bold text-secondary truncate max-w-[200px]">{masterMovesFile.name}</span>
+                                <span className="text-[8px] opacity-50 uppercase font-black">Linked Loop Ready</span>
+                              </div>
+                            ) : <FileVideo className="h-8 w-8 text-muted-foreground" />}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-black uppercase tracking-widest text-primary/80">01. Demo Preview</span>
-                          <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] font-black">HD</Badge>
+                    <DialogFooter className="flex flex-col gap-2">
+                      <Button onClick={handleUpload} disabled={isUploading || !isPublishEnabled} className="w-full bg-primary text-primary-foreground font-black uppercase tracking-widest text-[11px] h-12 rounded-xl">
+                        {isUploading ? "Syncing to Realm..." : "Publish to Realm"}
+                      </Button>
+                      {isUploading && (
+                        <div className="w-full space-y-1">
+                          <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-primary">
+                            <span>Synchronizing</span>
+                            <span>{uploadProgress}%</span>
+                          </div>
+                          <Progress value={uploadProgress} className="h-1 bg-white/5" />
                         </div>
-                        <div className="aspect-video relative rounded-2xl overflow-hidden bg-black ring-1 ring-white/5 shadow-2xl">
-                          <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-black uppercase tracking-widest text-secondary/80">02. Master the Moves</span>
-                          <Badge className="bg-secondary/10 text-secondary border-secondary/20 text-[8px] font-black">LOOPABLE</Badge>
-                        </div>
-                        <div className="aspect-video relative rounded-2xl overflow-hidden bg-black ring-1 ring-white/5 shadow-2xl">
-                          <StudioVideo url={upload.masterMovesUrl || upload.videoUrl} poster={upload.thumbnail} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col md:flex-row">
-                    <div className="w-full md:w-80 aspect-video relative bg-black shrink-0 border-r border-white/5">
-                      <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
-                    </div>
-                    <div className="flex-1 p-6 space-y-4">
-                      <div className="space-y-1">
-                        <Badge variant="outline" className={cn(
-                          "mb-2 uppercase tracking-widest text-[9px] font-black",
-                          upload.type === 'Blips' ? "text-accent border-accent/20" : "text-primary border-primary/20"
-                        )}>
-                          {upload.type}
-                        </Badge>
-                        <h3 className="text-xl font-black uppercase italic tracking-tight">{upload.title}</h3>
-                      </div>
-                      
-                      <div className="flex items-center gap-6 pt-2 border-t border-white/5">
-                         <div className="flex flex-col">
-                            <span className="text-[8px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Views</span>
-                            <span className="text-sm font-black tracking-tighter">{upload.views}</span>
-                         </div>
-                         <div className="flex flex-col">
-                            <span className="text-[8px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Published</span>
-                            <span className="text-sm font-black tracking-tighter">{upload.date}</span>
-                         </div>
-                         <div className="flex flex-col">
-                            <span className="text-[8px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Status</span>
-                            <span className="text-sm font-black tracking-tighter text-emerald-400">{upload.status}</span>
-                         </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                      )}
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Studio Sections Grid */}
+        <div className="max-w-7xl mx-auto px-8 md:px-12 lg:px-24 py-16 space-y-16">
+          
+          {/* Stats Grid */}
+          <div className="grid gap-6 grid-cols-2 lg:grid-cols-4">
+            {STUDIO_STATS.map((stat, idx) => (
+              <Card key={idx} className="glass-card border-white/5 shadow-xl hover:scale-[1.02] transition-transform">
+                <CardHeader className="pb-2 p-6">
+                  <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{stat.label}</CardDescription>
+                  <CardTitle className="text-3xl font-black tracking-tighter text-white">{stat.value}</CardTitle>
+                </CardHeader>
               </Card>
             ))}
           </div>
 
-          {processedUploads.length > 0 && (
-            <div className="flex items-center justify-center gap-4 pt-12 pb-24">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="rounded-xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-              
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Page</span>
-                <span className="text-sm font-black tracking-tighter text-primary">{currentPage}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">of</span>
-                <span className="text-sm font-black tracking-tighter">{totalPages}</span>
+          {/* Filter & Sort Bar */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/5 backdrop-blur-md p-6 rounded-[2.5rem] border border-white/5 shadow-2xl">
+            <div className="flex items-center gap-4 flex-1 w-full">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                <Filter className="w-5 h-5" />
               </div>
-
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="rounded-xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
+              <div className="flex-1">
+                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Filter by Category</p>
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger className="w-full bg-black/20 border-none h-10 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent className="glass-card border-white/10">
+                    <SelectItem value="All">All Categories</SelectItem>
+                    <SelectItem value="Tutorial Preview">Tutorial Previews</SelectItem>
+                    <SelectItem value="Performances">Performances</SelectItem>
+                    <SelectItem value="Podcast">Podcasts</SelectItem>
+                    <SelectItem value="Blips">Blips</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          )}
 
-          {processedUploads.length === 0 && (
-            <div className="text-center py-32 glass-card rounded-[3rem] border-dashed border-white/20">
-              <p className="text-2xl font-black italic uppercase tracking-tighter text-muted-foreground">
-                No masterpieces found in this realm.
-              </p>
-              <Button 
-                variant="link" 
-                className="text-primary uppercase font-black tracking-widest text-[10px] mt-4"
-                onClick={() => { setFilterType("All"); setSortBy("date-desc"); }}
-              >
-                Reset Filters
-              </Button>
+            <div className="flex items-center gap-4 flex-1 w-full">
+              <div className="h-10 w-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary">
+                <ArrowUpDown className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Sort Catalog</p>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-full bg-black/20 border-none h-10 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                    <SelectValue placeholder="Sort Order" />
+                  </SelectTrigger>
+                  <SelectContent className="glass-card border-white/10">
+                    <SelectItem value="date-desc">Newest First</SelectItem>
+                    <SelectItem value="date-asc">Oldest First</SelectItem>
+                    <SelectItem value="views-desc">Most Viewed</SelectItem>
+                    <SelectItem value="views-asc">Least Viewed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          )}
-        </section>
+          </div>
+
+          {/* Content Catalog */}
+          <section className="space-y-10">
+            <div className="flex items-center gap-4 border-b border-white/5 pb-8">
+              <LayoutGrid className="w-8 h-8 text-primary" />
+              <h2 className="text-4xl font-black italic uppercase tracking-tighter">Your Catalog</h2>
+            </div>
+            
+            <div className="flex flex-col gap-10">
+              {paginatedUploads.map((upload) => (
+                <Card key={upload.id} className="glass-card border-white/5 overflow-hidden group shadow-2xl transition-all duration-500 hover:border-primary/30">
+                  {upload.type === "Tutorial Preview" ? (
+                    <div className="p-8 space-y-8">
+                      <div className="flex items-center justify-between border-b border-white/5 pb-6">
+                        <div className="space-y-2">
+                          <h3 className="text-3xl font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">{upload.title}</h3>
+                          <div className="flex items-center gap-4">
+                             <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5 uppercase tracking-widest text-[9px] font-black px-4 py-1.5 rounded-full">{upload.type}</Badge>
+                             <div className="flex items-center gap-4 text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                               <span className="flex items-center gap-2"><Eye className="w-4 h-4 text-primary" /> {upload.views}</span>
+                               <span className="flex items-center gap-2"><Calendar className="w-4 h-4 text-secondary" /> {upload.date}</span>
+                             </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between px-2">
+                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-primary/80">01. Master Preview</span>
+                            <Badge className="bg-primary/20 text-primary border-primary/30 text-[8px] font-black px-3 py-1">HD READY</Badge>
+                          </div>
+                          <div className="aspect-video relative rounded-[2rem] overflow-hidden bg-black ring-1 ring-white/5 shadow-2xl">
+                            <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
+                          </div>
+                        </div>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between px-2">
+                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-secondary/80">02. Synchronized Loop</span>
+                            <Badge className="bg-secondary/20 text-secondary border-secondary/30 text-[8px] font-black px-3 py-1">MASTER THE MOVES</Badge>
+                          </div>
+                          <div className="aspect-video relative rounded-[2rem] overflow-hidden bg-black ring-1 ring-white/5 shadow-2xl">
+                            <StudioVideo url={upload.masterMovesUrl || upload.videoUrl} poster={upload.thumbnail} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col md:flex-row min-h-[280px]">
+                      <div className="w-full md:w-[400px] aspect-video md:aspect-auto relative bg-black shrink-0 border-r border-white/5 overflow-hidden">
+                        <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
+                      </div>
+                      <div className="flex-1 p-8 space-y-6 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <Badge variant="outline" className={cn(
+                            "mb-2 uppercase tracking-[0.3em] text-[10px] font-black px-4 py-1.5 rounded-full",
+                            upload.type === 'Blips' ? "text-accent border-accent/30 bg-accent/5" : "text-primary border-primary/30 bg-primary/5"
+                          )}>
+                            {upload.type}
+                          </Badge>
+                          <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white">{upload.title}</h3>
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-10 pt-6 border-t border-white/5">
+                           <div className="flex flex-col gap-1">
+                              <span className="text-[9px] uppercase tracking-[0.4em] font-black text-white/30">Engagement</span>
+                              <span className="text-xl font-black tracking-tighter text-white">{upload.views} <span className="text-[10px] text-primary">VIEWS</span></span>
+                           </div>
+                           <div className="flex flex-col gap-1">
+                              <span className="text-[9px] uppercase tracking-[0.4em] font-black text-white/30">Synchronized</span>
+                              <span className="text-xl font-black tracking-tighter text-white">{upload.date}</span>
+                           </div>
+                           <div className="flex flex-col gap-1">
+                              <span className="text-[9px] uppercase tracking-[0.4em] font-black text-white/30">Realm Status</span>
+                              <span className="text-xl font-black tracking-tighter text-emerald-400 uppercase">{upload.status}</span>
+                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {processedUploads.length > 0 && (
+              <div className="flex items-center justify-center gap-6 pt-16 pb-24">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    setCurrentPage(prev => Math.max(1, prev - 1));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  disabled={currentPage === 1}
+                  className="h-14 w-14 rounded-2xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30 shadow-2xl"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+                
+                <div className="flex items-center gap-4 glass-card px-8 py-3 rounded-2xl border-white/5 shadow-xl">
+                  <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40">Page</span>
+                  <span className="text-lg font-black tracking-tighter text-primary">{currentPage}</span>
+                  <span className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40">of</span>
+                  <span className="text-lg font-black tracking-tighter text-white">{totalPages}</span>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    setCurrentPage(prev => Math.min(totalPages, prev + 1));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  disabled={currentPage === totalPages}
+                  className="h-14 w-14 rounded-2xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30 shadow-2xl"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              </div>
+            )}
+
+            {processedUploads.length === 0 && (
+              <div className="text-center py-40 glass-card rounded-[4rem] border-dashed border-white/10 shadow-inner">
+                <Music2 className="w-16 h-16 text-muted-foreground/20 mx-auto mb-6" />
+                <p className="text-3xl font-black italic uppercase tracking-tighter text-muted-foreground">
+                  No masterpieces found in this realm.
+                </p>
+                <Button 
+                  variant="link" 
+                  className="text-primary uppercase font-black tracking-[0.4em] text-[11px] mt-8 hover:scale-105 transition-transform"
+                  onClick={() => { setFilterType("All"); setSortBy("date-desc"); }}
+                >
+                  Reset Synchronization
+                </Button>
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );
