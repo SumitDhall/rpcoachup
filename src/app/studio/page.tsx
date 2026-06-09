@@ -337,7 +337,7 @@ export default function ArtistStudioPage() {
       <div className="relative z-20">
         
         {/* Hero Cover Section */}
-        <section className="relative h-[40vh] md:h-[45vh] w-full overflow-hidden group">
+        <section className="relative h-[55vh] md:h-[65vh] w-full overflow-hidden group">
           {coverImage ? (
             <Image 
               src={coverImage} 
@@ -352,47 +352,25 @@ export default function ArtistStudioPage() {
           
           <div className="absolute inset-0 bg-gradient-to-t from-[#050816] via-transparent to-transparent" />
           
-          {/* Cover Management Controls */}
-          <div className="absolute bottom-6 right-6 flex items-center gap-3">
-            <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={handleCoverChange} />
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={triggerCoverInput}
-              className="bg-black/40 backdrop-blur-md border-white/10 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest px-4 h-10 rounded-xl"
-            >
-              <Camera className="w-4 h-4 mr-2" />
-              {coverImage ? 'Change Cover' : 'Upload Cover'}
-            </Button>
-            {coverImage && (
-              <Button 
-                size="icon" 
-                variant="destructive" 
-                onClick={deleteCover}
-                className="h-10 w-10 rounded-xl bg-red-500/80 hover:bg-red-600 backdrop-blur-md border-none"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-
-          {/* Header Overlay (Title, Name, Upload Masterpiece) */}
-          <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 lg:px-24">
-            <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div className="space-y-2">
-                <h1 className="text-5xl sm:text-6xl md:text-7xl font-black italic uppercase tracking-tighter text-gradient leading-none drop-shadow-2xl">
+          {/* Main Hero Header Layout */}
+          <div className="absolute inset-0 flex items-center px-8 md:px-12 lg:px-24">
+            <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row items-center justify-between gap-8 pt-12">
+              {/* Left Side: Branding */}
+              <div className="space-y-3 text-center md:text-left">
+                <h1 className="text-6xl sm:text-7xl md:text-9xl font-black italic uppercase tracking-tighter text-gradient leading-[0.85] drop-shadow-2xl">
                   Artist Studio
                 </h1>
-                <p className="text-[10px] sm:text-xs uppercase tracking-[0.5em] font-black text-white/70 drop-shadow-lg">
+                <p className="text-xs sm:text-sm uppercase tracking-[0.6em] font-black text-white/80 drop-shadow-lg">
                   Master: {user.name}
                 </p>
               </div>
 
-              <div className="shrink-0">
+              {/* Right Side: Primary CTA */}
+              <div className="shrink-0 flex flex-col items-center md:items-end gap-4">
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button className="h-14 rounded-2xl bg-vibrant-gradient text-white font-black uppercase tracking-widest text-[11px] px-10 hover:scale-105 transition-all shadow-2xl shadow-primary/40 border-none">
-                      <Upload className="w-5 h-5 mr-3" />
+                    <Button className="h-16 md:h-20 rounded-full bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] text-[12px] md:text-sm px-12 md:px-16 hover:scale-110 transition-all shadow-[0_0_50px_rgba(255,79,216,0.4)] border-none">
+                      <Upload className="w-6 h-6 mr-4" />
                       Upload Masterpiece
                     </Button>
                   </DialogTrigger>
@@ -475,6 +453,30 @@ export default function ArtistStudioPage() {
                 </Dialog>
               </div>
             </div>
+          </div>
+          
+          {/* Cover Management Controls (Bottom-Right) */}
+          <div className="absolute bottom-10 right-10 flex items-center gap-3">
+            <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={handleCoverChange} />
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={triggerCoverInput}
+              className="bg-black/60 backdrop-blur-xl border-white/20 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest px-6 h-12 rounded-2xl transition-all shadow-xl"
+            >
+              <Camera className="w-5 h-5 mr-3" />
+              {coverImage ? 'Change Cover' : 'Upload Cover'}
+            </Button>
+            {coverImage && (
+              <Button 
+                size="icon" 
+                variant="destructive" 
+                onClick={deleteCover}
+                className="h-12 w-12 rounded-2xl bg-red-500/80 hover:bg-red-600 backdrop-blur-md border-none shadow-xl"
+              >
+                <Trash2 className="w-5 h-5" />
+              </Button>
+            )}
           </div>
         </section>
 
