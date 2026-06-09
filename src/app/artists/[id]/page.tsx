@@ -140,12 +140,11 @@ function VideoCarouselSection({ title, videos, artistId }: VideoSectionProps) {
                     </div>
                   </div>
                 </div>
-              </CarouselItem>
-            ))}
+              ))}
           </CarouselContent>
-          <div className="hidden md:block">
-            <CarouselPrevious className="-left-6 bg-black/60 backdrop-blur-md border-white/10 hover:bg-primary hover:text-white transition-all shadow-xl" />
-            <CarouselNext className="-right-6 bg-black/60 backdrop-blur-md border-white/10 hover:bg-primary hover:text-white transition-all shadow-xl" />
+          <div className="flex">
+            <CarouselPrevious className="-left-2 md:-left-6 bg-black/60 backdrop-blur-md border-white/10 hover:bg-primary hover:text-white transition-all shadow-xl h-8 w-8 md:h-10 md:w-10 z-30" />
+            <CarouselNext className="-right-2 md:-right-6 bg-black/60 backdrop-blur-md border-white/10 hover:bg-primary hover:text-white transition-all shadow-xl h-8 w-8 md:h-10 md:w-10 z-30" />
           </div>
         </Carousel>
       </div>
