@@ -1,6 +1,7 @@
+
 'use client';
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { LogIn, ArrowLeft, User, Sparkles } from "lucide-react";
@@ -9,9 +10,32 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { useAuth } from "@/context/auth-context";
+import { useToast } from "@/hooks/use-toast";
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSignIn = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast({
+        variant: "destructive",
+        title: "Credentials Required",
+        description: "Please enter your email and password to enter the Realm.",
+      });
+      return;
+    }
+    
+    // In demo mode, we'll default to the 'dancer' role for manual sign-ins
+    login('dancer');
+    toast({
+      title: "Welcome to the Realm",
+      description: "Synchronization successful.",
+    });
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-background relative overflow-hidden">
@@ -49,7 +73,7 @@ export default function LoginPage() {
               Login
             </CardTitle>
             <CardDescription className="text-xs uppercase tracking-[0.2em] font-bold opacity-70">
-              Select a Demo Role to Enter
+              Select a Demo Role or Enter Credentials
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 pt-4">
@@ -86,7 +110,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Email</Label>
                 <Input 
@@ -94,7 +118,8 @@ export default function LoginPage() {
                   type="email" 
                   placeholder="dancer@realm.com" 
                   className="bg-black/20 border-white/5 focus:border-primary/50"
-                  disabled
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -104,15 +129,16 @@ export default function LoginPage() {
                   type="password" 
                   placeholder="••••••••" 
                   className="bg-black/20 border-white/5 focus:border-primary/50"
-                  disabled
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-            </div>
+              <Button type="submit" className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all">
+                Sign In
+              </Button>
+            </form>
           </CardContent>
           <CardFooter className="flex flex-col gap-4 pt-4">
-            <Button disabled className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-black uppercase tracking-widest opacity-50 cursor-not-allowed">
-              Sign In (Demo Only)
-            </Button>
             <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest font-bold">
               New to the Realm?{" "}
               <Link href="/register" className="text-primary hover:underline">Register Now</Link>
