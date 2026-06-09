@@ -5,6 +5,16 @@ import Image from "next/image";
 import { Mail, MapPin, Calendar, Users, DollarSign, PlusCircle, ShieldCheck, Instagram, Twitter, Youtube } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export function SiteFooter() {
   const brandLogo = PlaceHolderImages.find(img => img.id === 'brand-logo');
@@ -93,7 +103,34 @@ export function SiteFooter() {
                 <Link href="/contact" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors group drop-shadow-sm">
                   <Mail className="h-4 w-4 group-hover:text-accent transition-colors" /> Contact
                 </Link>
-                <Link href="#" className="text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors drop-shadow-sm">Privacy Policy</Link>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button className="text-left text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors drop-shadow-sm">
+                      Privacy Policy
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="glass-card border-white/10 bg-black/90 backdrop-blur-xl">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-white">
+                        Privacy Policy
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="text-sm text-white/60 leading-relaxed space-y-4 font-medium">
+                        <p>Welcome to the Dance Realm. Your privacy is paramount to our global community.</p>
+                        <p>1. Data Collection: We synchronize minimal profile data to enhance your rhythmic journey and provide personalized artist recommendations.</p>
+                        <p>2. Video Privacy: Content uploaded to the Artist Studio remains your intellectual property. We only host it to facilitate your connection with the audience.</p>
+                        <p>3. Security: We use industry-standard encryption to protect your account details and payment data.</p>
+                        <p>4. No Third-Party Sales: Your dance history and personal information are never sold to external entities for marketing purposes.</p>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="mt-6">
+                      <AlertDialogAction className="h-12 w-full rounded-xl bg-vibrant-gradient text-white font-black uppercase tracking-widest text-[10px] hover:scale-105 transition-all border-none">
+                        Got it
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
                 <Link href="#" className="text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors drop-shadow-sm">Terms of Use</Link>
                 <Link href="#" className="text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors drop-shadow-sm">Transparency</Link>
               </nav>
