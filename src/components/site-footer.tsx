@@ -1,8 +1,9 @@
 'use client';
 
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Mail, MapPin, Calendar, Users, DollarSign, PlusCircle, ShieldCheck, Instagram, Twitter, Youtube } from "lucide-react";
+import { Mail, MapPin, Calendar, Users, DollarSign, PlusCircle, ShieldCheck, Instagram, Twitter, Youtube, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import {
@@ -15,9 +16,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 export function SiteFooter() {
   const brandLogo = PlaceHolderImages.find(img => img.id === 'brand-logo');
+  const [hasDownloaded, setHasDownloaded] = useState(false);
 
   return (
     <footer className="relative border-t border-white/10 pt-16 pb-24 px-6 md:px-12 mt-auto z-10 overflow-hidden min-h-[400px]">
@@ -104,7 +107,7 @@ export function SiteFooter() {
                   <Mail className="h-4 w-4 group-hover:text-accent transition-colors" /> Contact
                 </Link>
 
-                <AlertDialog>
+                <AlertDialog onOpenChange={(open) => { if (!open) setHasDownloaded(false); }}>
                   <AlertDialogTrigger asChild>
                     <button className="text-left text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors drop-shadow-sm">
                       Privacy Policy
@@ -122,11 +125,29 @@ export function SiteFooter() {
                           <p>2. Video Privacy: Content uploaded to the Artist Studio remains your intellectual property. We only host it to facilitate your connection with the audience.</p>
                           <p>3. Security: We use industry-standard encryption to protect your account details and payment data.</p>
                           <p>4. No Third-Party Sales: Your dance history and personal information are never sold to external entities for marketing purposes.</p>
+                          
+                          <div className="pt-4 border-t border-gray-100">
+                            <Link 
+                              href="/policy/privacy_policy.pdf" 
+                              target="_blank"
+                              onClick={() => setHasDownloaded(true)}
+                              className="flex items-center gap-2 text-primary font-bold hover:underline"
+                            >
+                              <Download className="w-4 h-4" />
+                              Download Full Policy (PDF)
+                            </Link>
+                            <p className="text-[10px] text-gray-400 mt-2 uppercase tracking-widest">
+                              * You must download the document to proceed.
+                            </p>
+                          </div>
                         </div>
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="mt-6">
-                      <AlertDialogAction className="h-12 w-full rounded-xl bg-vibrant-gradient text-white font-black uppercase tracking-widest text-[10px] hover:scale-105 transition-all border-none">
+                      <AlertDialogAction 
+                        disabled={!hasDownloaded}
+                        className="h-12 w-full rounded-xl bg-vibrant-gradient text-white font-black uppercase tracking-widest text-[10px] hover:scale-105 transition-all border-none disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed"
+                      >
                         Got it
                       </AlertDialogAction>
                     </AlertDialogFooter>
