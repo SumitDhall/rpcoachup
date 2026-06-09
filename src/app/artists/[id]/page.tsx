@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useRef, useEffect } from "react";
@@ -121,7 +120,7 @@ function VideoCarouselSection({ title, videos }: VideoSectionProps) {
                          </Button>
                       </div>
                       
-                      {title === "Tutorial Demos" && (
+                      {title === "Tutorial Preview" && (
                         <div className="pt-3 border-t border-white/5 mt-1">
                           <Button 
                             className="w-full bg-vibrant-gradient hover:scale-[1.02] transition-all rounded-full h-9 text-[10px] font-black uppercase tracking-widest text-white border-none shadow-lg shadow-primary/20"
@@ -316,7 +315,7 @@ export default function ArtistDetailPage() {
 
           {/* Video Categories Sections */}
           <div className="space-y-24">
-            <VideoCarouselSection title="Tutorial Demos" videos={categories.TutorialDemos} />
+            <VideoCarouselSection title="Tutorial Preview" videos={categories.TutorialDemos} />
             <VideoCarouselSection title="Performances" videos={categories.Performances} />
             <VideoCarouselSection title="Podcasts" videos={categories.Podcasts} />
           </div>
