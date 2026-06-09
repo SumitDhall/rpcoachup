@@ -52,7 +52,7 @@ function SmallVideoPlayer({ url }: { url: string }) {
   }, [url]);
 
   return (
-    <div className="h-16 w-28 rounded-lg overflow-hidden relative bg-black">
+    <div className="h-28 w-48 rounded-xl overflow-hidden relative bg-black shadow-2xl ring-1 ring-white/5">
       <div 
         ref={containerRef} 
         className="w-full h-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" 
@@ -154,7 +154,7 @@ export default function ArtistVideosPage() {
 
       {/* Content */}
       <div className="relative z-20">
-        {/* Hero Section - Same as Detail Page */}
+        {/* Hero Section */}
         <div className="relative h-[40vh] min-h-[400px] w-full overflow-hidden">
           <Image
             src={artist.image}
@@ -237,7 +237,7 @@ export default function ArtistVideosPage() {
             <Table>
               <TableHeader className="bg-white/5">
                 <TableRow className="border-white/5 hover:bg-transparent">
-                  <TableHead className="w-[120px] text-[10px] font-black uppercase tracking-widest text-primary">Preview</TableHead>
+                  <TableHead className="w-[220px] text-[10px] font-black uppercase tracking-widest text-primary">Preview</TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest text-primary">Title & Master</TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest text-primary">Category</TableHead>
                   <TableHead className="text-[10px] font-black uppercase tracking-widest text-primary">Published</TableHead>
@@ -248,13 +248,13 @@ export default function ArtistVideosPage() {
               <TableBody>
                 {paginatedVideos.map((video) => (
                   <TableRow key={video.id} className="border-white/5 hover:bg-white/5 group transition-colors">
-                    <TableCell>
+                    <TableCell className="py-8">
                       <SmallVideoPlayer url={video.url} />
                     </TableCell>
-                    <TableCell className="py-6">
-                      <div className="space-y-1">
-                        <p className="font-black italic text-lg uppercase tracking-tight text-white group-hover:text-primary transition-colors">{video.title}</p>
-                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Master: {artist.name}</p>
+                    <TableCell className="py-8">
+                      <div className="space-y-2">
+                        <p className="font-black italic text-xl uppercase tracking-tight text-white group-hover:text-primary transition-colors leading-tight">{video.title}</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Master of Motion: {artist.name}</p>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -275,8 +275,8 @@ export default function ArtistVideosPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full hover:bg-primary/20 hover:text-primary transition-all">
-                        <Play className="h-5 w-5 fill-current" />
+                      <Button size="icon" variant="ghost" className="h-12 w-12 rounded-full hover:bg-primary/20 hover:text-primary transition-all">
+                        <Play className="h-6 w-6 fill-current" />
                       </Button>
                     </TableCell>
                   </TableRow>
