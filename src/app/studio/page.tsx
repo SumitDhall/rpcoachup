@@ -105,9 +105,10 @@ export default function ArtistStudioPage() {
   const [masterMovesFile, setMasterMovesFile] = useState<File | null>(null);
   
   const [videoTitle, setVideoTitle] = useState("");
-  const [videoCategory, setVideoCategory] = useState("Performances");
+  const [videoCategory, setVideoCategory] = useState("Tutorial Demo");
   
-  const [filterType, setFilterType] = useState("All");
+  // Apply requested default defaults: 'Tutorial Demo' and 'Newest' (date-desc)
+  const [filterType, setFilterType] = useState("Tutorial Demo");
   const [sortBy, setSortBy] = useState("date-desc");
   const [currentPage, setCurrentPage] = useState(1);
 
