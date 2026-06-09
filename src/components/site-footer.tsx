@@ -52,7 +52,6 @@ export function SiteFooter() {
             <div className="flex gap-4">
               <Link href="#" className="h-10 w-10 rounded-full border border-white/30 bg-black/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF] hover:text-primary backdrop-blur-sm">
                 <span className="sr-only">Instagram</span>
-                <span className="sr-only">Instagram</span>
                 <Instagram className="h-4 w-4" />
               </Link>
               <Link href="#" className="h-10 w-10 rounded-full border border-white/30 bg-black/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF] hover:text-primary backdrop-blur-sm">
@@ -91,7 +90,7 @@ export function SiteFooter() {
             <div className="space-y-6">
               <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-accent drop-shadow-[0_0_10px_rgba(255,230,0,0.5)]">Support</h4>
               <nav className="flex flex-col gap-4">
-                <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors group drop-shadow-sm">
+                <Link href="/contact" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors group drop-shadow-sm">
                   <Mail className="h-4 w-4 group-hover:text-accent transition-colors" /> Contact
                 </Link>
                 <Link href="#" className="text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors drop-shadow-sm">Privacy Policy</Link>
