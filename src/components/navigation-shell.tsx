@@ -63,9 +63,9 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
   if (!mounted) return null;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#050816]">
+    <div className="flex min-h-screen w-full bg-[#050816]">
       {/* Mobile Navigation Trigger */}
-      <div className="md:hidden absolute top-6 right-6 z-50">
+      <div className="md:hidden fixed top-6 right-6 z-50">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="default" size="icon" className="h-12 w-12 rounded-2xl bg-vibrant-gradient shadow-lg shadow-primary/40">
@@ -164,7 +164,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 relative overflow-auto flex flex-col">
+      <main className="flex-1 relative flex flex-col min-w-0">
         <div className="flex-1">
           {children}
         </div>
@@ -176,7 +176,7 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
         className={cn(
           navStyles.panel,
           navStyles.sidebarLayout,
-          "hidden md:flex transition-all duration-500 overflow-visible",
+          "hidden md:flex sticky top-0 h-screen transition-all duration-500 overflow-visible",
           isCollapsed ? "w-24" : "w-80"
         )}
       >
