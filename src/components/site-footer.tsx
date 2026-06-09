@@ -115,12 +115,14 @@ export function SiteFooter() {
                       <AlertDialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-white">
                         Privacy Policy
                       </AlertDialogTitle>
-                      <AlertDialogDescription className="text-sm text-white/60 leading-relaxed space-y-4 font-medium">
-                        <p>Welcome to the Dance Realm. Your privacy is paramount to our global community.</p>
-                        <p>1. Data Collection: We synchronize minimal profile data to enhance your rhythmic journey and provide personalized artist recommendations.</p>
-                        <p>2. Video Privacy: Content uploaded to the Artist Studio remains your intellectual property. We only host it to facilitate your connection with the audience.</p>
-                        <p>3. Security: We use industry-standard encryption to protect your account details and payment data.</p>
-                        <p>4. No Third-Party Sales: Your dance history and personal information are never sold to external entities for marketing purposes.</p>
+                      <AlertDialogDescription asChild>
+                        <div className="text-sm text-white/60 leading-relaxed space-y-4 font-medium">
+                          <p>Welcome to the Dance Realm. Your privacy is paramount to our global community.</p>
+                          <p>1. Data Collection: We synchronize minimal profile data to enhance your rhythmic journey and provide personalized artist recommendations.</p>
+                          <p>2. Video Privacy: Content uploaded to the Artist Studio remains your intellectual property. We only host it to facilitate your connection with the audience.</p>
+                          <p>3. Security: We use industry-standard encryption to protect your account details and payment data.</p>
+                          <p>4. No Third-Party Sales: Your dance history and personal information are never sold to external entities for marketing purposes.</p>
+                        </div>
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="mt-6">
