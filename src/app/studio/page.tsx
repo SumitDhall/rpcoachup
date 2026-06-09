@@ -24,7 +24,8 @@ import {
   Camera,
   Trash2,
   Music2,
-  MoreHorizontal
+  MoreHorizontal,
+  MoreVertical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -189,6 +190,14 @@ export default function ArtistStudioPage() {
     toast({
       title: "Cover Removed",
       description: "Back to original synchronicity.",
+    });
+  };
+
+  const handleDeleteVideo = (id: string) => {
+    setUploads((prev) => prev.filter((u) => u.id !== id));
+    toast({
+      title: "Masterpiece Deleted",
+      description: "Successfully removed from your catalog.",
     });
   };
 
@@ -399,6 +408,7 @@ export default function ArtistStudioPage() {
 
             {/* Primary CTA - Right Bottom Outline */}
             <div className="shrink-0">
+              <input type="file" ref={fileInputRef} className="hidden" accept="video/*" onChange={handleFileChange} />
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="h-14 md:h-16 rounded-full bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] text-[11px] md:text-xs px-10 md:px-12 hover:scale-105 transition-all shadow-lg shadow-primary/20 border-none">
@@ -442,7 +452,6 @@ export default function ArtistStudioPage() {
                         {videoCategory === "Blips" ? "Blip Video (Max 30s)" : "Main Video File"}
                       </Label>
                       <div onClick={triggerFileInput} className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 cursor-pointer hover:border-primary/50 transition-colors">
-                        <input type="file" ref={fileInputRef} className="hidden" accept="video/*" onChange={handleFileChange} />
                         {selectedFile ? (
                           <div className="flex flex-col items-center gap-1">
                             <span className="text-[9px] font-bold text-primary truncate max-w-[200px]">{selectedFile.name}</span>
@@ -555,7 +564,27 @@ export default function ArtistStudioPage() {
             
             <div className="flex flex-col gap-10">
               {paginatedUploads.map((upload) => (
-                <Card key={upload.id} className="glass-card border-white/5 overflow-hidden group shadow-2xl transition-all duration-500 hover:border-primary/30">
+                <Card key={upload.id} className="relative glass-card border-white/5 overflow-hidden group shadow-2xl transition-all duration-500 hover:border-primary/30">
+                  {/* Absolute positioned 3-dot vertical menu */}
+                  <div className="absolute top-4 right-4 z-30">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-black/20 backdrop-blur-md hover:bg-white/10 text-white border border-white/5">
+                          <MoreVertical className="h-5 w-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="glass-card border-white/10">
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteVideo(upload.id)} 
+                          className="gap-3 cursor-pointer text-red-400 focus:text-red-400 focus:bg-red-500/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span>Delete Masterpiece</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
                   {upload.type === "Tutorial Preview" ? (
                     <div className="p-8 space-y-8">
                       <div className="flex items-center justify-between border-b border-white/5 pb-6">
