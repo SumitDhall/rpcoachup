@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
@@ -46,22 +47,6 @@ import { cn } from "@/lib/utils";
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
-// Expanded Mock Data for Pagination Demo
-const INITIAL_UPLOADS = [
-  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
-  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/urban/800/450" },
-  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
-  { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/contemp/800/450" },
-  { id: "u5", title: "Hip Hop Foundations", date: "Aug 05, 2024", views: "21.1K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", thumbnail: "https://picsum.photos/seed/hiphop/800/450" },
-  { id: "u6", title: "Latin Heat Rehearsal", date: "Jul 20, 2024", views: "1.5K", status: "Draft", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/latin/800/450" },
-  { id: "u7", title: "Jazz Fusion Routine", date: "Jun 15, 2024", views: "15.7K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/jazz/800/450" },
-  { id: "u8", title: "Breaking Level 1", date: "May 22, 2024", views: "5.4K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/break/800/450" },
-  { id: "u9", title: "Popping Controls", date: "Apr 10, 2024", views: "10.2K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", thumbnail: "https://picsum.photos/seed/pop/800/450" },
-  { id: "u10", title: "World of Dance Prep", date: "Mar 30, 2024", views: "30.5K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/prep/800/450" },
-  { id: "u11", title: "Locking & Loading", date: "Feb 14, 2024", views: "2.8K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/lock/800/450" },
-  { id: "u12", title: "Vogue Intro", date: "Jan 02, 2024", views: "7.1K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/vogue/800/450" },
-];
-
 function StudioVideo({ url, poster }: { url: string; poster?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
@@ -69,6 +54,7 @@ function StudioVideo({ url, poster }: { url: string; poster?: string }) {
   useEffect(() => {
     if (!containerRef.current || !url) return;
 
+    containerRef.current.innerHTML = '';
     const videoElement = document.createElement("video-js");
     videoElement.classList.add('vjs-fill', 'vjs-big-play-centered');
     containerRef.current.appendChild(videoElement);
@@ -80,7 +66,7 @@ function StudioVideo({ url, poster }: { url: string; poster?: string }) {
       fluid: false, 
       loop: false,
       muted: true,
-      preload: 'none',
+      preload: 'metadata',
       poster: poster,
       sources: [{
         src: url,
@@ -91,9 +77,6 @@ function StudioVideo({ url, poster }: { url: string; poster?: string }) {
     return () => {
       if (player) {
         player.dispose();
-      }
-      if (containerRef.current) {
-        containerRef.current.innerHTML = '';
       }
     };
   }, [url, poster]);
@@ -111,12 +94,11 @@ export default function ArtistStudioPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const [uploads, setUploads] = useState(INITIAL_UPLOADS);
+  const [uploads, setUploads] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   
-  // States for two potential video files
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [masterMovesFile, setMasterMovesFile] = useState<File | null>(null);
   
@@ -125,7 +107,6 @@ export default function ArtistStudioPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [isDraggingMaster, setIsDraggingMaster] = useState(false);
   
-  // Sorting and Filtering State
   const [filterType, setFilterType] = useState("All");
   const [sortBy, setSortBy] = useState("date-desc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -140,6 +121,16 @@ export default function ArtistStudioPage() {
     }
   }, [user, isLoading, router]);
 
+  // Initial mock data load
+  useEffect(() => {
+    setUploads([
+      { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
+      { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/urban/800/450" },
+      { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
+      { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/contemp/800/450" },
+    ]);
+  }, []);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0]);
@@ -149,39 +140,6 @@ export default function ArtistStudioPage() {
   const handleMasterMovesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setMasterMovesFile(e.target.files[0]);
-    }
-  };
-
-  // Drag handlers for primary upload
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault(); e.stopPropagation(); setIsDragging(true);
-  };
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault(); e.stopPropagation(); setIsDragging(false);
-  };
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault(); e.stopPropagation(); setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      if (file.type.startsWith('video/')) { setSelectedFile(file); }
-      else { toast({ variant: "destructive", title: "Invalid file type", description: "Please upload a video file.", }); }
-    }
-  };
-
-  // Drag handlers for Master the Moves upload
-  const handleDragOverMaster = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
-  const handleDragEnterMaster = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDraggingMaster(true); };
-  const handleDragLeaveMaster = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDraggingMaster(false); };
-  const handleDropMaster = (e: React.DragEvent) => {
-    e.preventDefault(); e.stopPropagation(); setIsDraggingMaster(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      if (file.type.startsWith('video/')) { setMasterMovesFile(file); }
-      else { toast({ variant: "destructive", title: "Invalid file type", description: "Please upload a video file.", }); }
     }
   };
 
@@ -196,20 +154,6 @@ export default function ArtistStudioPage() {
   }, [videoCategory, selectedFile, masterMovesFile]);
 
   const handleUpload = () => {
-    if (videoCategory === "Tutorial Demo" && (!selectedFile || !masterMovesFile)) {
-      toast({
-        variant: "destructive",
-        title: "Missing Files",
-        description: "Please upload both Tutorial Demo and Master the Moves videos.",
-      });
-      return;
-    }
-
-    if (!selectedFile && videoCategory !== "Tutorial Demo") {
-      toast({ variant: "destructive", title: "No file selected", description: "Please choose a masterpiece to upload.", });
-      return;
-    }
-
     setIsUploading(true);
     let progress = 0;
     const interval = setInterval(() => {
@@ -218,12 +162,12 @@ export default function ArtistStudioPage() {
       if (progress >= 100) {
         clearInterval(interval);
         setTimeout(() => {
-          const newVideoUrl = URL.createObjectURL(selectedFile!);
+          const newVideoUrl = selectedFile ? URL.createObjectURL(selectedFile) : "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
           const masterMovesUrl = masterMovesFile ? URL.createObjectURL(masterMovesFile) : undefined;
           
           const newUpload = {
             id: `u-new-${Date.now()}`,
-            title: videoTitle || selectedFile!.name.split('.')[0],
+            title: videoTitle || "Untitled Performance",
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
             views: "0",
             status: "Published",
@@ -251,28 +195,12 @@ export default function ArtistStudioPage() {
     }, 150);
   };
 
-  const parseViews = (viewStr: string) => {
-    if (viewStr.endsWith('K')) return parseFloat(viewStr.replace('K', '')) * 1000;
-    if (viewStr.endsWith('M')) return parseFloat(viewStr.replace('M', '')) * 1000000;
-    return parseFloat(viewStr);
-  };
-
   const processedUploads = useMemo(() => {
     let result = [...uploads];
     if (filterType !== "All") result = result.filter(u => u.type === filterType);
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case "date-desc": return new Date(b.date).getTime() - new Date(a.date).getTime();
-        case "date-asc": return new Date(a.date).getTime() - new Date(b.date).getTime();
-        case "views-desc": return parseViews(b.views) - parseViews(a.views);
-        case "views-asc": return parseViews(a.views) - parseViews(b.views);
-        default: return 0;
-      }
-    });
     return result;
   }, [uploads, filterType, sortBy]);
 
-  const totalPages = Math.ceil(processedUploads.length / ITEMS_PER_PAGE);
   const paginatedUploads = processedUploads.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   if (isLoading || !user || user.role !== 'artist') {
@@ -303,12 +231,9 @@ export default function ArtistStudioPage() {
         />
       </div>
 
-      {/* Background Layer 2: Dark Overlay */}
       <div className="fixed inset-0 z-10 bg-[#050816]/75 pointer-events-none" />
 
-      {/* Page Content Layer 3 */}
       <div className="relative z-20 max-w-5xl mx-auto space-y-12">
-        {/* Header section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-12">
           <div className="space-y-2 text-center md:text-left">
             <h1 className="text-5xl font-black italic uppercase tracking-tighter text-gradient">
@@ -329,16 +254,12 @@ export default function ArtistStudioPage() {
               <DialogContent className="glass-card border-white/10 sm:max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">New Masterpiece</DialogTitle>
-                  <DialogDescription className="text-xs uppercase tracking-widest font-bold opacity-70">
-                    Upload your creation with the dance realm
-                  </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-6 py-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="video-title" className="text-[10px] uppercase tracking-widest font-black text-primary/80">Title</Label>
+                      <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Title</Label>
                       <Input 
-                        id="video-title" 
                         placeholder="Enter title..." 
                         className="bg-black/20 border-white/10 h-11" 
                         value={videoTitle}
@@ -362,90 +283,24 @@ export default function ArtistStudioPage() {
 
                   <div className="space-y-2">
                     <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Tutorial Demo Video</Label>
-                    <div 
-                      onClick={triggerFileInput}
-                      onDragOver={handleDragOver}
-                      onDragEnter={handleDragEnter}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                      className={cn(
-                        "border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 transition-all cursor-pointer group relative",
-                        isDragging ? "border-primary bg-primary/5" : "border-white/10 hover:bg-black/20"
-                      )}
-                    >
+                    <div onClick={triggerFileInput} className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 cursor-pointer">
                       <input type="file" ref={fileInputRef} className="hidden" accept="video/*" onChange={handleFileChange} />
-                      {selectedFile ? (
-                        <div className="flex flex-col items-center gap-2 animate-in zoom-in duration-300">
-                          <CheckCircle2 className="h-8 w-8 text-primary" />
-                          <span className="text-[9px] font-black uppercase tracking-widest text-primary">Selected</span>
-                          <span className="text-[9px] font-bold text-muted-foreground truncate max-w-[200px]">{selectedFile.name}</span>
-                        </div>
-                      ) : (
-                        <>
-                          <FileVideo className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
-                          <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-center">
-                            Tutorial Demo Video
-                          </span>
-                        </>
-                      )}
+                      {selectedFile ? <span className="text-[9px] font-bold text-primary">{selectedFile.name}</span> : <FileVideo className="h-8 w-8 text-muted-foreground" />}
                     </div>
                   </div>
 
-                  {/* Conditional Upload for Master the Moves */}
                   {videoCategory === "Tutorial Demo" && (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="space-y-2 animate-in fade-in slide-in-from-top-4">
                       <Label className="text-[10px] uppercase tracking-widest font-black text-secondary/80">Master the Moves Video</Label>
-                      <div 
-                        onClick={triggerMasterMovesInput}
-                        onDragOver={handleDragOverMaster}
-                        onDragEnter={handleDragEnterMaster}
-                        onDragLeave={handleDragLeaveMaster}
-                        onDrop={handleDropMaster}
-                        className={cn(
-                          "border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 transition-all cursor-pointer group relative",
-                          isDraggingMaster ? "border-secondary bg-secondary/5" : "border-white/10 hover:bg-black/20"
-                        )}
-                      >
+                      <div onClick={triggerMasterMovesInput} className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 cursor-pointer">
                         <input type="file" ref={masterMovesInputRef} className="hidden" accept="video/*" onChange={handleMasterMovesChange} />
-                        {masterMovesFile ? (
-                          <div className="flex flex-col items-center gap-2 animate-in zoom-in duration-300">
-                            <CheckCircle2 className="h-8 w-8 text-secondary" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-secondary">Selected</span>
-                            <span className="text-[9px] font-bold text-muted-foreground truncate max-w-[200px]">{masterMovesFile.name}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <FileVideo className="h-8 w-8 text-muted-foreground group-hover:text-secondary transition-colors" />
-                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest text-center">
-                              Master the Moves Video
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {isUploading && (
-                    <div className="space-y-2 animate-in fade-in duration-300">
-                      <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-primary">
-                        <span>Syncing to Realm...</span>
-                        <span>{uploadProgress}%</span>
-                      </div>
-                      <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-primary transition-all duration-300" 
-                          style={{ width: `${uploadProgress}%` }}
-                        />
+                        {masterMovesFile ? <span className="text-[9px] font-bold text-secondary">{masterMovesFile.name}</span> : <FileVideo className="h-8 w-8 text-muted-foreground" />}
                       </div>
                     </div>
                   )}
                 </div>
                 <DialogFooter>
-                  <Button 
-                    onClick={handleUpload} 
-                    disabled={isUploading || !isPublishEnabled}
-                    className="w-full h-12 rounded-xl font-black uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all"
-                  >
+                  <Button onClick={handleUpload} disabled={isUploading || !isPublishEnabled} className="w-full bg-primary text-primary-foreground">
                     {isUploading ? "Syncing..." : "Publish to Realm"}
                   </Button>
                 </DialogFooter>
@@ -457,269 +312,59 @@ export default function ArtistStudioPage() {
         {/* Stats Grid */}
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
           {STUDIO_STATS.map((stat, idx) => (
-            <Card key={idx} className="glass-card border-white/5 hover:border-primary/20 transition-all overflow-hidden relative group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <TrendingUp className="w-12 h-12 text-primary" />
-              </div>
+            <Card key={idx} className="glass-card border-white/5">
               <CardHeader className="pb-2 p-4">
-                <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                  {stat.label}
-                </CardDescription>
+                <CardDescription className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{stat.label}</CardDescription>
                 <CardTitle className="text-2xl font-black tracking-tighter">{stat.value}</CardTitle>
               </CardHeader>
-              <CardContent className="p-4 pt-0">
-                <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-emerald-400">
-                  <TrendingUp className="w-3 h-3" />
-                  {stat.change}
-                </div>
-              </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Channel Content Section */}
+        {/* Content */}
         <section className="space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-6 gap-4">
-            <div className="flex items-center gap-3">
-              <LayoutGrid className="w-6 h-6 text-primary" />
-              <h2 className="text-3xl font-black italic uppercase tracking-tighter">Channel Content</h2>
-              <Badge variant="outline" className="border-primary/20 text-primary font-black uppercase tracking-widest text-[10px] ml-2">
-                {processedUploads.length} videos
-              </Badge>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Filter className="w-3.5 h-3.5 text-muted-foreground" />
-                <Select value={filterType} onValueChange={(v) => { setFilterType(v); setCurrentPage(1); }}>
-                  <SelectTrigger className="w-[130px] h-9 bg-black/20 border-white/5 text-[10px] font-black uppercase tracking-widest">
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent className="glass-card border-white/10">
-                    <SelectItem value="All">All Types</SelectItem>
-                    <SelectItem value="Tutorial Demo">Tutorial Demo</SelectItem>
-                    <SelectItem value="Performances">Performances</SelectItem>
-                    <SelectItem value="Podcast">Podcast</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
-                <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setCurrentPage(1); }}>
-                  <SelectTrigger className="w-[160px] h-9 bg-black/20 border-white/5 text-[10px] font-black uppercase tracking-widest">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent className="glass-card border-white/10">
-                    <SelectItem value="date-desc">Newest First</SelectItem>
-                    <SelectItem value="date-asc">Oldest First</SelectItem>
-                    <SelectItem value="views-desc">Most Views</SelectItem>
-                    <SelectItem value="views-asc">Least Views</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+          <div className="flex items-center gap-3 border-b border-white/5 pb-6">
+            <LayoutGrid className="w-6 h-6 text-primary" />
+            <h2 className="text-3xl font-black italic uppercase tracking-tighter">Channel Content</h2>
           </div>
           
-          <div className="flex flex-col gap-8 min-h-[600px] transition-all duration-300">
+          <div className="flex flex-col gap-8">
             {paginatedUploads.map((upload) => (
-              <Card key={upload.id} className="glass-card border-white/5 hover:border-primary/20 transition-all overflow-hidden group animate-in fade-in duration-500">
+              <Card key={upload.id} className="glass-card border-white/5 overflow-hidden group">
                 {upload.type === "Tutorial Demo" ? (
                   <div className="p-6 space-y-6">
                     <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-primary/40 text-primary bg-primary/5">
-                            Tutorial Package
-                          </Badge>
-                          <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border-none">
-                            {upload.status}
-                          </Badge>
-                        </div>
-                        <h3 className="text-2xl font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">
-                          {upload.title}
-                        </h3>
-                      </div>
-                      <div className="hidden sm:flex items-center gap-6">
-                        <div className="text-right">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Views</p>
-                          <p className="text-lg font-bold">{upload.views}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Date</p>
-                          <p className="text-lg font-bold">{upload.date}</p>
-                        </div>
-                      </div>
+                      <h3 className="text-2xl font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">{upload.title}</h3>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
-                              <span className="text-[10px] font-black text-primary">01</span>
-                            </div>
-                            <span className="text-[11px] font-black uppercase tracking-widest text-primary/80">Instructional Demo</span>
-                          </div>
-                          <Badge variant="ghost" className="text-[8px] opacity-40 uppercase tracking-widest">Main Feature</Badge>
-                        </div>
-                        <div className="aspect-video relative rounded-2xl overflow-hidden border border-white/10 bg-black shadow-2xl">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-primary/80">Instructional Demo</span>
+                        <div className="aspect-video relative rounded-2xl overflow-hidden bg-black">
                           <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
                         </div>
                       </div>
-
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="h-6 w-6 rounded-full bg-secondary/10 flex items-center justify-center">
-                              <span className="text-[10px] font-black text-secondary">02</span>
-                            </div>
-                            <span className="text-[11px] font-black uppercase tracking-widest text-secondary/80">Master the Moves</span>
-                          </div>
-                          <Badge variant="ghost" className="text-[8px] opacity-40 uppercase tracking-widest">Practice Loop</Badge>
-                        </div>
-                        <div className="aspect-video relative rounded-2xl overflow-hidden border border-white/10 bg-black shadow-2xl">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-secondary/80">Master the Moves</span>
+                        <div className="aspect-video relative rounded-2xl overflow-hidden bg-black">
                           <StudioVideo url={upload.masterMovesUrl || upload.videoUrl} poster={upload.thumbnail} />
                         </div>
                       </div>
                     </div>
-
-                    <div className="flex items-center justify-center gap-8 pt-4 border-t border-white/5 opacity-60">
-                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
-                          <Clock className="w-3.5 h-3.5 text-primary" />
-                          Retention: 84%
-                       </div>
-                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
-                          <Sparkles className="w-3.5 h-3.5 text-secondary" />
-                          Engagement: High
-                       </div>
-                    </div>
                   </div>
                 ) : (
                   <div className="flex flex-col md:flex-row">
-                    <div className="w-full md:w-80 aspect-video relative bg-black shrink-0 border-b md:border-b-0 md:border-r border-white/5">
+                    <div className="w-full md:w-80 aspect-video relative bg-black shrink-0 border-r border-white/5">
                       <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
                     </div>
-
-                    <div className="flex-1 p-6 flex flex-col justify-between gap-6">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-primary/20 text-primary bg-primary/5">
-                            {upload.type}
-                          </Badge>
-                          <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border-none">
-                            {upload.status}
-                          </Badge>
-                        </div>
-                        <h3 className="text-xl font-black uppercase italic tracking-tight group-hover:text-primary transition-colors">
-                          {upload.title}
-                        </h3>
-                      </div>
-
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-4 border-t border-white/5">
-                        <div className="space-y-1">
-                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Date Uploaded</p>
-                          <div className="flex items-center gap-2 text-xs font-bold">
-                            <Calendar className="w-3 h-3 text-primary" />
-                            {upload.date}
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Total Views</p>
-                          <div className="flex items-center gap-2 text-xs font-bold">
-                            <Eye className="w-3 h-3 text-primary" />
-                            {upload.views}
-                          </div>
-                        </div>
-                        <div className="space-y-1 hidden sm:block">
-                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Avg. Retention</p>
-                          <div className="flex items-center gap-2 text-xs font-bold">
-                            <Clock className="w-3 h-3 text-primary" />
-                            84%
-                          </div>
-                        </div>
-                      </div>
+                    <div className="flex-1 p-6 space-y-2">
+                      <Badge variant="outline" className="text-primary">{upload.type}</Badge>
+                      <h3 className="text-xl font-black uppercase italic tracking-tight">{upload.title}</h3>
                     </div>
                   </div>
                 )}
               </Card>
             ))}
-            
-            {paginatedUploads.length === 0 && (
-              <div className="py-20 text-center glass-card border-dashed border-white/10 rounded-3xl">
-                <p className="text-muted-foreground font-black uppercase tracking-widest text-xs italic">
-                  No masterpieces found matching your filters.
-                </p>
-              </div>
-            )}
           </div>
-
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-4 pt-8">
-              <Button 
-                variant="outline" size="icon" type="button"
-                className="rounded-xl border-white/10 hover:border-primary/50" 
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
-              <div className="flex gap-2">
-                {Array.from({ length: totalPages }).map((_, i) => (
-                  <Button 
-                    key={i} size="sm" type="button"
-                    variant={currentPage === i + 1 ? "default" : "ghost"}
-                    className={cn(
-                      "w-10 h-10 rounded-xl font-black transition-all",
-                      currentPage === i + 1 ? "bg-primary text-primary-foreground scale-110" : "hover:bg-white/5"
-                    )}
-                    onClick={() => setCurrentPage(i + 1)}
-                  >
-                    {i + 1}
-                  </Button>
-                ))}
-              </div>
-              <Button 
-                variant="outline" size="icon" type="button"
-                className="rounded-xl border-white/10 hover:border-primary/50" 
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-              >
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-            </div>
-          )}
-        </section>
-
-        {/* Creator Goal */}
-        <section className="space-y-6 pt-12 border-t border-white/5">
-          <div className="flex items-center gap-3">
-            <TrendingUp className="w-6 h-6 text-primary" />
-            <h2 className="text-3xl font-black italic uppercase tracking-tighter">Creator Goal</h2>
-          </div>
-          <Card className="glass-card border-white/5">
-            <CardHeader>
-              <CardDescription className="text-[10px] font-black uppercase tracking-widest text-primary">Realm Pro Level Advancement</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-8 md:grid-cols-2">
-              <div className="space-y-3">
-                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                  <span className="text-muted-foreground">Watch Hours Accumulation</span>
-                  <span className="text-primary">45.2K / 50K</span>
-                </div>
-                <Progress value={90} className="h-2 bg-white/5" />
-                <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">4.8K hours remaining for monetization unlock</p>
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                  <span className="text-muted-foreground">Global Dancer Network</span>
-                  <span className="text-primary">85.4K / 100K</span>
-                </div>
-                <Progress value={85} className="h-2 bg-white/5" />
-                <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">14.6K new followers until Elite Creator status</p>
-              </div>
-            </CardContent>
-          </Card>
         </section>
       </div>
     </div>

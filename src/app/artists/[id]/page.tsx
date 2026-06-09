@@ -49,7 +49,7 @@ function GalleryVideo({ url }: { url: string }) {
       fluid: false, 
       loop: false,
       muted: false,
-      preload: 'auto',
+      preload: 'metadata',
       sources: [{
         src: url,
         type: 'video/mp4'

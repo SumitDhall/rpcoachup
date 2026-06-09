@@ -104,7 +104,7 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
       fluid: false, 
       loop: true,
       muted: isMuted,
-      preload: 'auto',
+      preload: 'metadata',
       sources: [{
         src: blip.videoUrl,
         type: 'video/mp4'

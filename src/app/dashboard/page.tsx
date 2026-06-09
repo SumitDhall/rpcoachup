@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useRef } from "react";
@@ -33,7 +34,7 @@ function DashboardVideo({ url, thumbnail }: { url: string; thumbnail?: string })
   const playerRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !url) return;
 
     const videoElement = document.createElement("video-js");
     videoElement.classList.add('vjs-fill', 'vjs-big-play-centered');
@@ -46,7 +47,7 @@ function DashboardVideo({ url, thumbnail }: { url: string; thumbnail?: string })
       fluid: false, 
       loop: false,
       muted: false,
-      preload: 'none',
+      preload: 'metadata',
       poster: thumbnail,
       sources: [{
         src: url,

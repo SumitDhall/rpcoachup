@@ -207,9 +207,9 @@ export const STUDIO_STATS = [
 ];
 
 export const STUDIO_UPLOADS = [
-  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial", videoUrl: SAMPLE_VIDEO_1 },
-  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performance", videoUrl: SAMPLE_VIDEO_2 },
-  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial", videoUrl: SAMPLE_VIDEO_3 },
+  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial Demo", videoUrl: SAMPLE_VIDEO_1 },
+  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: SAMPLE_VIDEO_2 },
+  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial Demo", videoUrl: SAMPLE_VIDEO_3 },
 ];
 
 export const DANCER_CONTENT = {
