@@ -151,15 +151,15 @@ export default function ContactPage() {
             <div className="flex flex-wrap justify-center gap-8 text-[9px] font-black uppercase tracking-[0.3em] text-white/40">
               <div className="flex items-center gap-2">
                 <Mail className="w-3 h-3 text-primary" />
-                support@dancerealm.com
+                support@dancerealm.co
               </div>
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <Phone className="w-3 h-3 text-secondary" />
-                +1 (888) DANCE-SYNC
-              </div>
+                +44 (7435 573346)
+              </div> */}
             </div>
             <p className="text-[9px] text-center text-muted-foreground uppercase tracking-widest font-bold">
-              Average response time: <span className="text-emerald-500">2 Rhythm Hours</span>
+              Average response time: <span className="text-emerald-500">24 Hours</span>
             </p>
           </CardFooter>
         </Card>
