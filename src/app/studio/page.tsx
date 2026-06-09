@@ -48,6 +48,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -122,6 +132,10 @@ export default function ArtistStudioPage() {
   const [filterType, setFilterType] = useState("Tutorial Preview");
   const [sortBy, setSortBy] = useState("date-desc");
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Deletion state
+  const [videoToDelete, setVideoToDelete] = useState<string | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const masterMovesInputRef = useRef<HTMLInputElement>(null);
@@ -199,6 +213,19 @@ export default function ArtistStudioPage() {
       title: "Masterpiece Deleted",
       description: "Successfully removed from your catalog.",
     });
+  };
+
+  const initiateDelete = (id: string) => {
+    setVideoToDelete(id);
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (videoToDelete) {
+      handleDeleteVideo(videoToDelete);
+      setVideoToDelete(null);
+      setIsConfirmOpen(false);
+    }
   };
 
   const triggerFileInput = () => fileInputRef.current?.click();
@@ -575,7 +602,7 @@ export default function ArtistStudioPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="glass-card border-white/10">
                         <DropdownMenuItem 
-                          onClick={() => handleDeleteVideo(upload.id)} 
+                          onClick={() => initiateDelete(upload.id)} 
                           className="gap-3 cursor-pointer text-red-400 focus:text-red-400 focus:bg-red-500/10"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -713,6 +740,29 @@ export default function ArtistStudioPage() {
           </section>
         </div>
       </div>
+
+      {/* Confirmation Dialog for Deletion */}
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent className="glass-card border-white/10 bg-black/90 backdrop-blur-xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-white">Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-white/60 leading-relaxed font-medium">
+              Are you sure you want to delete this video? This action will permanently remove your masterpiece from the Dance Realm catalog and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-3 sm:gap-4 mt-6">
+            <AlertDialogCancel className="h-12 rounded-xl border-white/10 bg-white/5 font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-colors">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="h-12 rounded-xl bg-destructive text-destructive-foreground font-black uppercase tracking-widest text-[10px] hover:bg-destructive/90 shadow-lg shadow-destructive/20 transition-all border-none"
+            >
+              Continue Deletion
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
