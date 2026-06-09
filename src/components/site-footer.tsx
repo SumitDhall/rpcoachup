@@ -17,11 +17,11 @@ export function SiteFooter() {
           src="/images/dance-realm_background_footer.png"
           alt="Footer Background"
           fill
-          className="object-cover opacity-90 brightness-90 contrast-110"
+          className="object-cover opacity-45 brightness-50 contrast-110"
           priority
         />
-        {/* Lighter Overlay to let colors pop while maintaining text contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050816]/60 via-[#050816]/30 to-[#050816]/80 backdrop-blur-[1px]" />
+        {/* Darker Overlay to ensure depth and contrast */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050816]/80 via-[#050816]/50 to-[#050816]/90 backdrop-blur-[2px]" />
       </div>
 
       {/* Background Glows */}
@@ -51,6 +51,7 @@ export function SiteFooter() {
             </p>
             <div className="flex gap-4">
               <Link href="#" className="h-10 w-10 rounded-full border border-white/30 bg-black/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF] hover:text-primary backdrop-blur-sm">
+                <span className="sr-only">Instagram</span>
                 <span className="sr-only">Instagram</span>
                 <Instagram className="h-4 w-4" />
               </Link>
