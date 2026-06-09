@@ -216,8 +216,11 @@ export default function ArtistStudioPage() {
   };
 
   const initiateDelete = (id: string) => {
+    // Delay ensures DropdownMenu has time to clean up focus traps
     setVideoToDelete(id);
-    setIsConfirmOpen(true);
+    setTimeout(() => {
+      setIsConfirmOpen(true);
+    }, 100);
   };
 
   const confirmDelete = () => {
@@ -230,7 +233,13 @@ export default function ArtistStudioPage() {
 
   const triggerFileInput = () => fileInputRef.current?.click();
   const triggerMasterMovesInput = () => masterMovesInputRef.current?.click();
-  const triggerCoverInput = () => coverInputRef.current?.click();
+  
+  const triggerCoverInput = () => {
+    // Delay ensures DropdownMenu has time to close and release focus
+    setTimeout(() => {
+      coverInputRef.current?.click();
+    }, 100);
+  };
 
   const isPublishEnabled = useMemo(() => {
     if (videoCategory === "Tutorial Preview") {
@@ -405,12 +414,12 @@ export default function ArtistStudioPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="glass-card border-white/10">
-                <DropdownMenuItem onClick={triggerCoverInput} className="gap-3 cursor-pointer">
+                <DropdownMenuItem onSelect={triggerCoverInput} className="gap-3 cursor-pointer">
                   <Camera className="h-4 w-4" />
                   <span>Upload Cover</span>
                 </DropdownMenuItem>
                 {coverImage && (
-                  <DropdownMenuItem onClick={deleteCover} className="gap-3 cursor-pointer text-red-400 focus:text-red-400">
+                  <DropdownMenuItem onSelect={deleteCover} className="gap-3 cursor-pointer text-red-400 focus:text-red-400">
                     <Trash2 className="h-4 w-4" />
                     <span>Delete Cover</span>
                   </DropdownMenuItem>
@@ -420,10 +429,10 @@ export default function ArtistStudioPage() {
           </div>
         </section>
 
-        {/* Branding & Action Header Area (Outside/Bottom of Cover Photo) */}
+        {/* Branding & Action Header Area */}
         <div className="max-w-7xl mx-auto px-8 md:px-12 lg:px-24 pt-8">
           <div className="flex flex-col md:flex-row items-end justify-between gap-8 border-b border-white/5 pb-12">
-            {/* Branding - Left Bottom Outline */}
+            {/* Branding */}
             <div className="space-y-2 text-left">
               <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-gradient leading-[0.85] drop-shadow-2xl">
                 Artist Studio
@@ -433,7 +442,7 @@ export default function ArtistStudioPage() {
               </p>
             </div>
 
-            {/* Primary CTA - Right Bottom Outline */}
+            {/* Primary CTA */}
             <div className="shrink-0">
               <input type="file" ref={fileInputRef} className="hidden" accept="video/*" onChange={handleFileChange} />
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -602,7 +611,7 @@ export default function ArtistStudioPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="glass-card border-white/10">
                         <DropdownMenuItem 
-                          onClick={() => initiateDelete(upload.id)} 
+                          onSelect={() => initiateDelete(upload.id)} 
                           className="gap-3 cursor-pointer text-red-400 focus:text-red-400 focus:bg-red-500/10"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -742,7 +751,13 @@ export default function ArtistStudioPage() {
       </div>
 
       {/* Confirmation Dialog for Deletion */}
-      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+      <AlertDialog 
+        open={isConfirmOpen} 
+        onOpenChange={(open) => {
+          setIsConfirmOpen(open);
+          if (!open) setVideoToDelete(null); // Cleanup state when dialog closes
+        }}
+      >
         <AlertDialogContent className="glass-card border-white/10 bg-black/90 backdrop-blur-xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-white">Confirm Deletion</AlertDialogTitle>
