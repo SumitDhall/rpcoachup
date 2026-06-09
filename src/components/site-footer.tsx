@@ -10,10 +10,23 @@ export function SiteFooter() {
   const brandLogo = PlaceHolderImages.find(img => img.id === 'brand-logo');
 
   return (
-    <footer className="bg-black/80 backdrop-blur-md border-t border-white/10 pt-16 pb-24 px-6 md:px-12 mt-auto relative z-10 overflow-visible">
+    <footer className="relative bg-black/80 backdrop-blur-md border-t border-white/10 pt-16 pb-24 px-6 md:px-12 mt-auto z-10 overflow-hidden">
+      {/* Background Image Layer */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <Image
+          src="/images/dance-realm_background_footer.png"
+          alt="Footer Background"
+          fill
+          className="object-cover opacity-40 brightness-75 contrast-125"
+          priority
+        />
+        {/* Darkening and Blur Overlay to ensure legibility */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050816] via-[#050816]/80 to-[#050816]/95" />
+      </div>
+
       {/* Background Glows */}
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/10 blur-[120px] rounded-full pointer-events-none opacity-50" />
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-secondary/10 blur-[120px] rounded-full pointer-events-none opacity-50" />
+      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/10 blur-[120px] rounded-full pointer-events-none opacity-50 z-10" />
+      <div className="absolute -top-24 -right-24 w-96 h-96 bg-secondary/10 blur-[120px] rounded-full pointer-events-none opacity-50 z-10" />
 
       <div className="max-w-7xl mx-auto relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-x-12 gap-y-16 mb-16">
@@ -67,27 +80,11 @@ export function SiteFooter() {
                 <Link href="/artists" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                   <Users className="h-4 w-4 group-hover:text-primary transition-colors" /> Artists
                 </Link>
-                {/* <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
-                  <MapPin className="h-4 w-4 group-hover:text-primary transition-colors" /> Maps
-                </Link> */}
                 <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
                   <DollarSign className="h-4 w-4 group-hover:text-primary transition-colors" /> Pricing
                 </Link>
               </nav>
             </div>
-
-            {/* For Organizers Section */}
-            {/* <div className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-secondary">For Organizers</h4>
-              <nav className="flex flex-col gap-4">
-                <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
-                  <PlusCircle className="h-4 w-4 group-hover:text-secondary transition-colors" /> Create Event
-                </Link>
-                <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
-                  <ShieldCheck className="h-4 w-4 group-hover:text-secondary transition-colors" /> Plans
-                </Link>
-              </nav>
-            </div> */}
 
             {/* Support Section */}
             <div className="space-y-6">
