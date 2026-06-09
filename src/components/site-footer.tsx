@@ -10,18 +10,18 @@ export function SiteFooter() {
   const brandLogo = PlaceHolderImages.find(img => img.id === 'brand-logo');
 
   return (
-    <footer className="relative bg-black/80 backdrop-blur-md border-t border-white/10 pt-16 pb-24 px-6 md:px-12 mt-auto z-10 overflow-hidden">
+    <footer className="relative border-t border-white/10 pt-16 pb-24 px-6 md:px-12 mt-auto z-10 overflow-hidden min-h-[400px]">
       {/* Background Image Layer */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <Image
           src="/images/dance-realm_background_footer.png"
           alt="Footer Background"
           fill
-          className="object-cover opacity-40 brightness-75 contrast-125"
+          className="object-cover opacity-60 brightness-90 contrast-110"
           priority
         />
-        {/* Darkening and Blur Overlay to ensure legibility */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050816] via-[#050816]/80 to-[#050816]/95" />
+        {/* Subtle Darkening Overlay for legibility */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050816]/90 via-[#050816]/70 to-[#050816]/95 backdrop-blur-[2px]" />
       </div>
 
       {/* Background Glows */}
