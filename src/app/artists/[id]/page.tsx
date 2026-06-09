@@ -85,61 +85,63 @@ function VideoCarouselSection({ title, videos }: VideoSectionProps) {
         </Button>
       </div>
 
-      <Carousel
-        opts={{
-          align: "start",
-          loop: false,
-        }}
-        className="w-full"
-      >
-        <CarouselContent className="-ml-4">
-          {videos.map((video, idx) => (
-            <CarouselItem key={`${video.id}-${idx}`} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-              <div className="group relative glass-card rounded-2xl overflow-hidden border-white/5 hover:border-primary/40 transition-all h-full flex flex-col">
-                <div className="aspect-video relative bg-black flex items-center justify-center overflow-hidden">
-                  <GalleryVideo url={video.url} />
-                </div>
-                <div className="p-4 flex-1 flex flex-col justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                      <Music2 className="w-5 h-5" />
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="font-bold text-sm uppercase tracking-wider truncate">{video.title}</span>
-                      <span className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/60">HD Quality</span>
-                    </div>
+      <div className="relative px-4">
+        <Carousel
+          opts={{
+            align: "start",
+            loop: false,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-4">
+            {videos.map((video, idx) => (
+              <CarouselItem key={`${video.id}-${idx}`} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                <div className="group relative glass-card rounded-2xl overflow-hidden border-white/5 hover:border-primary/40 transition-all h-full flex flex-col">
+                  <div className="aspect-video relative bg-black flex items-center justify-center overflow-hidden">
+                    <GalleryVideo url={video.url} />
                   </div>
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                       <Badge variant="secondary" className="bg-white/5 text-[10px] font-bold">4K READY</Badge>
-                       <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full hover:bg-primary/20 hover:text-primary">
-                          <PlayCircle className="w-4 h-4" />
-                       </Button>
-                    </div>
-                    
-                    {/* Learn Moves link for Tutorial Demos */}
-                    {title === "Tutorial Demos" && (
-                      <div className="pt-2 border-t border-white/5 mt-1">
-                        <Link 
-                          href="#" 
-                          className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 flex items-center gap-1 group/link"
-                        >
-                          Learn Moves
-                          <ChevronRight className="w-2.5 h-2.5 transition-transform group-hover/link:translate-x-0.5" />
-                        </Link>
+                  <div className="p-4 flex-1 flex flex-col justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <Music2 className="w-5 h-5" />
                       </div>
-                    )}
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold text-sm uppercase tracking-wider truncate">{video.title}</span>
+                        <span className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/60">HD Quality</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                         <Badge variant="secondary" className="bg-white/5 text-[10px] font-bold">4K READY</Badge>
+                         <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full hover:bg-primary/20 hover:text-primary">
+                            <PlayCircle className="w-4 h-4" />
+                         </Button>
+                      </div>
+                      
+                      {/* Learn Moves link for Tutorial Demos */}
+                      {title === "Tutorial Demos" && (
+                        <div className="pt-2 border-t border-white/5 mt-1">
+                          <Link 
+                            href="#" 
+                            className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 flex items-center gap-1 group/link"
+                          >
+                            Learn Moves
+                            <ChevronRight className="w-2.5 h-2.5 transition-transform group-hover/link:translate-x-0.5" />
+                          </Link>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <div className="hidden md:block">
-          <CarouselPrevious className="-left-12 bg-black/40 border-white/10 hover:bg-primary hover:text-white" />
-          <CarouselNext className="-right-12 bg-black/40 border-white/10 hover:bg-primary hover:text-white" />
-        </div>
-      </Carousel>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <div className="hidden md:block">
+            <CarouselPrevious className="-left-6 bg-black/60 backdrop-blur-md border-white/10 hover:bg-primary hover:text-white transition-all shadow-xl" />
+            <CarouselNext className="-right-6 bg-black/60 backdrop-blur-md border-white/10 hover:bg-primary hover:text-white transition-all shadow-xl" />
+          </div>
+        </Carousel>
+      </div>
     </div>
   );
 }
@@ -181,7 +183,7 @@ export default function ArtistDetailPage() {
     }
   };
 
-  // Sections: Tutorial Demos, Performances, Podcasts
+  // Sections: Tutorial Demos (renamed from Demos), Performances, Podcasts
   const categories = {
     TutorialDemos: artist.videos,
     Performances: [...artist.videos].reverse(),
@@ -218,7 +220,7 @@ export default function ArtistDetailPage() {
       {/* Page Content Layer 3 */}
       <div className="relative z-20">
         {/* Hero Section */}
-        <div className="relative h-[65vh] min-h-[500px] md:h-[50vh] w-full overflow-hidden">
+        <div className="relative h-[65vh] min-h-[550px] md:h-[50vh] w-full overflow-hidden">
           <Image
             src={artist.image}
             alt={artist.name}
