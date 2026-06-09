@@ -110,13 +110,13 @@ export function SiteFooter() {
                       Privacy Policy
                     </button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent className="glass-card border-white/10 bg-black/90 backdrop-blur-xl">
+                  <AlertDialogContent className="bg-white border-none shadow-2xl rounded-[2rem]">
                     <AlertDialogHeader>
-                      <AlertDialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-white">
+                      <AlertDialogTitle className="text-2xl font-black italic uppercase tracking-tighter text-black">
                         Privacy Policy
                       </AlertDialogTitle>
                       <AlertDialogDescription asChild>
-                        <div className="text-sm text-white/60 leading-relaxed space-y-4 font-medium">
+                        <div className="text-sm text-gray-600 leading-relaxed space-y-4 font-medium">
                           <p>Welcome to the Dance Realm. Your privacy is paramount to our global community.</p>
                           <p>1. Data Collection: We synchronize minimal profile data to enhance your rhythmic journey and provide personalized artist recommendations.</p>
                           <p>2. Video Privacy: Content uploaded to the Artist Studio remains your intellectual property. We only host it to facilitate your connection with the audience.</p>
