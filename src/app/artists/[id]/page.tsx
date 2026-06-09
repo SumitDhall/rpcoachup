@@ -91,7 +91,7 @@ function VideoCarouselSection({ title, videos, artistId }: VideoSectionProps) {
         </Button>
       </div>
 
-      <div className="relative px-4">
+      <div className="relative px-2 md:px-4">
         <Carousel
           opts={{
             align: "start",
@@ -140,11 +140,12 @@ function VideoCarouselSection({ title, videos, artistId }: VideoSectionProps) {
                     </div>
                   </div>
                 </div>
-              ))}
+              </CarouselItem>
+            ))}
           </CarouselContent>
-          <div className="flex">
-            <CarouselPrevious className="-left-2 md:-left-6 bg-black/60 backdrop-blur-md border-white/10 hover:bg-primary hover:text-white transition-all shadow-xl h-8 w-8 md:h-10 md:w-10 z-30" />
-            <CarouselNext className="-right-2 md:-right-6 bg-black/60 backdrop-blur-md border-white/10 hover:bg-primary hover:text-white transition-all shadow-xl h-8 w-8 md:h-10 md:w-10 z-30" />
+          <div className="flex items-center justify-center gap-4 mt-8 md:mt-0">
+            <CarouselPrevious className="static md:absolute md:-left-12 md:top-1/2 md:-translate-y-1/2 bg-black/60 backdrop-blur-md border-white/10 hover:bg-primary hover:text-white transition-all shadow-xl h-10 w-10 z-30" />
+            <CarouselNext className="static md:absolute md:-right-12 md:top-1/2 md:-translate-y-1/2 bg-black/60 backdrop-blur-md border-white/10 hover:bg-primary hover:text-white transition-all shadow-xl h-10 w-10 z-30" />
           </div>
         </Carousel>
       </div>
