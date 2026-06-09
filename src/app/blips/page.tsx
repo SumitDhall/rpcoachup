@@ -2,9 +2,10 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from "react";
-import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X, Volume2, VolumeX } from "lucide-react";
+import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X, Volume2, VolumeX, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import {
@@ -89,6 +90,24 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  
+  // Local state for comments interaction
+  const [comments, setComments] = useState(MOCK_COMMENTS);
+  const [newComment, setNewComment] = useState("");
+
+  const handleAddComment = () => {
+    if (!newComment.trim()) return;
+    
+    const comment = {
+      id: Date.now(),
+      user: "You",
+      text: newComment,
+      time: "Just now"
+    };
+    
+    setComments([comment, ...comments]);
+    setNewComment("");
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -198,7 +217,7 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
           </DrawerTrigger>
           <DrawerPortal>
             <DrawerOverlay className="bg-black/40 backdrop-blur-none" />
-            <DrawerContent className="glass-card border-white/10 bg-black/90 text-foreground h-[60vh] outline-none">
+            <DrawerContent className="glass-card border-white/10 bg-black/90 text-foreground h-[75vh] md:h-[60vh] outline-none">
               <DrawerHeader className="border-b border-white/5 flex items-center justify-between px-6 py-4">
                 <DrawerTitle className="text-xl font-black italic uppercase tracking-tighter">
                   Comments
@@ -209,9 +228,10 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
                   </Button>
                 </DrawerClose>
               </DrawerHeader>
+              
               <ScrollArea className="flex-1 p-6">
                 <div className="space-y-6">
-                  {MOCK_COMMENTS.map((comment) => (
+                  {comments.map((comment) => (
                     <div key={comment.id} className="flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                       <Avatar className="h-8 w-8 border border-white/10">
                         <AvatarImage src={`https://picsum.photos/seed/${comment.user}/100/100`} />
@@ -228,6 +248,27 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
                   ))}
                 </div>
               </ScrollArea>
+
+              {/* Comment Input Area */}
+              <div className="p-6 border-t border-white/5 bg-black/40 backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                  <Input 
+                    placeholder="Add a rhythm to the chat..." 
+                    className="flex-1 bg-white/5 border-white/10 rounded-2xl h-12 text-sm focus-visible:ring-primary focus-visible:ring-offset-0 placeholder:text-white/30"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                  />
+                  <Button 
+                    size="icon" 
+                    className="h-12 w-12 rounded-2xl bg-vibrant-gradient text-white shadow-lg shadow-primary/20 hover:scale-105 transition-all disabled:opacity-50"
+                    onClick={handleAddComment}
+                    disabled={!newComment.trim()}
+                  >
+                    <Send className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
             </DrawerContent>
           </DrawerPortal>
         </Drawer>
