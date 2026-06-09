@@ -17,7 +17,7 @@ export function SiteFooter() {
           src="/images/dance-realm_background_footer.png"
           alt="Footer Background"
           fill
-          className="object-cover opacity-100 brightness-110 contrast-125"
+          className="object-cover opacity-90 brightness-90 contrast-110"
           priority
         />
         {/* Lighter Overlay to let colors pop while maintaining text contrast */}
