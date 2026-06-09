@@ -338,7 +338,7 @@ export default function ArtistStudioPage() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-3">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-primary/80">Instructional Demo</span>
+                        <span className="text-[11px] font-black uppercase tracking-widest text-primary/80">Demo Preview</span>
                         <div className="aspect-video relative rounded-2xl overflow-hidden bg-black">
                           <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
                         </div>
