@@ -17,16 +17,16 @@ export function SiteFooter() {
           src="/images/dance-realm_background_footer.png"
           alt="Footer Background"
           fill
-          className="object-cover opacity-60 brightness-90 contrast-110"
+          className="object-cover opacity-100 brightness-110 contrast-125"
           priority
         />
-        {/* Subtle Darkening Overlay for legibility */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050816]/90 via-[#050816]/70 to-[#050816]/95 backdrop-blur-[2px]" />
+        {/* Lighter Overlay to let colors pop while maintaining text contrast */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050816]/60 via-[#050816]/30 to-[#050816]/80 backdrop-blur-[1px]" />
       </div>
 
       {/* Background Glows */}
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/10 blur-[120px] rounded-full pointer-events-none opacity-50 z-10" />
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-secondary/10 blur-[120px] rounded-full pointer-events-none opacity-50 z-10" />
+      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/20 blur-[120px] rounded-full pointer-events-none opacity-60 z-10" />
+      <div className="absolute -top-24 -right-24 w-96 h-96 bg-secondary/20 blur-[120px] rounded-full pointer-events-none opacity-60 z-10" />
 
       <div className="max-w-7xl mx-auto relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-x-12 gap-y-16 mb-16">
@@ -46,24 +46,24 @@ export function SiteFooter() {
                 )}
               </div>
             </Link>
-            <p className="text-[#F4F7FF]/70 text-sm leading-relaxed max-w-sm">
+            <p className="text-[#F4F7FF] text-sm leading-relaxed max-w-sm font-medium drop-shadow-md">
             World's stage for dancers and artists. Learn from renowned creators anywhere. Share your Blips and be part of a global community, creativity, and expression.
             </p>
             <div className="flex gap-4">
-              <Link href="#" className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF]/60 hover:text-primary">
+              <Link href="#" className="h-10 w-10 rounded-full border border-white/30 bg-black/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF] hover:text-primary backdrop-blur-sm">
                 <span className="sr-only">Instagram</span>
                 <Instagram className="h-4 w-4" />
               </Link>
-              <Link href="#" className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF]/60 hover:text-primary">
+              <Link href="#" className="h-10 w-10 rounded-full border border-white/30 bg-black/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF] hover:text-primary backdrop-blur-sm">
                 <span className="sr-only">Twitter</span>
                 <Twitter className="h-4 w-4" />
               </Link>
-              <Link href="#" className="h-10 w-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF]/60 hover:text-primary">
+              <Link href="#" className="h-10 w-10 rounded-full border border-white/30 bg-black/20 flex items-center justify-center hover:bg-white/10 hover:border-primary/50 transition-all text-[#F4F7FF] hover:text-primary backdrop-blur-sm">
                 <span className="sr-only">Youtube</span>
                 <Youtube className="h-4 w-4" />
               </Link>
             </div>
-            <Badge variant="outline" className="border-white/10 text-[10px] font-black uppercase tracking-[0.3em] px-4 py-1.5 text-[#F4F7FF]/60 bg-white/[0.05]">
+            <Badge variant="outline" className="border-white/20 text-[10px] font-black uppercase tracking-[0.3em] px-4 py-1.5 text-white bg-white/[0.1] backdrop-blur-md">
               Synchronized 2026
             </Badge>
           </div>
@@ -72,15 +72,15 @@ export function SiteFooter() {
           <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-12">
             {/* Discover Section */}
             <div className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-primary">Discover</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-primary drop-shadow-[0_0_10px_rgba(255,79,216,0.5)]">Discover</h4>
               <nav className="flex flex-col gap-4">
-                <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
+                <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors group drop-shadow-sm">
                   <Calendar className="h-4 w-4 group-hover:text-primary transition-colors" /> Events
                 </Link>
-                <Link href="/artists" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
+                <Link href="/artists" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors group drop-shadow-sm">
                   <Users className="h-4 w-4 group-hover:text-primary transition-colors" /> Artists
                 </Link>
-                <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
+                <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors group drop-shadow-sm">
                   <DollarSign className="h-4 w-4 group-hover:text-primary transition-colors" /> Pricing
                 </Link>
               </nav>
@@ -88,28 +88,28 @@ export function SiteFooter() {
 
             {/* Support Section */}
             <div className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-accent">Support</h4>
+              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-accent drop-shadow-[0_0_10px_rgba(255,230,0,0.5)]">Support</h4>
               <nav className="flex flex-col gap-4">
-                <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors group">
+                <Link href="#" className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors group drop-shadow-sm">
                   <Mail className="h-4 w-4 group-hover:text-accent transition-colors" /> Contact
                 </Link>
-                <Link href="#" className="text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors">Privacy Policy</Link>
-                <Link href="#" className="text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors">Terms of Use</Link>
-                <Link href="#" className="text-xs font-black uppercase tracking-widest text-[#F4F7FF]/70 hover:text-white transition-colors">Transparency</Link>
+                <Link href="#" className="text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors drop-shadow-sm">Privacy Policy</Link>
+                <Link href="#" className="text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors drop-shadow-sm">Terms of Use</Link>
+                <Link href="#" className="text-xs font-black uppercase tracking-widest text-white/90 hover:text-white transition-colors drop-shadow-sm">Transparency</Link>
               </nav>
             </div>
           </div>
         </div>
 
         {/* Bottom Credits */}
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F4F7FF]/40 text-center md:text-left">
+        <div className="pt-8 border-t border-white/20 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60 text-center md:text-left drop-shadow-sm">
             © 2026 Dance Realm. All rights reserved.
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 text-[10px] font-black uppercase tracking-[0.3em] text-[#F4F7FF]/40">
+          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/60">
             <span>Built by <span className="text-primary hover:text-primary/80 cursor-pointer">sk group</span></span>
-            <span className="hidden md:inline h-1.5 w-1.5 bg-white/10 rounded-full" />
-            <span>Secure by <span className="text-[#F4F7FF]/80">Stripe</span></span>
+            <span className="hidden md:inline h-1.5 w-1.5 bg-white/20 rounded-full" />
+            <span>Secure by <span className="text-white/80">Stripe</span></span>
           </div>
         </div>
       </div>
