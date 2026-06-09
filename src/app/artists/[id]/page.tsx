@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Music2, Share2, Heart, Instagram, Facebook, MessageSquare, ChevronRight, PlayCircle } from "lucide-react";
+import { ArrowLeft, Music2, Share2, Heart, Instagram, Facebook, MessageSquare, ChevronRight, PlayCircle, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ARTISTS } from "@/lib/mock-data";
@@ -118,16 +118,18 @@ function VideoCarouselSection({ title, videos }: VideoSectionProps) {
                          </Button>
                       </div>
                       
-                      {/* Learn Moves link for Tutorial Demos */}
+                      {/* USP Button for Tutorial Demos */}
                       {title === "Tutorial Demos" && (
-                        <div className="pt-2 border-t border-white/5 mt-1">
-                          <Link 
-                            href="#" 
-                            className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary/80 flex items-center gap-1 group/link"
+                        <div className="pt-3 border-t border-white/5 mt-1">
+                          <Button 
+                            className="w-full bg-vibrant-gradient hover:scale-[1.02] transition-all rounded-full h-9 text-[10px] font-black uppercase tracking-widest text-white border-none shadow-lg shadow-primary/20"
+                            asChild
                           >
-                            Learn Moves
-                            <ChevronRight className="w-2.5 h-2.5 transition-transform group-hover/link:translate-x-0.5" />
-                          </Link>
+                            <Link href="#">
+                              <Play className="w-3 h-3 mr-1.5 fill-current" />
+                              Master the Moves
+                            </Link>
+                          </Button>
                         </div>
                       )}
                     </div>
