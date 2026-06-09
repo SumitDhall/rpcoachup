@@ -23,7 +23,8 @@ import {
   Play,
   Camera,
   Trash2,
-  Music2
+  Music2,
+  MoreHorizontal
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -40,6 +41,12 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -337,7 +344,7 @@ export default function ArtistStudioPage() {
       <div className="relative z-20">
         
         {/* Hero Cover Section */}
-        <section className="relative h-[55vh] md:h-[65vh] w-full overflow-hidden group">
+        <section className="relative h-[65vh] w-full overflow-hidden group">
           {coverImage ? (
             <Image 
               src={coverImage} 
@@ -350,135 +357,135 @@ export default function ArtistStudioPage() {
             <div className="w-full h-full bg-vibrant-gradient opacity-30" />
           )}
           
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050816] via-transparent to-transparent" />
-          
-          {/* Main Hero Header Layout */}
-          <div className="absolute inset-0 flex items-center px-8 md:px-12 lg:px-24">
-            <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row items-center justify-between gap-8 pt-12">
-              {/* Left Side: Branding */}
-              <div className="space-y-3 text-center md:text-left">
-                <h1 className="text-6xl sm:text-7xl md:text-9xl font-black italic uppercase tracking-tighter text-gradient leading-[0.85] drop-shadow-2xl">
-                  Artist Studio
-                </h1>
-                <p className="text-xs sm:text-sm uppercase tracking-[0.6em] font-black text-white/80 drop-shadow-lg">
-                  Master: {user.name}
-                </p>
-              </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050816]/40 via-transparent to-transparent" />
 
-              {/* Right Side: Primary CTA */}
-              <div className="shrink-0 flex flex-col items-center md:items-end gap-4">
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="h-16 md:h-20 rounded-full bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] text-[12px] md:text-sm px-12 md:px-16 hover:scale-110 transition-all shadow-[0_0_50px_rgba(255,79,216,0.4)] border-none">
-                      <Upload className="w-6 h-6 mr-4" />
-                      Upload Masterpiece
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="glass-card border-white/10 sm:max-w-md max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">New Masterpiece</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-6 py-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Title</Label>
-                          <input 
-                            placeholder="Enter title..." 
-                            className="flex h-11 w-full rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
-                            value={videoTitle}
-                            onChange={(e) => setVideoTitle(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Type</Label>
-                          <Select value={videoCategory} onValueChange={setVideoCategory}>
-                            <SelectTrigger className="bg-black/20 border-white/10 h-11">
-                              <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent className="glass-card border-white/10">
-                              <SelectItem value="Tutorial Preview">Tutorial Preview</SelectItem>
-                              <SelectItem value="Performances">Performances</SelectItem>
-                              <SelectItem value="Podcast">Podcast</SelectItem>
-                              <SelectItem value="Blips">Blips (Max 30s)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
+          {/* More (3 dots) Dropdown - Fixed position in cover photo bottom right */}
+          <div className="absolute bottom-6 right-6 z-30">
+            <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={handleCoverChange} />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-black/60 backdrop-blur-md hover:bg-white/20 text-white shadow-xl border border-white/10">
+                  <MoreHorizontal className="h-6 w-6" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="glass-card border-white/10">
+                <DropdownMenuItem onClick={triggerCoverInput} className="gap-3 cursor-pointer">
+                  <Camera className="h-4 w-4" />
+                  <span>Upload Cover</span>
+                </DropdownMenuItem>
+                {coverImage && (
+                  <DropdownMenuItem onClick={deleteCover} className="gap-3 cursor-pointer text-red-400 focus:text-red-400">
+                    <Trash2 className="h-4 w-4" />
+                    <span>Delete Cover</span>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </section>
 
+        {/* Branding & Action Header Area (Outside/Bottom of Cover Photo) */}
+        <div className="max-w-7xl mx-auto px-8 md:px-12 lg:px-24 pt-8">
+          <div className="flex flex-col md:flex-row items-end justify-between gap-8 border-b border-white/5 pb-12">
+            {/* Branding - Left Bottom Outline */}
+            <div className="space-y-2 text-left">
+              <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-gradient leading-[0.85] drop-shadow-2xl">
+                Artist Studio
+              </h1>
+              <p className="text-[10px] md:text-xs uppercase tracking-[0.5em] font-black text-white/60">
+                Master: {user.name}
+              </p>
+            </div>
+
+            {/* Primary CTA - Right Bottom Outline */}
+            <div className="shrink-0">
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="h-14 md:h-16 rounded-full bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] text-[11px] md:text-xs px-10 md:px-12 hover:scale-105 transition-all shadow-lg shadow-primary/20 border-none">
+                    <Upload className="w-5 h-5 mr-3" />
+                    Upload Masterpiece
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="glass-card border-white/10 sm:max-w-md max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">New Masterpiece</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-6 py-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">
-                          {videoCategory === "Blips" ? "Blip Video (Max 30s)" : "Main Video File"}
-                        </Label>
-                        <div onClick={triggerFileInput} className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 cursor-pointer hover:border-primary/50 transition-colors">
-                          <input type="file" ref={fileInputRef} className="hidden" accept="video/*" onChange={handleFileChange} />
-                          {selectedFile ? (
+                        <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Title</Label>
+                        <input 
+                          placeholder="Enter title..." 
+                          className="flex h-11 w-full rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
+                          value={videoTitle}
+                          onChange={(e) => setVideoTitle(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Type</Label>
+                        <Select value={videoCategory} onValueChange={setVideoCategory}>
+                          <SelectTrigger className="bg-black/20 border-white/10 h-11">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent className="glass-card border-white/10">
+                            <SelectItem value="Tutorial Preview">Tutorial Preview</SelectItem>
+                            <SelectItem value="Performances">Performances</SelectItem>
+                            <SelectItem value="Podcast">Podcast</SelectItem>
+                            <SelectItem value="Blips">Blips (Max 30s)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">
+                        {videoCategory === "Blips" ? "Blip Video (Max 30s)" : "Main Video File"}
+                      </Label>
+                      <div onClick={triggerFileInput} className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 cursor-pointer hover:border-primary/50 transition-colors">
+                        <input type="file" ref={fileInputRef} className="hidden" accept="video/*" onChange={handleFileChange} />
+                        {selectedFile ? (
+                          <div className="flex flex-col items-center gap-1">
+                            <span className="text-[9px] font-bold text-primary truncate max-w-[200px]">{selectedFile.name}</span>
+                            <span className="text-[8px] opacity-50 uppercase font-black">Ready to Sync</span>
+                          </div>
+                        ) : <FileVideo className="h-8 w-8 text-muted-foreground" />}
+                      </div>
+                    </div>
+
+                    {videoCategory === "Tutorial Preview" && (
+                      <div className="space-y-2 animate-in fade-in slide-in-from-top-4">
+                        <Label className="text-[10px] uppercase tracking-widest font-black text-secondary/80">Master the Moves Video</Label>
+                        <div onClick={triggerMasterMovesInput} className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 cursor-pointer hover:border-secondary/50 transition-colors">
+                          <input type="file" ref={masterMovesInputRef} className="hidden" accept="video/*" onChange={handleMasterMovesChange} />
+                          {masterMovesFile ? (
                             <div className="flex flex-col items-center gap-1">
-                              <span className="text-[9px] font-bold text-primary truncate max-w-[200px]">{selectedFile.name}</span>
-                              <span className="text-[8px] opacity-50 uppercase font-black">Ready to Sync</span>
+                              <span className="text-[9px] font-bold text-secondary truncate max-w-[200px]">{masterMovesFile.name}</span>
+                              <span className="text-[8px] opacity-50 uppercase font-black">Linked Loop Ready</span>
                             </div>
                           ) : <FileVideo className="h-8 w-8 text-muted-foreground" />}
                         </div>
                       </div>
-
-                      {videoCategory === "Tutorial Preview" && (
-                        <div className="space-y-2 animate-in fade-in slide-in-from-top-4">
-                          <Label className="text-[10px] uppercase tracking-widest font-black text-secondary/80">Master the Moves Video</Label>
-                          <div onClick={triggerMasterMovesInput} className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 cursor-pointer hover:border-secondary/50 transition-colors">
-                            <input type="file" ref={masterMovesInputRef} className="hidden" accept="video/*" onChange={handleMasterMovesChange} />
-                            {masterMovesFile ? (
-                              <div className="flex flex-col items-center gap-1">
-                                <span className="text-[9px] font-bold text-secondary truncate max-w-[200px]">{masterMovesFile.name}</span>
-                                <span className="text-[8px] opacity-50 uppercase font-black">Linked Loop Ready</span>
-                              </div>
-                            ) : <FileVideo className="h-8 w-8 text-muted-foreground" />}
-                          </div>
+                    )}
+                  </div>
+                  <DialogFooter className="flex flex-col gap-2">
+                    <Button onClick={handleUpload} disabled={isUploading || !isPublishEnabled} className="w-full bg-primary text-primary-foreground font-black uppercase tracking-widest text-[11px] h-12 rounded-xl">
+                      {isUploading ? "Syncing to Realm..." : "Publish to Realm"}
+                    </Button>
+                    {isUploading && (
+                      <div className="w-full space-y-1">
+                        <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-primary">
+                          <span>Synchronizing</span>
+                          <span>{uploadProgress}%</span>
                         </div>
-                      )}
-                    </div>
-                    <DialogFooter className="flex flex-col gap-2">
-                      <Button onClick={handleUpload} disabled={isUploading || !isPublishEnabled} className="w-full bg-primary text-primary-foreground font-black uppercase tracking-widest text-[11px] h-12 rounded-xl">
-                        {isUploading ? "Syncing to Realm..." : "Publish to Realm"}
-                      </Button>
-                      {isUploading && (
-                        <div className="w-full space-y-1">
-                          <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-primary">
-                            <span>Synchronizing</span>
-                            <span>{uploadProgress}%</span>
-                          </div>
-                          <Progress value={uploadProgress} className="h-1 bg-white/5" />
-                        </div>
-                      )}
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
+                        <Progress value={uploadProgress} className="h-1 bg-white/5" />
+                      </div>
+                    )}
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
-          
-          {/* Cover Management Controls (Bottom-Right) */}
-          <div className="absolute bottom-10 right-10 flex items-center gap-3">
-            <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={handleCoverChange} />
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={triggerCoverInput}
-              className="bg-black/60 backdrop-blur-xl border-white/20 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest px-6 h-12 rounded-2xl transition-all shadow-xl"
-            >
-              <Camera className="w-5 h-5 mr-3" />
-              {coverImage ? 'Change Cover' : 'Upload Cover'}
-            </Button>
-            {coverImage && (
-              <Button 
-                size="icon" 
-                variant="destructive" 
-                onClick={deleteCover}
-                className="h-12 w-12 rounded-2xl bg-red-500/80 hover:bg-red-600 backdrop-blur-md border-none shadow-xl"
-              >
-                <Trash2 className="w-5 h-5" />
-              </Button>
-            )}
-          </div>
-        </section>
+        </div>
 
         {/* Studio Sections Grid */}
         <div className="max-w-7xl mx-auto px-8 md:px-12 lg:px-24 py-16 space-y-16">
