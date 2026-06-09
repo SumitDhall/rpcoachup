@@ -15,7 +15,7 @@ import { ARTISTS } from "@/lib/mock-data";
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
-const ITEMS_PER_PAGE = 5; // Reduced since tiles are much larger now
+const ITEMS_PER_PAGE = 5;
 
 function CatalogVideoPlayer({ url }: { url: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -76,7 +76,7 @@ function VideoCatalogItem({ video, artistName }: { video: any, artistName: strin
               <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5 uppercase tracking-[0.3em] px-4 py-1.5 text-[9px] font-black">
                 {video.type}
               </Badge>
-              <h3 className="text-3xl md:text-4xl xl:text-5xl font-black italic uppercase tracking-tighter text-white group-hover:text-primary transition-colors leading-tight">
+              <h3 className="text-2xl md:text-3xl xl:text-4xl font-black italic uppercase tracking-tighter text-white group-hover:text-primary transition-colors leading-tight">
                 {video.title}
               </h3>
               <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-[0.4em]">
@@ -109,12 +109,6 @@ function VideoCatalogItem({ video, artistName }: { video: any, artistName: strin
               Master The Moves
             </Button>
           )}
-          <Button 
-            variant="outline" 
-            className="w-full sm:w-auto h-14 px-10 rounded-2xl border-white/10 glass-card font-black uppercase tracking-widest text-[11px] hover:text-primary hover:border-primary/40 transition-all"
-          >
-            Watch Original
-          </Button>
         </div>
       </div>
     </div>
@@ -125,6 +119,7 @@ export default function ArtistVideosPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
   const artist = ARTISTS.find((a) => a.id === id);
+  const catalogTopRef = useRef<HTMLDivElement>(null);
   
   const initialType = searchParams.get('type') || "All";
   const [filterType, setFilterType] = useState(initialType);
@@ -147,6 +142,13 @@ export default function ArtistVideosPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [filterType, sortBy]);
+
+  // Handle scroll to top on page change
+  useEffect(() => {
+    if (catalogTopRef.current) {
+      catalogTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [currentPage]);
 
   const processedVideos = useMemo(() => {
     let result = [...allVideos];
@@ -245,7 +247,7 @@ export default function ArtistVideosPage() {
         </div>
 
         {/* Catalog Content */}
-        <div className="max-w-7xl mx-auto px-8 -mt-8 relative z-30 space-y-12">
+        <div className="max-w-7xl mx-auto px-8 -mt-8 relative z-30 space-y-12" ref={catalogTopRef}>
           
           {/* Controls Bar */}
           <div className="flex flex-col md:flex-row items-center gap-6 glass-card p-6 rounded-[2.5rem] border-white/5 shadow-2xl">
@@ -313,21 +315,22 @@ export default function ArtistVideosPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-8 pt-12 pb-24">
+            <div className="flex items-center justify-center gap-4 pt-12 pb-24">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="h-14 w-14 rounded-2xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
+                className="h-12 w-12 rounded-xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
               >
-                <ChevronLeft className="h-6 h-6" />
+                <ChevronLeft className="h-5 w-5" />
               </Button>
               
-              <div className="flex items-center gap-4">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Synchronizing Page</span>
-                <span className="text-3xl font-black italic text-primary leading-none">{currentPage}</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">of {totalPages}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Page</span>
+                <span className="text-sm font-black tracking-tighter text-primary">{currentPage}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">of</span>
+                <span className="text-sm font-black tracking-tighter">{totalPages}</span>
               </div>
 
               <Button
@@ -335,9 +338,9 @@ export default function ArtistVideosPage() {
                 size="icon"
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="h-14 w-14 rounded-2xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
+                className="h-12 w-12 rounded-xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
               >
-                <ChevronRight className="h-6 h-6" />
+                <ChevronRight className="h-5 w-5" />
               </Button>
             </div>
           )}
