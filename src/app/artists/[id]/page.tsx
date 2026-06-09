@@ -74,17 +74,20 @@ function GalleryVideo({ url }: { url: string }) {
 interface VideoSectionProps {
   title: string;
   videos: any[];
+  artistId: string;
 }
 
-function VideoCarouselSection({ title, videos }: VideoSectionProps) {
+function VideoCarouselSection({ title, videos, artistId }: VideoSectionProps) {
   if (videos.length === 0) return null;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between px-2">
         <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">{title}</h3>
-        <Button variant="link" className="text-primary font-black uppercase tracking-widest text-[10px] group">
-          View All <ChevronRight className="w-3 h-3 ml-1 transition-transform group-hover:translate-x-1" />
+        <Button variant="link" className="text-primary font-black uppercase tracking-widest text-[10px] group" asChild>
+          <Link href={`/artists/${artistId}/videos?type=${encodeURIComponent(title)}`}>
+            View All <ChevronRight className="w-3 h-3 ml-1 transition-transform group-hover:translate-x-1" />
+          </Link>
         </Button>
       </div>
 
@@ -316,9 +319,9 @@ export default function ArtistDetailPage() {
 
           {/* Video Categories Sections */}
           <div className="space-y-24">
-            <VideoCarouselSection title="TUTORIAL PREVIEW" videos={categories.TutorialPreview} />
-            <VideoCarouselSection title="Performances" videos={categories.Performances} />
-            <VideoCarouselSection title="Podcasts" videos={categories.Podcasts} />
+            <VideoCarouselSection title="TUTORIAL PREVIEW" videos={categories.TutorialPreview} artistId={id as string} />
+            <VideoCarouselSection title="Performances" videos={categories.Performances} artistId={id as string} />
+            <VideoCarouselSection title="Podcasts" videos={categories.Podcasts} artistId={id as string} />
           </div>
         </div>
       </div>
