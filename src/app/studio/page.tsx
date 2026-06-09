@@ -17,7 +17,9 @@ import {
   Clock,
   LayoutGrid,
   Filter,
-  ArrowUpDown
+  ArrowUpDown,
+  Sparkles,
+  Play
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -46,18 +48,18 @@ import 'video.js/dist/video-js.css';
 
 // Expanded Mock Data for Pagination Demo
 const INITIAL_UPLOADS = [
-  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial Demo", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
-  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4", thumbnail: "https://picsum.photos/seed/urban/800/450" },
-  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial Demo", videoUrl: "https://www.w3schools.com/html/movie.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
-  { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performances", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4", thumbnail: "https://picsum.photos/seed/contemp/800/450" },
-  { id: "u5", title: "Hip Hop Foundations", date: "Aug 05, 2024", views: "21.1K", status: "Published", type: "Tutorial Demo", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", thumbnail: "https://picsum.photos/seed/hiphop/800/450" },
-  { id: "u6", title: "Latin Heat Rehearsal", date: "Jul 20, 2024", views: "1.5K", status: "Draft", type: "Tutorial Demo", videoUrl: "https://www.w3schools.com/html/movie.mp4", thumbnail: "https://picsum.photos/seed/latin/800/450" },
-  { id: "u7", title: "Jazz Fusion Routine", date: "Jun 15, 2024", views: "15.7K", status: "Published", type: "Performances", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4", thumbnail: "https://picsum.photos/seed/jazz/800/450" },
-  { id: "u8", title: "Breaking Level 1", date: "May 22, 2024", views: "5.4K", status: "Published", type: "Tutorial Demo", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", thumbnail: "https://picsum.photos/seed/break/800/450" },
-  { id: "u9", title: "Popping Controls", date: "Apr 10, 2024", views: "10.2K", status: "Published", type: "Tutorial Demo", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4", thumbnail: "https://picsum.photos/seed/pop/800/450" },
-  { id: "u10", title: "World of Dance Prep", date: "Mar 30, 2024", views: "30.5K", status: "Published", type: "Performances", videoUrl: "https://www.w3schools.com/html/movie.mp4", thumbnail: "https://picsum.photos/seed/prep/800/450" },
-  { id: "u11", title: "Locking & Loading", date: "Feb 14, 2024", views: "2.8K", status: "Published", type: "Tutorial Demo", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4", thumbnail: "https://picsum.photos/seed/lock/800/450" },
-  { id: "u12", title: "Vogue Intro", date: "Jan 02, 2024", views: "7.1K", status: "Published", type: "Tutorial Demo", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4", thumbnail: "https://picsum.photos/seed/vogue/800/450" },
+  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
+  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/urban/800/450" },
+  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
+  { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/contemp/800/450" },
+  { id: "u5", title: "Hip Hop Foundations", date: "Aug 05, 2024", views: "21.1K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", thumbnail: "https://picsum.photos/seed/hiphop/800/450" },
+  { id: "u6", title: "Latin Heat Rehearsal", date: "Jul 20, 2024", views: "1.5K", status: "Draft", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/latin/800/450" },
+  { id: "u7", title: "Jazz Fusion Routine", date: "Jun 15, 2024", views: "15.7K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/jazz/800/450" },
+  { id: "u8", title: "Breaking Level 1", date: "May 22, 2024", views: "5.4K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/break/800/450" },
+  { id: "u9", title: "Popping Controls", date: "Apr 10, 2024", views: "10.2K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", thumbnail: "https://picsum.photos/seed/pop/800/450" },
+  { id: "u10", title: "World of Dance Prep", date: "Mar 30, 2024", views: "30.5K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/prep/800/450" },
+  { id: "u11", title: "Locking & Loading", date: "Feb 14, 2024", views: "2.8K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/lock/800/450" },
+  { id: "u12", title: "Vogue Intro", date: "Jan 02, 2024", views: "7.1K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/vogue/800/450" },
 ];
 
 function StudioVideo({ url, poster }: { url: string; poster?: string }) {
@@ -65,7 +67,7 @@ function StudioVideo({ url, poster }: { url: string; poster?: string }) {
   const playerRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !url) return;
 
     const videoElement = document.createElement("video-js");
     videoElement.classList.add('vjs-fill', 'vjs-big-play-centered');
@@ -217,6 +219,8 @@ export default function ArtistStudioPage() {
         clearInterval(interval);
         setTimeout(() => {
           const newVideoUrl = URL.createObjectURL(selectedFile!);
+          const masterMovesUrl = masterMovesFile ? URL.createObjectURL(masterMovesFile) : undefined;
+          
           const newUpload = {
             id: `u-new-${Date.now()}`,
             title: videoTitle || selectedFile!.name.split('.')[0],
@@ -225,6 +229,7 @@ export default function ArtistStudioPage() {
             status: "Published",
             type: videoCategory,
             videoUrl: newVideoUrl,
+            masterMovesUrl: masterMovesUrl,
             thumbnail: "https://picsum.photos/seed/new-upload/800/450"
           };
 
@@ -516,54 +521,127 @@ export default function ArtistStudioPage() {
             </div>
           </div>
           
-          <div className="flex flex-col gap-6 min-h-[600px] transition-all duration-300">
+          <div className="flex flex-col gap-8 min-h-[600px] transition-all duration-300">
             {paginatedUploads.map((upload) => (
               <Card key={upload.id} className="glass-card border-white/5 hover:border-primary/20 transition-all overflow-hidden group animate-in fade-in duration-500">
-                <div className="flex flex-col md:flex-row">
-                  <div className="w-full md:w-80 aspect-video relative bg-black shrink-0 border-b md:border-b-0 md:border-r border-white/5">
-                    <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
-                  </div>
-
-                  <div className="flex-1 p-6 flex flex-col justify-between gap-6">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-primary/20 text-primary bg-primary/5">
-                          {upload.type}
-                        </Badge>
-                        <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border-none">
-                          {upload.status}
-                        </Badge>
-                      </div>
-                      <h3 className="text-xl font-black uppercase italic tracking-tight group-hover:text-primary transition-colors">
-                        {upload.title}
-                      </h3>
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-4 border-t border-white/5">
+                {upload.type === "Tutorial Demo" ? (
+                  <div className="p-6 space-y-6">
+                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
                       <div className="space-y-1">
-                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Date Uploaded</p>
-                        <div className="flex items-center gap-2 text-xs font-bold">
-                          <Calendar className="w-3 h-3 text-primary" />
-                          {upload.date}
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-primary/40 text-primary bg-primary/5">
+                            Tutorial Package
+                          </Badge>
+                          <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border-none">
+                            {upload.status}
+                          </Badge>
                         </div>
+                        <h3 className="text-2xl font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">
+                          {upload.title}
+                        </h3>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Total Views</p>
-                        <div className="flex items-center gap-2 text-xs font-bold">
-                          <Eye className="w-3 h-3 text-primary" />
-                          {upload.views}
+                      <div className="hidden sm:flex items-center gap-6">
+                        <div className="text-right">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Views</p>
+                          <p className="text-lg font-bold">{upload.views}</p>
                         </div>
-                      </div>
-                      <div className="space-y-1 hidden sm:block">
-                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Avg. Retention</p>
-                        <div className="flex items-center gap-2 text-xs font-bold">
-                          <Clock className="w-3 h-3 text-primary" />
-                          84%
+                        <div className="text-right">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Date</p>
+                          <p className="text-lg font-bold">{upload.date}</p>
                         </div>
                       </div>
                     </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-[10px] font-black text-primary">01</span>
+                            </div>
+                            <span className="text-[11px] font-black uppercase tracking-widest text-primary/80">Instructional Demo</span>
+                          </div>
+                          <Badge variant="ghost" className="text-[8px] opacity-40 uppercase tracking-widest">Main Feature</Badge>
+                        </div>
+                        <div className="aspect-video relative rounded-2xl overflow-hidden border border-white/10 bg-black shadow-2xl">
+                          <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-6 w-6 rounded-full bg-secondary/10 flex items-center justify-center">
+                              <span className="text-[10px] font-black text-secondary">02</span>
+                            </div>
+                            <span className="text-[11px] font-black uppercase tracking-widest text-secondary/80">Master the Moves</span>
+                          </div>
+                          <Badge variant="ghost" className="text-[8px] opacity-40 uppercase tracking-widest">Practice Loop</Badge>
+                        </div>
+                        <div className="aspect-video relative rounded-2xl overflow-hidden border border-white/10 bg-black shadow-2xl">
+                          <StudioVideo url={upload.masterMovesUrl || upload.videoUrl} poster={upload.thumbnail} />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-8 pt-4 border-t border-white/5 opacity-60">
+                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                          <Clock className="w-3.5 h-3.5 text-primary" />
+                          Retention: 84%
+                       </div>
+                       <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                          <Sparkles className="w-3.5 h-3.5 text-secondary" />
+                          Engagement: High
+                       </div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex flex-col md:flex-row">
+                    <div className="w-full md:w-80 aspect-video relative bg-black shrink-0 border-b md:border-b-0 md:border-r border-white/5">
+                      <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
+                    </div>
+
+                    <div className="flex-1 p-6 flex flex-col justify-between gap-6">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-primary/20 text-primary bg-primary/5">
+                            {upload.type}
+                          </Badge>
+                          <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border-none">
+                            {upload.status}
+                          </Badge>
+                        </div>
+                        <h3 className="text-xl font-black uppercase italic tracking-tight group-hover:text-primary transition-colors">
+                          {upload.title}
+                        </h3>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-4 border-t border-white/5">
+                        <div className="space-y-1">
+                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Date Uploaded</p>
+                          <div className="flex items-center gap-2 text-xs font-bold">
+                            <Calendar className="w-3 h-3 text-primary" />
+                            {upload.date}
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Total Views</p>
+                          <div className="flex items-center gap-2 text-xs font-bold">
+                            <Eye className="w-3 h-3 text-primary" />
+                            {upload.views}
+                          </div>
+                        </div>
+                        <div className="space-y-1 hidden sm:block">
+                          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Avg. Retention</p>
+                          <div className="flex items-center gap-2 text-xs font-bold">
+                            <Clock className="w-3 h-3 text-primary" />
+                            84%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </Card>
             ))}
             
