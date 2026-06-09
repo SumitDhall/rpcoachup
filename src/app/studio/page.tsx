@@ -104,8 +104,6 @@ export default function ArtistStudioPage() {
   
   const [videoTitle, setVideoTitle] = useState("");
   const [videoCategory, setVideoCategory] = useState("Performances");
-  const [isDragging, setIsDragging] = useState(false);
-  const [isDraggingMaster, setIsDraggingMaster] = useState(false);
   
   const [filterType, setFilterType] = useState("All");
   const [sortBy, setSortBy] = useState("date-desc");
@@ -128,6 +126,7 @@ export default function ArtistStudioPage() {
       { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/urban/800/450" },
       { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
       { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/contemp/800/450" },
+      { id: "u5", title: "Rhythm & Pulse Podcast #1", date: "Sep 05, 2024", views: "1.5K", status: "Published", type: "Podcast", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/podcast/800/450" },
     ]);
   }, []);
 
@@ -167,7 +166,7 @@ export default function ArtistStudioPage() {
           
           const newUpload = {
             id: `u-new-${Date.now()}`,
-            title: videoTitle || "Untitled Performance",
+            title: videoTitle || "Untitled Masterpiece",
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
             views: "0",
             status: "Published",
@@ -195,9 +194,40 @@ export default function ArtistStudioPage() {
     }, 150);
   };
 
+  // Helper to parse views string like "12.5K" to number
+  const parseViews = (views: string) => {
+    if (!views) return 0;
+    const clean = views.replace(/[^0-9.]/g, '');
+    let num = parseFloat(clean);
+    if (views.toLowerCase().includes('k')) num *= 1000;
+    if (views.toLowerCase().includes('m')) num *= 1000000;
+    return num;
+  };
+
   const processedUploads = useMemo(() => {
     let result = [...uploads];
-    if (filterType !== "All") result = result.filter(u => u.type === filterType);
+    
+    // Filter
+    if (filterType !== "All") {
+      result = result.filter(u => u.type === filterType);
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case "date-desc":
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        case "date-asc":
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        case "views-desc":
+          return parseViews(b.views) - parseViews(a.views);
+        case "views-asc":
+          return parseViews(a.views) - parseViews(b.views);
+        default:
+          return 0;
+      }
+    });
+
     return result;
   }, [uploads, filterType, sortBy]);
 
@@ -321,7 +351,42 @@ export default function ArtistStudioPage() {
           ))}
         </div>
 
-        {/* Content */}
+        {/* Filter & Sort Bar */}
+        <div className="flex flex-col sm:flex-row items-center gap-4 bg-black/30 backdrop-blur-md p-4 rounded-[2rem] border border-white/5">
+          <div className="flex items-center gap-2 flex-1 w-full">
+            <Filter className="w-4 h-4 text-primary" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Filter:</span>
+            <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger className="w-full sm:w-[180px] bg-white/5 border-none h-10 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent className="glass-card border-white/10">
+                <SelectItem value="All">All Categories</SelectItem>
+                <SelectItem value="Tutorial Demo">Tutorial Demos</SelectItem>
+                <SelectItem value="Performances">Performances</SelectItem>
+                <SelectItem value="Podcast">Podcasts</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-2 flex-1 w-full justify-end">
+            <ArrowUpDown className="w-4 h-4 text-secondary" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sort:</span>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full sm:w-[180px] bg-white/5 border-none h-10 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                <SelectValue placeholder="Sort Order" />
+              </SelectTrigger>
+              <SelectContent className="glass-card border-white/10">
+                <SelectItem value="date-desc">Newest First</SelectItem>
+                <SelectItem value="date-asc">Oldest First</SelectItem>
+                <SelectItem value="views-desc">Most Viewed</SelectItem>
+                <SelectItem value="views-asc">Least Viewed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Content Content Content */}
         <section className="space-y-8">
           <div className="flex items-center gap-3 border-b border-white/5 pb-6">
             <LayoutGrid className="w-6 h-6 text-primary" />
@@ -334,18 +399,35 @@ export default function ArtistStudioPage() {
                 {upload.type === "Tutorial Demo" ? (
                   <div className="p-6 space-y-6">
                     <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                      <h3 className="text-2xl font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">{upload.title}</h3>
+                      <div className="space-y-1">
+                        <h3 className="text-2xl font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">{upload.title}</h3>
+                        <div className="flex items-center gap-3">
+                           <Badge variant="outline" className="text-primary border-primary/20">{upload.type}</Badge>
+                           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+                             <Eye className="w-3 h-3" /> {upload.views} Views
+                           </span>
+                           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+                             <Calendar className="w-3 h-3" /> {upload.date}
+                           </span>
+                        </div>
+                      </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-3">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-primary/80">Demo Preview</span>
-                        <div className="aspect-video relative rounded-2xl overflow-hidden bg-black">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-black uppercase tracking-widest text-primary/80">01. Demo Preview</span>
+                          <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] font-black">HD</Badge>
+                        </div>
+                        <div className="aspect-video relative rounded-2xl overflow-hidden bg-black ring-1 ring-white/5 shadow-2xl">
                           <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
                         </div>
                       </div>
                       <div className="space-y-3">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-secondary/80">Master the Moves</span>
-                        <div className="aspect-video relative rounded-2xl overflow-hidden bg-black">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-black uppercase tracking-widest text-secondary/80">02. Master the Moves</span>
+                          <Badge className="bg-secondary/10 text-secondary border-secondary/20 text-[8px] font-black">LOOPABLE</Badge>
+                        </div>
+                        <div className="aspect-video relative rounded-2xl overflow-hidden bg-black ring-1 ring-white/5 shadow-2xl">
                           <StudioVideo url={upload.masterMovesUrl || upload.videoUrl} poster={upload.thumbnail} />
                         </div>
                       </div>
@@ -356,15 +438,47 @@ export default function ArtistStudioPage() {
                     <div className="w-full md:w-80 aspect-video relative bg-black shrink-0 border-r border-white/5">
                       <StudioVideo url={upload.videoUrl} poster={upload.thumbnail} />
                     </div>
-                    <div className="flex-1 p-6 space-y-2">
-                      <Badge variant="outline" className="text-primary">{upload.type}</Badge>
-                      <h3 className="text-xl font-black uppercase italic tracking-tight">{upload.title}</h3>
+                    <div className="flex-1 p-6 space-y-4">
+                      <div className="space-y-1">
+                        <Badge variant="outline" className="text-primary border-primary/20 mb-2">{upload.type}</Badge>
+                        <h3 className="text-xl font-black uppercase italic tracking-tight">{upload.title}</h3>
+                      </div>
+                      
+                      <div className="flex items-center gap-6 pt-2 border-t border-white/5">
+                         <div className="flex flex-col">
+                            <span className="text-[8px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Views</span>
+                            <span className="text-sm font-black tracking-tighter">{upload.views}</span>
+                         </div>
+                         <div className="flex flex-col">
+                            <span className="text-[8px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Published</span>
+                            <span className="text-sm font-black tracking-tighter">{upload.date}</span>
+                         </div>
+                         <div className="flex flex-col">
+                            <span className="text-[8px] uppercase tracking-[0.2em] font-black text-muted-foreground/60">Status</span>
+                            <span className="text-sm font-black tracking-tighter text-emerald-400">{upload.status}</span>
+                         </div>
+                      </div>
                     </div>
                   </div>
                 )}
               </Card>
             ))}
           </div>
+
+          {processedUploads.length === 0 && (
+            <div className="text-center py-32 glass-card rounded-[3rem] border-dashed border-white/20">
+              <p className="text-2xl font-black italic uppercase tracking-tighter text-muted-foreground">
+                No masterpieces found in this realm.
+              </p>
+              <Button 
+                variant="link" 
+                className="text-primary uppercase font-black tracking-widest text-[10px] mt-4"
+                onClick={() => { setFilterType("All"); setSortBy("date-desc"); }}
+              >
+                Reset Filters
+              </Button>
+            </div>
+          )}
         </section>
       </div>
     </div>
