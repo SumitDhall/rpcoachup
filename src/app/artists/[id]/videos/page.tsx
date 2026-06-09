@@ -9,16 +9,15 @@ import { ArrowLeft, Play, Filter, ArrowUpDown, ChevronLeft, ChevronRight, Eye, C
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ARTISTS } from "@/lib/mock-data";
 
 // Video.js imports
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5; // Reduced since tiles are much larger now
 
-function SmallVideoPlayer({ url }: { url: string }) {
+function CatalogVideoPlayer({ url }: { url: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
 
@@ -36,7 +35,7 @@ function SmallVideoPlayer({ url }: { url: string }) {
       responsive: true,
       fluid: false, 
       loop: false,
-      muted: true,
+      muted: false,
       preload: 'metadata',
       sources: [{
         src: url,
@@ -52,11 +51,72 @@ function SmallVideoPlayer({ url }: { url: string }) {
   }, [url]);
 
   return (
-    <div className="h-28 w-48 rounded-xl overflow-hidden relative bg-black shadow-2xl ring-1 ring-white/5">
+    <div className="w-full h-full relative bg-black">
       <div 
         ref={containerRef} 
         className="w-full h-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" 
       />
+    </div>
+  );
+}
+
+function VideoCatalogItem({ video, artistName }: { video: any, artistName: string }) {
+  return (
+    <div className="glass-card rounded-[2.5rem] border-white/5 overflow-hidden group transition-all duration-500 hover:border-primary/30 flex flex-col lg:flex-row shadow-2xl">
+      {/* Video Side */}
+      <div className="w-full lg:w-[500px] xl:w-[600px] shrink-0 aspect-video lg:aspect-auto lg:h-[350px] relative bg-black">
+        <CatalogVideoPlayer url={video.url} />
+      </div>
+
+      {/* Details Side */}
+      <div className="p-8 md:p-10 flex-1 flex flex-col justify-between gap-8">
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-3">
+              <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5 uppercase tracking-[0.3em] px-4 py-1.5 text-[9px] font-black">
+                {video.type}
+              </Badge>
+              <h3 className="text-3xl md:text-4xl xl:text-5xl font-black italic uppercase tracking-tighter text-white group-hover:text-primary transition-colors leading-tight">
+                {video.title}
+              </h3>
+              <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-[0.4em]">
+                Master of Motion: {artistName}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-white/40">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-secondary" />
+                {new Date(video.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </div>
+              <div className="flex items-center gap-2">
+                <Eye className="w-4 h-4 text-primary" />
+                {video.views.toLocaleString()}
+              </div>
+            </div>
+          </div>
+          
+          <div className="h-px w-full bg-gradient-to-r from-white/10 to-transparent" />
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          {video.type === "TUTORIAL PREVIEW" && (
+            <Button 
+              className="w-full sm:w-auto h-14 px-10 rounded-2xl bg-vibrant-gradient text-white font-black uppercase tracking-widest text-[11px] shadow-xl shadow-primary/20 hover:scale-[1.05] transition-all border-none"
+            >
+              <Play className="w-4 h-4 mr-3 fill-current" />
+              Master The Moves
+            </Button>
+          )}
+          <Button 
+            variant="outline" 
+            className="w-full sm:w-auto h-14 px-10 rounded-2xl border-white/10 glass-card font-black uppercase tracking-widest text-[11px] hover:text-primary hover:border-primary/40 transition-all"
+          >
+            Watch Original
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -71,11 +131,9 @@ export default function ArtistVideosPage() {
   const [sortBy, setSortBy] = useState("date-desc");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Generate some random dates and view counts for the mock videos to make the table look realistic
   const allVideos = useMemo(() => {
     if (!artist) return [];
     
-    // We categorize the artist's existing videos into the three types
     const types = ["TUTORIAL PREVIEW", "Performances", "Podcasts"];
     return artist.videos.map((v, idx) => ({
       ...v,
@@ -155,7 +213,7 @@ export default function ArtistVideosPage() {
       {/* Content */}
       <div className="relative z-20">
         {/* Hero Section */}
-        <div className="relative h-[40vh] min-h-[400px] w-full overflow-hidden">
+        <div className="relative h-[45vh] min-h-[450px] w-full overflow-hidden">
           <Image
             src={artist.image}
             alt={artist.name}
@@ -176,7 +234,7 @@ export default function ArtistVideosPage() {
 
           <div className="absolute bottom-16 left-8 right-8 space-y-4">
             <div className="space-y-2">
-              <Badge variant="outline" className="text-primary border-primary/40 bg-primary/10 uppercase tracking-[0.2em] px-3 py-1 text-[10px] font-black">
+              <Badge variant="outline" className="text-primary border-primary/40 bg-primary/10 uppercase tracking-[0.3em] px-4 py-1.5 text-[10px] font-black">
                 FULL CATALOG
               </Badge>
               <h1 className="text-5xl sm:text-6xl md:text-8xl font-black italic uppercase tracking-tighter text-white drop-shadow-2xl leading-none">
@@ -190,15 +248,15 @@ export default function ArtistVideosPage() {
         <div className="max-w-7xl mx-auto px-8 -mt-8 relative z-30 space-y-12">
           
           {/* Controls Bar */}
-          <div className="flex flex-col md:flex-row items-center gap-6 glass-card p-6 rounded-3xl border-white/5 shadow-2xl">
+          <div className="flex flex-col md:flex-row items-center gap-6 glass-card p-6 rounded-[2.5rem] border-white/5 shadow-2xl">
              <div className="flex items-center gap-4 flex-1 w-full">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                  <Filter className="w-5 h-5" />
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                  <Filter className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Filter by Type</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Filter by Type</p>
                   <Select value={filterType} onValueChange={setFilterType}>
-                    <SelectTrigger className="bg-white/5 border-none h-11 rounded-xl text-[11px] font-black uppercase tracking-widest">
+                    <SelectTrigger className="bg-white/5 border-none h-12 rounded-xl text-[11px] font-black uppercase tracking-widest">
                       <SelectValue placeholder="Category" />
                     </SelectTrigger>
                     <SelectContent className="glass-card border-white/10">
@@ -212,13 +270,13 @@ export default function ArtistVideosPage() {
              </div>
 
              <div className="flex items-center gap-4 flex-1 w-full">
-                <div className="h-10 w-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary">
-                  <ArrowUpDown className="w-5 h-5" />
+                <div className="h-12 w-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
+                  <ArrowUpDown className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1">Sort Catalog</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Sort Catalog</p>
                   <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="bg-white/5 border-none h-11 rounded-xl text-[11px] font-black uppercase tracking-widest">
+                    <SelectTrigger className="bg-white/5 border-none h-12 rounded-xl text-[11px] font-black uppercase tracking-widest">
                       <SelectValue placeholder="Sort Order" />
                     </SelectTrigger>
                     <SelectContent className="glass-card border-white/10">
@@ -232,64 +290,22 @@ export default function ArtistVideosPage() {
              </div>
           </div>
 
-          {/* Tabular Display */}
-          <div className="glass-card rounded-[2.5rem] border-white/5 overflow-hidden shadow-2xl">
-            <Table>
-              <TableHeader className="bg-white/5">
-                <TableRow className="border-white/5 hover:bg-transparent">
-                  <TableHead className="w-[220px] text-[10px] font-black uppercase tracking-widest text-primary">Preview</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-primary">Title & Master</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-primary">Category</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-primary">Published</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-primary text-right">Views</TableHead>
-                  <TableHead className="w-[100px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedVideos.map((video) => (
-                  <TableRow key={video.id} className="border-white/5 hover:bg-white/5 group transition-colors">
-                    <TableCell className="py-8">
-                      <SmallVideoPlayer url={video.url} />
-                    </TableCell>
-                    <TableCell className="py-8">
-                      <div className="space-y-2">
-                        <p className="font-black italic text-xl uppercase tracking-tight text-white group-hover:text-primary transition-colors leading-tight">{video.title}</p>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Master of Motion: {artist.name}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-primary/20 bg-primary/5 text-primary">
-                        {video.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase">
-                        <Calendar className="w-3 h-3 text-secondary" />
-                        {new Date(video.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="inline-flex items-center gap-2 text-sm font-black tracking-tighter text-white">
-                        <Eye className="w-4 h-4 text-primary" />
-                        {video.views.toLocaleString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Button size="icon" variant="ghost" className="h-12 w-12 rounded-full hover:bg-primary/20 hover:text-primary transition-all">
-                        <Play className="h-6 w-6 fill-current" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          {/* Catalog List */}
+          <div className="space-y-12">
+            {paginatedVideos.map((video) => (
+              <VideoCatalogItem key={video.id} video={video} artistName={artist.name} />
+            ))}
 
             {processedVideos.length === 0 && (
-              <div className="py-32 text-center space-y-4">
-                <Music2 className="w-12 h-12 text-muted-foreground/20 mx-auto" />
-                <p className="text-2xl font-black italic uppercase tracking-tighter text-muted-foreground">No matches in the Realm</p>
-                <Button variant="link" className="text-primary font-black uppercase tracking-widest text-[10px]" onClick={() => { setFilterType("All"); setSortBy("date-desc"); }}>
-                  Clear Filters
+              <div className="py-40 text-center space-y-6 glass-card rounded-[3rem] border-dashed border-white/10">
+                <Music2 className="w-16 h-16 text-muted-foreground/20 mx-auto" />
+                <p className="text-3xl font-black italic uppercase tracking-tighter text-muted-foreground">No matches in the Realm</p>
+                <Button 
+                  variant="link" 
+                  className="text-primary font-black uppercase tracking-widest text-xs" 
+                  onClick={() => { setFilterType("All"); setSortBy("date-desc"); }}
+                >
+                  Reset Synchronization
                 </Button>
               </div>
             )}
@@ -297,20 +313,20 @@ export default function ArtistVideosPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-6 pt-8 pb-24">
+            <div className="flex items-center justify-center gap-8 pt-12 pb-24">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="rounded-xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
+                className="h-14 w-14 rounded-2xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-6 h-6" />
               </Button>
               
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Synchronizing Page</span>
-                <span className="text-xl font-black italic text-primary">{currentPage}</span>
+                <span className="text-3xl font-black italic text-primary leading-none">{currentPage}</span>
                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">of {totalPages}</span>
               </div>
 
@@ -319,9 +335,9 @@ export default function ArtistVideosPage() {
                 size="icon"
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="rounded-xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
+                className="h-14 w-14 rounded-2xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-6 h-6" />
               </Button>
             </div>
           )}
