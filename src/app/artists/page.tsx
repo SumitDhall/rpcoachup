@@ -1,22 +1,49 @@
+
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, Zap } from "lucide-react";
+import { Search, Zap, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ARTISTS } from "@/lib/mock-data";
 
+const ITEMS_PER_PAGE = 9;
+
 export default function ArtistsPage() {
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const topRef = useRef<HTMLDivElement>(null);
 
-  const filteredArtists = ARTISTS.filter(
-    (artist) =>
-      artist.name.toLowerCase().includes(search.toLowerCase()) ||
-      artist.style.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filter artists based on search input
+  const filteredArtists = useMemo(() => {
+    return ARTISTS.filter(
+      (artist) =>
+        artist.name.toLowerCase().includes(search.toLowerCase()) ||
+        artist.style.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search]);
+
+  // Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  // Handle scroll to top when page changes
+  useEffect(() => {
+    if (topRef.current && currentPage > 1) {
+      topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [currentPage]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredArtists.length / ITEMS_PER_PAGE);
+  const paginatedArtists = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredArtists.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredArtists, currentPage]);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -51,7 +78,7 @@ export default function ArtistsPage() {
       <div className="relative z-20 max-w-6xl mx-auto p-8 space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-1000">
         <div className="blob top-0 left-0 opacity-10" />
 
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8" ref={topRef}>
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <Zap className="h-6 w-6 text-primary fill-primary" />
@@ -82,7 +109,7 @@ export default function ArtistsPage() {
         </div>
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredArtists.map((artist) => (
+          {paginatedArtists.map((artist) => (
             <Link key={artist.id} href={`/artists/${artist.id}`}>
               <Card className="glass-card border-white/10 hover:border-primary/50 hover:scale-[1.05] transition-all duration-500 group cursor-pointer h-full rounded-3xl overflow-hidden">
                 <div className="h-64 w-full relative overflow-hidden">
@@ -133,6 +160,38 @@ export default function ArtistsPage() {
             </div>
           )}
         </div>
+
+        {/* Pagination UI */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 pt-12 pb-24">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="h-12 w-12 rounded-xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Page</span>
+              <span className="text-sm font-black tracking-tighter text-primary">{currentPage}</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">of</span>
+              <span className="text-sm font-black tracking-tighter">{totalPages}</span>
+            </div>
+
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="h-12 w-12 rounded-xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
