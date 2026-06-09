@@ -87,6 +87,11 @@ export const activities = [
   },
 ];
 
+const SAMPLE_VIDEO_1 = "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
+const SAMPLE_VIDEO_2 = "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4";
+const SAMPLE_VIDEO_3 = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+const SAMPLE_VIDEO_4 = "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4";
+
 export const ARTISTS = [
   { 
     id: "1", 
@@ -95,16 +100,16 @@ export const ARTISTS = [
     description: "A two-time professional champion of ABC's Dancing with the Stars, Julianne has become a household name in the world of ballroom dance and entertainment.",
     image: "https://picsum.photos/seed/artist1/800/800",
     videos: [
-      { id: "v1-1", title: "Samba Soul Masterclass", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v1-2", title: "Cha Cha Champions", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v1-3", title: "Ballroom Basics", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v1-4", title: "Tango Technique", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v1-5", title: "Waltz Wonders", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v1-6", title: "Jive Jump", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v1-7", title: "Foxtrot Flow", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v1-8", title: "Rumba Romance", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v1-9", title: "Paso Doble Power", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v1-10", title: "Quickstep Quickness", url: "https://vjs.zencdn.net/v/oceans.mp4" }
+      { id: "v1-1", title: "Samba Soul Masterclass", url: SAMPLE_VIDEO_1 },
+      { id: "v1-2", title: "Cha Cha Champions", url: SAMPLE_VIDEO_2 },
+      { id: "v1-3", title: "Ballroom Basics", url: SAMPLE_VIDEO_3 },
+      { id: "v1-4", title: "Tango Technique", url: SAMPLE_VIDEO_4 },
+      { id: "v1-5", title: "Waltz Wonders", url: SAMPLE_VIDEO_1 },
+      { id: "v1-6", title: "Jive Jump", url: SAMPLE_VIDEO_2 },
+      { id: "v1-7", title: "Foxtrot Flow", url: SAMPLE_VIDEO_3 },
+      { id: "v1-8", title: "Rumba Romance", url: SAMPLE_VIDEO_4 },
+      { id: "v1-9", title: "Paso Doble Power", url: SAMPLE_VIDEO_1 },
+      { id: "v1-10", title: "Quickstep Quickness", url: SAMPLE_VIDEO_2 }
     ]
   },
   { 
@@ -114,14 +119,14 @@ export const ARTISTS = [
     description: "Emmy Award-winning choreographer and New York Times Best Selling author, Derek Hough is a powerhouse of creative expression and technical excellence.",
     image: "https://picsum.photos/seed/artist2/800/800",
     videos: [
-      { id: "v2-1", title: "Emotional Flow", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v2-2", title: "Modern Masterpiece", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v2-3", title: "Contact Improv", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v2-4", title: "Floorwork Focus", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v2-5", title: "Fluidity Drill", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v2-6", title: "Release Technique", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v2-7", title: "Contemporary Fusion", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v2-8", title: "Partnering Prep", url: "https://www.w3schools.com/html/mov_bbb.mp4" }
+      { id: "v2-1", title: "Emotional Flow", url: SAMPLE_VIDEO_3 },
+      { id: "v2-2", title: "Modern Masterpiece", url: SAMPLE_VIDEO_4 },
+      { id: "v2-3", title: "Contact Improv", url: SAMPLE_VIDEO_1 },
+      { id: "v2-4", title: "Floorwork Focus", url: SAMPLE_VIDEO_2 },
+      { id: "v2-5", title: "Fluidity Drill", url: SAMPLE_VIDEO_3 },
+      { id: "v2-6", title: "Release Technique", url: SAMPLE_VIDEO_4 },
+      { id: "v2-7", title: "Contemporary Fusion", url: SAMPLE_VIDEO_1 },
+      { id: "v2-8", title: "Partnering Prep", url: SAMPLE_VIDEO_2 }
     ]
   },
   { 
@@ -131,14 +136,14 @@ export const ARTISTS = [
     description: "The first African American woman to be promoted to principal dancer in ABT's 75-year history, Misty is a true pioneer and inspiration.",
     image: "https://picsum.photos/seed/artist3/800/800",
     videos: [
-      { id: "v3-1", title: "Swan Lake Solo", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v3-2", title: "Pointe Work Pro", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v3-3", title: "Barre Basics", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v3-4", title: "Adagio Alignment", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v3-5", title: "Allegro Action", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v3-6", title: "Pirouette Perfection", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v3-7", title: "Port de Bras", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v3-8", title: "Nutcracker Rehearsal", url: "https://vjs.zencdn.net/v/oceans.mp4" }
+      { id: "v3-1", title: "Swan Lake Solo", url: SAMPLE_VIDEO_1 },
+      { id: "v3-2", title: "Pointe Work Pro", url: SAMPLE_VIDEO_2 },
+      { id: "v3-3", title: "Barre Basics", url: SAMPLE_VIDEO_3 },
+      { id: "v3-4", title: "Adagio Alignment", url: SAMPLE_VIDEO_4 },
+      { id: "v3-5", title: "Allegro Action", url: SAMPLE_VIDEO_1 },
+      { id: "v3-6", title: "Pirouette Perfection", url: SAMPLE_VIDEO_2 },
+      { id: "v3-7", title: "Port de Bras", url: SAMPLE_VIDEO_3 },
+      { id: "v3-8", title: "Nutcracker Rehearsal", url: SAMPLE_VIDEO_4 }
     ]
   },
   { 
@@ -148,14 +153,14 @@ export const ARTISTS = [
     description: "Larry and Laurent Bourgeois are world-renowned creators, entertainers, and dancers recognized for their innovative freestyle technique.",
     image: "https://picsum.photos/seed/artist4/800/800",
     videos: [
-      { id: "v4-1", title: "New Style Session", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v4-2", title: "Twin Synergy", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v4-3", title: "Popping Patterns", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v4-4", title: "Isolation Mastery", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v4-5", title: "Freestyle Flow", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v4-6", title: "Battle Prep", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v4-7", title: "Musicality Drills", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v4-8", title: "Groove Foundation", url: "https://www.w3schools.com/html/mov_bbb.mp4" }
+      { id: "v4-1", title: "New Style Session", url: SAMPLE_VIDEO_3 },
+      { id: "v4-2", title: "Twin Synergy", url: SAMPLE_VIDEO_4 },
+      { id: "v4-3", title: "Popping Patterns", url: SAMPLE_VIDEO_1 },
+      { id: "v4-4", title: "Isolation Mastery", url: SAMPLE_VIDEO_2 },
+      { id: "v4-5", title: "Freestyle Flow", url: SAMPLE_VIDEO_3 },
+      { id: "v4-6", title: "Battle Prep", url: SAMPLE_VIDEO_4 },
+      { id: "v4-7", title: "Musicality Drills", url: SAMPLE_VIDEO_1 },
+      { id: "v4-8", title: "Groove Foundation", url: SAMPLE_VIDEO_2 }
     ]
   },
   { 
@@ -165,14 +170,14 @@ export const ARTISTS = [
     description: "Known for his work on So You Think You Can Dance, Travis is a master of contemporary jazz storytelling through intricate movement.",
     image: "https://picsum.photos/seed/artist5/800/800",
     videos: [
-      { id: "v5-1", title: "Jazz Fusion", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v5-2", title: "Lyrical Leap", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v5-3", title: "Technical Turns", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v5-4", title: "Jazz Walk Progressions", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v5-5", title: "Extension Exercises", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v5-6", title: "Broadway Bound", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v5-7", title: "Sharpness Drills", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v5-8", title: "Modern Jazz Study", url: "https://vjs.zencdn.net/v/oceans.mp4" }
+      { id: "v5-1", title: "Jazz Fusion", url: SAMPLE_VIDEO_1 },
+      { id: "v5-2", title: "Lyrical Leap", url: SAMPLE_VIDEO_2 },
+      { id: "v5-3", title: "Technical Turns", url: SAMPLE_VIDEO_3 },
+      { id: "v5-4", title: "Jazz Walk Progressions", url: SAMPLE_VIDEO_4 },
+      { id: "v5-5", title: "Extension Exercises", url: SAMPLE_VIDEO_1 },
+      { id: "v5-6", title: "Broadway Bound", url: SAMPLE_VIDEO_2 },
+      { id: "v5-7", title: "Sharpness Drills", url: SAMPLE_VIDEO_3 },
+      { id: "v5-8", title: "Modern Jazz Study", url: SAMPLE_VIDEO_4 }
     ]
   },
   { 
@@ -182,14 +187,14 @@ export const ARTISTS = [
     description: "Creator of the 'Polyswagg' style, Parris is the visionary behind some of the most iconic music video choreographies in modern history.",
     image: "https://picsum.photos/seed/artist6/800/800",
     videos: [
-      { id: "v6-1", title: "Urban Pulse", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v6-2", title: "Polyswagg Power", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v6-3", title: "Formation Focus", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v6-4", title: "Energy Explosions", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v6-5", title: "Camera Blocking", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v6-6", title: "Performance Presence", url: "https://www.w3schools.com/html/mov_bbb.mp4" },
-      { id: "v6-7", title: "Style Study", url: "https://vjs.zencdn.net/v/oceans.mp4" },
-      { id: "v6-8", title: "Choreo Creation", url: "https://www.w3schools.com/html/mov_bbb.mp4" }
+      { id: "v6-1", title: "Urban Pulse", url: SAMPLE_VIDEO_3 },
+      { id: "v6-2", title: "Polyswagg Power", url: SAMPLE_VIDEO_4 },
+      { id: "v6-3", title: "Formation Focus", url: SAMPLE_VIDEO_1 },
+      { id: "v6-4", title: "Energy Explosions", url: SAMPLE_VIDEO_2 },
+      { id: "v6-5", title: "Camera Blocking", url: SAMPLE_VIDEO_3 },
+      { id: "v6-6", title: "Performance Presence", url: SAMPLE_VIDEO_4 },
+      { id: "v6-7", title: "Style Study", url: SAMPLE_VIDEO_1 },
+      { id: "v6-8", title: "Choreo Creation", url: SAMPLE_VIDEO_2 }
     ]
   }
 ];
@@ -202,21 +207,21 @@ export const STUDIO_STATS = [
 ];
 
 export const STUDIO_UPLOADS = [
-  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performance", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
-  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
+  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial", videoUrl: SAMPLE_VIDEO_1 },
+  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performance", videoUrl: SAMPLE_VIDEO_2 },
+  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial", videoUrl: SAMPLE_VIDEO_3 },
 ];
 
 export const DANCER_CONTENT = {
   continueWatching: [
-    { id: "cw1", title: "Advanced Salsa Patterns", artist: "Derek Hough", progress: 65, thumbnail: "https://picsum.photos/seed/salsa/400/225", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-    { id: "cw2", title: "Hip Hop Fundamentals", artist: "Les Twins", progress: 30, thumbnail: "https://picsum.photos/seed/hiphop/400/225", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
+    { id: "cw1", title: "Advanced Salsa Patterns", artist: "Derek Hough", progress: 65, thumbnail: "https://picsum.photos/seed/salsa/400/225", videoUrl: SAMPLE_VIDEO_1 },
+    { id: "cw2", title: "Hip Hop Fundamentals", artist: "Les Twins", progress: 30, thumbnail: "https://picsum.photos/seed/hiphop/400/225", videoUrl: SAMPLE_VIDEO_2 },
   ],
   saved: [
-    { id: "s1", title: "Contemporary Expression", artist: "Travis Wall", thumbnail: "https://picsum.photos/seed/contemp/400/225", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
-    { id: "s2", title: "Urban Pulse", artist: "Parris Goebel", thumbnail: "https://picsum.photos/seed/urban/400/225", videoUrl: "https://vjs.zencdn.net/v/oceans.mp4" },
+    { id: "s1", title: "Contemporary Expression", artist: "Travis Wall", thumbnail: "https://picsum.photos/seed/contemp/400/225", videoUrl: SAMPLE_VIDEO_3 },
+    { id: "s2", title: "Urban Pulse", artist: "Parris Goebel", thumbnail: "https://picsum.photos/seed/urban/400/225", videoUrl: SAMPLE_VIDEO_4 },
   ],
   purchased: [
-    { id: "p1", title: "The Art of Ballroom", artist: "Julianne Hough", date: "Sep 2024", thumbnail: "https://picsum.photos/seed/ballroom/400/225", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
+    { id: "p1", title: "The Art of Ballroom", artist: "Julianne Hough", date: "Sep 2024", thumbnail: "https://picsum.photos/seed/ballroom/400/225", videoUrl: SAMPLE_VIDEO_1 },
   ]
 };

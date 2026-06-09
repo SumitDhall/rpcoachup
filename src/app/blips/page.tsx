@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useRef, useState } from "react";
@@ -19,6 +20,13 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+const SAMPLE_VIDEOS = [
+  "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+  "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+  "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+  "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+];
+
 const MOCK_BLIPS = [
   {
     id: 1,
@@ -28,7 +36,7 @@ const MOCK_BLIPS = [
     location: "Los Angeles, CA",
     date: "Oct 24, 2024",
     duration: "0:45",
-    videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
+    videoUrl: SAMPLE_VIDEOS[0],
   },
   {
     id: 2,
@@ -38,7 +46,7 @@ const MOCK_BLIPS = [
     location: "Miami, FL",
     date: "Sep 12, 2024",
     duration: "0:58",
-    videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
+    videoUrl: SAMPLE_VIDEOS[1],
   },
   {
     id: 3,
@@ -48,7 +56,7 @@ const MOCK_BLIPS = [
     location: "New York, NY",
     date: "Aug 05, 2024",
     duration: "0:32",
-    videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
+    videoUrl: SAMPLE_VIDEOS[2],
   },
   {
     id: 4,
@@ -58,7 +66,7 @@ const MOCK_BLIPS = [
     location: "London, UK",
     date: "Jul 20, 2024",
     duration: "0:55",
-    videoUrl: "https://vjs.zencdn.net/v/oceans.mp4",
+    videoUrl: SAMPLE_VIDEOS[3],
   }
 ];
 

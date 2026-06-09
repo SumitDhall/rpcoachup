@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useRef, useEffect } from "react";
@@ -33,8 +34,10 @@ function GalleryVideo({ url }: { url: string }) {
   const playerRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !url) return;
 
+    // Reset container if re-initializing
+    containerRef.current.innerHTML = '';
     const videoElement = document.createElement("video-js");
     videoElement.classList.add('vjs-fill', 'vjs-big-play-centered');
     containerRef.current.appendChild(videoElement);
@@ -118,7 +121,6 @@ function VideoCarouselSection({ title, videos }: VideoSectionProps) {
                          </Button>
                       </div>
                       
-                      {/* USP Button for Tutorial Demos */}
                       {title === "Tutorial Demos" && (
                         <div className="pt-3 border-t border-white/5 mt-1">
                           <Button 
@@ -185,7 +187,6 @@ export default function ArtistDetailPage() {
     }
   };
 
-  // Sections: Tutorial Demos (renamed from Demos), Performances, Podcasts
   const categories = {
     TutorialDemos: artist.videos,
     Performances: [...artist.videos].reverse(),
