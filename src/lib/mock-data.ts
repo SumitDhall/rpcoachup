@@ -196,6 +196,78 @@ export const ARTISTS = [
       { id: "v6-7", title: "Style Study", url: SAMPLE_VIDEO_1 },
       { id: "v6-8", title: "Choreo Creation", url: SAMPLE_VIDEO_2 }
     ]
+  },
+  { 
+    id: "7", 
+    name: "Tiler Peck", 
+    style: "Ballet",
+    description: "Principal dancer with the New York City Ballet, Tiler is widely considered one of the most technical and musical dancers of her generation.",
+    image: "https://picsum.photos/seed/artist7/800/800",
+    videos: [
+      { id: "v7-1", title: "The Nutcracker Pas de Deux", url: SAMPLE_VIDEO_1 },
+      { id: "v7-2", title: "Barre Strength", url: SAMPLE_VIDEO_2 },
+      { id: "v7-3", title: "Adagio Elegance", url: SAMPLE_VIDEO_3 }
+    ]
+  },
+  { 
+    id: "8", 
+    name: "Fik-Shun", 
+    style: "Hip Hop",
+    description: "Winner of SYTYCD Season 10, Fik-Shun is a master of liquid animation and incredible control in urban movement.",
+    image: "https://picsum.photos/seed/artist8/800/800",
+    videos: [
+      { id: "v8-1", title: "Liquid Animation", url: SAMPLE_VIDEO_4 },
+      { id: "v8-2", title: "Robot Ryhthms", url: SAMPLE_VIDEO_1 },
+      { id: "v8-3", title: "Freestyle Masterclass", url: SAMPLE_VIDEO_2 }
+    ]
+  },
+  { 
+    id: "9", 
+    name: "Chachi Gonzales", 
+    style: "Urban",
+    description: "A world-renowned choreographer and winner of America's Best Dance Crew, Chachi brings a unique flair to modern urban dance.",
+    image: "https://picsum.photos/seed/artist9/800/800",
+    videos: [
+      { id: "v9-1", title: "Urban Groove", url: SAMPLE_VIDEO_3 },
+      { id: "v9-2", title: "Footwork Fundamentals", url: SAMPLE_VIDEO_4 },
+      { id: "v9-3", title: "Stage Presence", url: SAMPLE_VIDEO_1 }
+    ]
+  },
+  { 
+    id: "10", 
+    name: "Yanis Marshall", 
+    style: "Contemporary",
+    description: "Famous for his work in heels, Yanis has revolutionized contemporary jazz with his high-energy, high-impact style.",
+    image: "https://picsum.photos/seed/artist10/800/800",
+    videos: [
+      { id: "v10-1", title: "Heels Technique", url: SAMPLE_VIDEO_2 },
+      { id: "v10-2", title: "Sass & Class", url: SAMPLE_VIDEO_3 },
+      { id: "v10-3", title: "Strut Your Stuff", url: SAMPLE_VIDEO_4 }
+    ]
+  },
+  { 
+    id: "11", 
+    name: "Michael Dameski", 
+    style: "Contemporary",
+    description: "Known for his incredible athleticism and power, Michael is a standout performer in the global contemporary scene.",
+    image: "https://picsum.photos/seed/artist11/800/800",
+    videos: [
+      { id: "v11-1", title: "Athletic Flow", url: SAMPLE_VIDEO_1 },
+      { id: "v11-2", title: "Power Jumps", url: SAMPLE_VIDEO_2 },
+      { id: "v11-3", title: "Floor Mastery", url: SAMPLE_VIDEO_3 }
+    ]
+  },
+  { 
+    id: "12", 
+    name: "Brian Friedman", 
+    style: "Jazz",
+    description: "Creative director and choreographer to the stars, Brian's legendary Jazz-Funk style has shaped modern pop performance.",
+    image: "https://picsum.photos/seed/artist12/800/800",
+    videos: [
+      { id: "v12-1", title: "Jazz Funk Fusion", url: SAMPLE_VIDEO_4 },
+      { id: "v12-2", title: "Pop Performance", url: SAMPLE_VIDEO_1 },
+      { id: "v12-3", title: "Industry Insider", url: SAMPLE_VIDEO_2 }
+    ]
   }
 ];
 
