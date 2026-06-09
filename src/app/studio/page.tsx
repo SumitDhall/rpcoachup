@@ -47,6 +47,8 @@ import { cn } from "@/lib/utils";
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
+const ITEMS_PER_PAGE = 10;
+
 function StudioVideo({ url, poster }: { url: string; poster?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
@@ -108,7 +110,6 @@ export default function ArtistStudioPage() {
   const [filterType, setFilterType] = useState("All");
   const [sortBy, setSortBy] = useState("date-desc");
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 10;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const masterMovesInputRef = useRef<HTMLInputElement>(null);
@@ -121,14 +122,34 @@ export default function ArtistStudioPage() {
 
   // Initial mock data load
   useEffect(() => {
-    setUploads([
+    // Creating extra mock data to demonstrate pagination
+    const baseMockData = [
       { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
       { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/urban/800/450" },
       { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial Demo", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
       { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/contemp/800/450" },
       { id: "u5", title: "Rhythm & Pulse Podcast #1", date: "Sep 05, 2024", views: "1.5K", status: "Published", type: "Podcast", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/podcast/800/450" },
-    ]);
+    ];
+
+    // Generate more items for pagination testing
+    const expandedMockData = [...baseMockData];
+    for(let i = 1; i <= 20; i++) {
+      expandedMockData.push({
+        ...baseMockData[i % baseMockData.length],
+        id: `extra-${i}`,
+        title: `${baseMockData[i % baseMockData.length].title} Vol. ${i}`,
+        views: `${Math.floor(Math.random() * 50)}K`,
+        date: `Sep ${Math.min(30, i + 1)}, 2024`
+      });
+    }
+    
+    setUploads(expandedMockData);
   }, []);
+
+  // Reset to first page when filters or sorting change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterType, sortBy]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -194,7 +215,6 @@ export default function ArtistStudioPage() {
     }, 150);
   };
 
-  // Helper to parse views string like "12.5K" to number
   const parseViews = (views: string) => {
     if (!views) return 0;
     const clean = views.replace(/[^0-9.]/g, '');
@@ -207,12 +227,10 @@ export default function ArtistStudioPage() {
   const processedUploads = useMemo(() => {
     let result = [...uploads];
     
-    // Filter
     if (filterType !== "All") {
       result = result.filter(u => u.type === filterType);
     }
 
-    // Sort
     result.sort((a, b) => {
       switch (sortBy) {
         case "date-desc":
@@ -231,7 +249,11 @@ export default function ArtistStudioPage() {
     return result;
   }, [uploads, filterType, sortBy]);
 
-  const paginatedUploads = processedUploads.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(processedUploads.length / ITEMS_PER_PAGE);
+  const paginatedUploads = processedUploads.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   if (isLoading || !user || user.role !== 'artist') {
     return (
@@ -249,7 +271,6 @@ export default function ArtistStudioPage() {
         .video-js.vjs-fill { width: 100%; height: 100%; }
       `}</style>
 
-      {/* Background Layer 1: Image */}
       <div className="fixed inset-0 z-0">
         <Image
           src="/images/dance-realm_background_image_without_dancers.png"
@@ -386,7 +407,6 @@ export default function ArtistStudioPage() {
           </div>
         </div>
 
-        {/* Content Content Content */}
         <section className="space-y-8">
           <div className="flex items-center gap-3 border-b border-white/5 pb-6">
             <LayoutGrid className="w-6 h-6 text-primary" />
@@ -464,6 +484,37 @@ export default function ArtistStudioPage() {
               </Card>
             ))}
           </div>
+
+          {processedUploads.length > 0 && (
+            <div className="flex items-center justify-center gap-4 pt-12 pb-24">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="rounded-xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Page</span>
+                <span className="text-sm font-black tracking-tighter text-primary">{currentPage}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">of</span>
+                <span className="text-sm font-black tracking-tighter">{totalPages}</span>
+              </div>
+
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="rounded-xl border-white/10 glass-card hover:border-primary hover:text-primary transition-all disabled:opacity-30"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
+          )}
 
           {processedUploads.length === 0 && (
             <div className="text-center py-32 glass-card rounded-[3rem] border-dashed border-white/20">
