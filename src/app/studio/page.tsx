@@ -22,7 +22,8 @@ import {
   Sparkles,
   Play,
   Camera,
-  Trash2
+  Trash2,
+  Music2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
