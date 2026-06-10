@@ -6,14 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
-  Play, 
   Plus, 
-  Bookmark, 
-  Star, 
-  TrendingUp, 
-  Clock, 
   Music2, 
-  User, 
   ChevronRight,
   Flame,
   Lock,
@@ -21,13 +15,13 @@ import {
   MoreVertical,
   Camera,
   Trash2,
-  Upload,
   FileVideo,
   ChevronLeft,
-  LayoutGrid
+  LayoutGrid,
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DANCER_CONTENT, ARTISTS } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
@@ -60,13 +54,13 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 
 // Video.js imports
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
-const BLIPS_PER_PAGE = 10;
+const BLIPS_PER_PAGE = 3;
+const WATCHING_PER_PAGE = 5;
 
 function DashboardVideo({ url, poster, muted = false }: { url: string; poster?: string; muted?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -122,12 +116,20 @@ export default function DancerDashboardPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [blipTitle, setBlipTitle] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Pagination States
+  const [currentBlipPage, setCurrentBlipPage] = useState(1);
+  const [currentWatchingPage, setCurrentWatchingPage] = useState(1);
+  
   const [blipToDelete, setBlipToDelete] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const blipInputRef = useRef<HTMLInputElement>(null);
+  
+  // Refs for scroll behavior
+  const blipsSectionRef = useRef<HTMLDivElement>(null);
+  const watchingSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'dancer')) {
@@ -137,7 +139,7 @@ export default function DancerDashboardPage() {
 
   // Initial mock blips
   useEffect(() => {
-    const mockBlips = Array.from({ length: 15 }).map((_, i) => ({
+    const mockBlips = Array.from({ length: 12 }).map((_, i) => ({
       id: `blip-${i}`,
       title: `Rhythm Session #${i + 1}`,
       date: "Oct 24, 2024",
@@ -166,30 +168,8 @@ export default function DancerDashboardPage() {
 
   const triggerBlipInput = () => blipInputRef.current?.click();
 
-  const getVideoDuration = (file: File): Promise<number> => {
-    return new Promise((resolve) => {
-      const video = document.createElement('video');
-      video.preload = 'metadata';
-      video.onloadedmetadata = function() {
-        window.URL.revokeObjectURL(video.src);
-        resolve(video.duration);
-      };
-      video.src = URL.createObjectURL(file);
-    });
-  };
-
   const handleUploadBlip = async () => {
     if (!selectedFile) return;
-
-    const duration = await getVideoDuration(selectedFile);
-    if (duration > 30) {
-      toast({
-        variant: "destructive",
-        title: "Blip Too Long",
-        description: "Blips cannot exceed 30 seconds. Yours is " + Math.round(duration) + "s.",
-      });
-      return;
-    }
 
     setIsUploading(true);
     let progress = 0;
@@ -232,12 +212,46 @@ export default function DancerDashboardPage() {
     }
   };
 
+  // Pagination Calculations
   const paginatedBlips = useMemo(() => {
-    const start = (currentPage - 1) * BLIPS_PER_PAGE;
+    const start = (currentBlipPage - 1) * BLIPS_PER_PAGE;
     return blips.slice(start, start + BLIPS_PER_PAGE);
-  }, [blips, currentPage]);
+  }, [blips, currentBlipPage]);
 
-  const totalPages = Math.ceil(blips.length / BLIPS_PER_PAGE);
+  const totalBlipPages = Math.ceil(blips.length / BLIPS_PER_PAGE);
+
+  // Extend mock watching data for pagination demo
+  const allWatchingItems = useMemo(() => {
+    const base = DANCER_CONTENT.continueWatching;
+    const items = [];
+    for(let i = 0; i < 15; i++) {
+        items.push({
+            ...base[i % base.length],
+            id: `cw-${i}`,
+            title: `${base[i % base.length].title} Part ${i + 1}`
+        });
+    }
+    return items;
+  }, []);
+
+  const paginatedWatching = useMemo(() => {
+    const start = (currentWatchingPage - 1) * WATCHING_PER_PAGE;
+    return allWatchingItems.slice(start, start + WATCHING_PER_PAGE);
+  }, [allWatchingItems, currentWatchingPage]);
+
+  const totalWatchingPages = Math.ceil(allWatchingItems.length / WATCHING_PER_PAGE);
+
+  const latestArtists = ARTISTS.slice(0, 5);
+
+  const handleBlipPageChange = (newPage: number) => {
+    setCurrentBlipPage(newPage);
+    blipsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleWatchingPageChange = (newPage: number) => {
+    setCurrentWatchingPage(newPage);
+    watchingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   if (isLoading || !user || user.role !== 'dancer') {
     return (
@@ -271,7 +285,7 @@ export default function DancerDashboardPage() {
       {/* Page Content */}
       <div className="relative z-20">
         {/* Cover Photo Section */}
-        <section className="relative h-[55vh] w-full overflow-hidden group">
+        <section className="relative h-[45vh] w-full overflow-hidden group">
           {coverImage ? (
             <Image src={coverImage} alt="Dashboard Cover" fill className="object-cover" priority />
           ) : (
@@ -377,28 +391,25 @@ export default function DancerDashboardPage() {
         {/* Dashboard Content Grid */}
         <div className="max-w-7xl mx-auto px-8 md:px-12 py-16 space-y-24">
           
-          {/* Continue Watching */}
-          <section className="space-y-8">
+          {/* Continue Watching Section */}
+          <section className="space-y-8" ref={watchingSectionRef}>
             <div className="flex items-center justify-between border-b border-white/5 pb-6">
               <h2 className="text-3xl font-black italic uppercase tracking-tighter">Continue Synchronizing</h2>
-              <Button variant="ghost" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary">
-                View History <ChevronRight className="w-3 h-3 ml-1" />
-              </Button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {DANCER_CONTENT.continueWatching.map((item) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+              {paginatedWatching.map((item) => (
                 <Card key={item.id} className="glass-card border-white/5 hover:border-primary/20 transition-all overflow-hidden group">
                   <div className="aspect-video relative overflow-hidden bg-black">
                     <DashboardVideo url={item.videoUrl} poster={item.thumbnail} muted />
                   </div>
-                  <CardContent className="p-6 space-y-4">
+                  <CardContent className="p-4 space-y-4">
                     <div className="space-y-1">
-                      <h3 className="text-sm font-black uppercase tracking-wide truncate">{item.title}</h3>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Master: {item.artist}</p>
+                      <h3 className="text-[11px] font-black uppercase tracking-wide truncate">{item.title}</h3>
+                      <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Master: {item.artist}</p>
                     </div>
                     <div className="space-y-2">
-                      <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-primary">
-                        <span>Sync Progress</span>
+                      <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-primary">
+                        <span>Sync</span>
                         <span>{item.progress}%</span>
                       </div>
                       <Progress value={item.progress} className="h-1 bg-white/5" />
@@ -407,23 +418,80 @@ export default function DancerDashboardPage() {
                 </Card>
               ))}
             </div>
+            {/* Watching Pagination */}
+            {totalWatchingPages > 1 && (
+              <div className="flex items-center justify-center gap-6 pt-6">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleWatchingPageChange(Math.max(1, currentWatchingPage - 1))}
+                  disabled={currentWatchingPage === 1}
+                  className="h-10 w-10 rounded-xl border-white/10 glass-card"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
+                  Page <span className="text-primary">{currentWatchingPage}</span> of {totalWatchingPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleWatchingPageChange(Math.min(totalWatchingPages, currentWatchingPage + 1))}
+                  disabled={currentWatchingPage === totalWatchingPages}
+                  className="h-10 w-10 rounded-xl border-white/10 glass-card"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </section>
+
+          {/* Latest Artists Joined */}
+          <section className="space-y-8">
+            <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+              <Users className="w-8 h-8 text-secondary" />
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter">New Master Arrivals</h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+              {latestArtists.map((artist) => (
+                <Link key={artist.id} href={`/artists/${artist.id}`}>
+                  <Card className="glass-card border-white/5 hover:border-secondary/40 transition-all overflow-hidden group rounded-[2rem]">
+                    <div className="aspect-square relative overflow-hidden">
+                      <Image 
+                        src={artist.image} 
+                        alt={artist.name} 
+                        fill 
+                        className="object-cover group-hover:scale-110 transition-transform duration-700" 
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                      <div className="absolute bottom-4 left-4 right-4">
+                        <Badge variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30 text-[8px] mb-1">
+                          {artist.style}
+                        </Badge>
+                        <h4 className="text-[11px] font-black uppercase italic tracking-tighter text-white truncate">{artist.name}</h4>
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
           </section>
 
           {/* YOUR BLIPS Section */}
-          <section className="space-y-10">
+          <section className="space-y-10" ref={blipsSectionRef}>
             <div className="flex items-center gap-4 border-b border-white/5 pb-8">
               <LayoutGrid className="w-8 h-8 text-primary" />
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">Your Blips</h2>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {paginatedBlips.map((blip) => (
-                <div key={blip.id} className="relative group glass-card rounded-2xl overflow-hidden border-white/5 hover:border-primary/30 transition-all">
-                  <div className="absolute top-2 right-2 z-30">
+                <div key={blip.id} className="relative group glass-card rounded-[2.5rem] overflow-hidden border-white/5 hover:border-primary/30 transition-all shadow-2xl">
+                  <div className="absolute top-4 right-4 z-30">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white">
-                          <MoreVertical className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white">
+                          <MoreVertical className="h-5 w-5" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="glass-card border-white/10">
@@ -434,38 +502,44 @@ export default function DancerDashboardPage() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                  <div className="aspect-[9/16] relative bg-black">
+                  <div className="aspect-video relative bg-black">
                     <DashboardVideo url={blip.url} poster={blip.thumbnail} muted />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />
-                    <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
-                      <h4 className="text-[10px] font-black uppercase italic tracking-tighter text-white truncate">{blip.title}</h4>
-                      <p className="text-[8px] font-bold text-white/60 uppercase tracking-widest">{blip.date}</p>
+                    <div className="absolute bottom-6 left-6 right-6 pointer-events-none">
+                      <h4 className="text-lg font-black uppercase italic tracking-tighter text-white truncate">{blip.title}</h4>
+                      <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest">{blip.date}</p>
                     </div>
                   </div>
                 </div>
               ))}
+              
+              {blips.length === 0 && (
+                <div className="col-span-full py-20 text-center glass-card rounded-[3rem] border-dashed">
+                    <p className="text-muted-foreground font-black uppercase tracking-widest text-sm">No blips uploaded yet</p>
+                </div>
+              )}
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-6 pt-8">
+            {/* Blips Pagination */}
+            {totalBlipPages > 1 && (
+              <div className="flex items-center justify-center gap-6 pt-12">
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
+                  onClick={() => handleBlipPageChange(Math.max(1, currentBlipPage - 1))}
+                  disabled={currentBlipPage === 1}
                   className="h-12 w-12 rounded-xl border-white/10 glass-card hover:border-primary"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </Button>
                 <div className="flex items-center gap-4 text-[11px] font-black uppercase tracking-widest text-white/40">
-                  <span>Page <span className="text-primary">{currentPage}</span> of {totalPages}</span>
+                  <span>Page <span className="text-primary">{currentBlipPage}</span> of {totalBlipPages}</span>
                 </div>
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
+                  onClick={() => handleBlipPageChange(Math.min(totalBlipPages, currentBlipPage + 1))}
+                  disabled={currentBlipPage === totalBlipPages}
                   className="h-12 w-12 rounded-xl border-white/10 glass-card hover:border-primary"
                 >
                   <ChevronRight className="h-5 w-5" />
