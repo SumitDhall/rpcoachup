@@ -340,8 +340,8 @@ export default function DancerDashboardPage() {
 
         {/* Identity & Add Blips Header Area */}
         <div className="max-w-7xl mx-auto px-8 md:px-12 pt-8">
-          <div className="flex flex-col md:flex-row items-end justify-between gap-8 border-b border-white/5 pb-12">
-            <div className="space-y-3">
+          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8 border-b border-white/5 pb-12">
+            <div className="space-y-3 text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/20 border border-primary/30 backdrop-blur-md">
                 <Flame className="w-3 h-3 text-primary fill-primary" />
                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary">Level 12 Rhythm Master</span>
@@ -354,12 +354,11 @@ export default function DancerDashboardPage() {
               </p>
             </div>
 
-            <div className="shrink-0">
+            <div className="shrink-0 w-full md:w-auto flex justify-start md:justify-end">
               <input type="file" ref={blipInputRef} className="hidden" accept="video/*" onChange={(e) => e.target.files && setSelectedFile(e.target.files[0])} />
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="h-14 md:h-16 rounded-full bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] text-[11px] px-10 hover:scale-105 transition-all shadow-lg shadow-primary/20 border-none">
-                    <Plus className="w-5 h-5 mr-3" />
                     ADD BLIPS
                   </Button>
                 </DialogTrigger>
