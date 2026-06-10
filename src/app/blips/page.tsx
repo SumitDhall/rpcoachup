@@ -424,7 +424,7 @@ export default function BlipsPage() {
           <DialogFooter className="pt-4">
             <Button 
               onClick={handleAuthRedirect}
-              className="w-full h-16 rounded-2xl bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-primary/20 hover:scale-[1.05] transition-all border-none"
+              className="w-full h-14 rounded-2xl bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-primary/20 hover:scale-[1.05] transition-all border border-white/20"
             >
               Got It
             </Button>
