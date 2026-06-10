@@ -1,11 +1,13 @@
-
 'use client';
 
 import React, { useEffect, useRef, useState } from "react";
-import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X, Volume2, VolumeX, Send } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X, Volume2, VolumeX, Send, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/context/auth-context";
+import { useToast } from "@/hooks/use-toast";
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import {
@@ -91,7 +93,6 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   
-  // Local state for comments interaction
   const [comments, setComments] = useState(MOCK_COMMENTS);
   const [newComment, setNewComment] = useState("");
 
@@ -169,16 +170,13 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
 
   return (
     <div className="h-screen w-full snap-start relative bg-black flex items-center justify-center overflow-hidden">
-      {/* Immersive Video Container */}
       <div 
         ref={containerRef} 
         className="absolute inset-0 h-full w-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" 
       />
       
-      {/* Gradient Overlay for Readability */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none z-10" />
       
-      {/* Right Side Actions - Floating on Top */}
       <div className="absolute right-4 bottom-32 flex flex-col gap-6 items-center pointer-events-auto z-20">
         <div className="flex flex-col items-center gap-1 group">
           <Button 
@@ -249,7 +247,6 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
                 </div>
               </ScrollArea>
 
-              {/* Comment Input Area */}
               <div className="p-6 border-t border-white/5 bg-black/40 backdrop-blur-md">
                 <div className="flex items-center gap-3">
                   <Input 
@@ -281,7 +278,6 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
         </div>
       </div>
 
-      {/* Bottom Info - Floating on Top */}
       <div className="absolute bottom-10 left-6 right-20 space-y-4 pointer-events-none z-20">
         <div className="space-y-3">
           <div className="flex items-center gap-3 pointer-events-auto">
@@ -333,9 +329,34 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
 }
 
 export default function BlipsPage() {
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
   const [isMuted, setIsMuted] = useState(true);
 
+  useEffect(() => {
+    if (!isLoading && !user) {
+      toast({
+        title: "Authentication Required",
+        description: "You need to sign in or register first to check the BLIPS.",
+        variant: "destructive"
+      });
+      router.push('/login');
+    }
+  }, [user, isLoading, router, toast]);
+
   const toggleMute = () => setIsMuted(prev => !prev);
+
+  if (isLoading || !user) {
+    return (
+      <div className="h-screen w-full bg-black flex items-center justify-center">
+        <div className="text-center space-y-4">
+           <Lock className="h-12 w-12 text-primary animate-pulse mx-auto" />
+           <p className="text-sm font-black uppercase tracking-widest text-primary">Synchronizing Rhythms...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen w-full bg-black overflow-y-scroll snap-y snap-mandatory scroll-smooth hide-scrollbar">
@@ -361,7 +382,6 @@ export default function BlipsPage() {
         .animate-spin-slow {
           animation: spin-slow 8s linear infinite;
         }
-        /* Ensure Video.js tech (actual video) stretches to fill its container */
         .vjs-tech {
           object-fit: cover !important;
         }
