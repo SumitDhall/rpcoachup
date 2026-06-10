@@ -155,9 +155,9 @@ export default function ArtistStudioPage() {
   // Initial mock data load
   useEffect(() => {
     const baseMockData = [
-      { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
+      { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial", difficulty: "Advanced", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
       { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/urban/800/450" },
-      { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
+      { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial", difficulty: "Beginner", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
       { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/contemp/800/450" },
       { id: "u5", title: "Rhythm & Pulse Podcast #1", date: "Sep 05, 2024", views: "1.5K", status: "Published", type: "Podcast", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/podcast/800/450" },
       { id: "u6", title: "Quick Grooves", date: "Oct 28, 2024", views: "2.1K", status: "Published", type: "Blips", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/blips/800/450" },
@@ -357,6 +357,12 @@ export default function ArtistStudioPage() {
           return parseViews(b.views) - parseViews(a.views);
         case "views-asc":
           return parseViews(a.views) - parseViews(b.views);
+        case "difficulty-beginner":
+          return (a.difficulty === "Beginner" ? -1 : 1) - (b.difficulty === "Beginner" ? -1 : 1);
+        case "difficulty-intermediate":
+          return (a.difficulty === "Intermediate" ? -1 : 1) - (b.difficulty === "Intermediate" ? -1 : 1);
+        case "difficulty-advanced":
+          return (a.difficulty === "Advanced" ? -1 : 1) - (b.difficulty === "Advanced" ? -1 : 1);
         default:
           return 0;
       }
@@ -675,6 +681,9 @@ export default function ArtistStudioPage() {
                     <SelectItem value="date-asc">Oldest First</SelectItem>
                     <SelectItem value="views-desc">Most Viewed</SelectItem>
                     <SelectItem value="views-asc">Least Viewed</SelectItem>
+                    <SelectItem value="difficulty-beginner">Beginner</SelectItem>
+                    <SelectItem value="difficulty-intermediate">Intermediate</SelectItem>
+                    <SelectItem value="difficulty-advanced">Advanced</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -730,7 +739,7 @@ export default function ArtistStudioPage() {
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                         <div className="space-y-4">
                           <div className="flex items-center justify-between px-2">
-                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-primary/80">01. Master Preview</span>
+                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-primary/80">01. Preview</span>
                             <Badge className="bg-primary/20 text-primary border-primary/30 text-[8px] font-black px-3 py-1">HD READY</Badge>
                           </div>
                           <div className="aspect-video relative rounded-[2rem] overflow-hidden bg-black ring-1 ring-white/5 shadow-2xl">
@@ -739,7 +748,7 @@ export default function ArtistStudioPage() {
                         </div>
                         <div className="space-y-4">
                           <div className="flex items-center justify-between px-2">
-                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-secondary/80">02. Synchronized Loop</span>
+                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-secondary/80">02. Tutorial</span>
                             <Badge className="bg-secondary/20 text-secondary border-secondary/30 text-[8px] font-black px-3 py-1">MASTER THE MOVES</Badge>
                           </div>
                           <div className="aspect-video relative rounded-[2rem] overflow-hidden bg-black ring-1 ring-white/5 shadow-2xl">
