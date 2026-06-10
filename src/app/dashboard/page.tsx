@@ -60,6 +60,7 @@ import 'video.js/dist/video-js.css';
 
 const BLIPS_PER_PAGE = 3;
 const WATCHING_PER_PAGE = 9;
+const ARTISTS_PER_PAGE = 6;
 
 function DashboardVideo({ url, poster, muted = false }: { url: string; poster?: string; muted?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -119,6 +120,7 @@ export default function DancerDashboardPage() {
   // Pagination States
   const [currentBlipPage, setCurrentBlipPage] = useState(1);
   const [currentWatchingPage, setCurrentWatchingPage] = useState(1);
+  const [currentArtistsPage, setCurrentArtistsPage] = useState(1);
   
   const [blipToDelete, setBlipToDelete] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -129,6 +131,7 @@ export default function DancerDashboardPage() {
   // Refs for scroll behavior
   const blipsSectionRef = useRef<HTMLDivElement>(null);
   const watchingSectionRef = useRef<HTMLDivElement>(null);
+  const artistsSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'dancer')) {
@@ -241,7 +244,12 @@ export default function DancerDashboardPage() {
 
   const totalWatchingPages = Math.ceil(allWatchingItems.length / WATCHING_PER_PAGE);
 
-  const latestArtists = ARTISTS.slice(0, 5);
+  const paginatedArtists = useMemo(() => {
+    const start = (currentArtistsPage - 1) * ARTISTS_PER_PAGE;
+    return ARTISTS.slice(start, start + ARTISTS_PER_PAGE);
+  }, [currentArtistsPage]);
+
+  const totalArtistsPages = Math.ceil(ARTISTS.length / ARTISTS_PER_PAGE);
 
   const handleBlipPageChange = (newPage: number) => {
     setCurrentBlipPage(newPage);
@@ -251,6 +259,11 @@ export default function DancerDashboardPage() {
   const handleWatchingPageChange = (newPage: number) => {
     setCurrentWatchingPage(newPage);
     watchingSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleArtistsPageChange = (newPage: number) => {
+    setCurrentArtistsPage(newPage);
+    artistsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   if (isLoading || !user || user.role !== 'dancer') {
@@ -284,7 +297,7 @@ export default function DancerDashboardPage() {
 
       {/* Page Content */}
       <div className="relative z-20">
-        {/* Cover Photo Section - Increased to 65vh to match Studio page */}
+        {/* Cover Photo Section */}
         <section className="relative h-[65vh] w-full overflow-hidden group">
           {coverImage ? (
             <Image src={coverImage} alt="Dashboard Cover" fill className="object-cover" priority />
@@ -446,17 +459,17 @@ export default function DancerDashboardPage() {
             )}
           </section>
 
-          {/* Latest Artists Joined */}
-          <section className="space-y-8">
+          {/* New Artists Arrivals */}
+          <section className="space-y-8" ref={artistsSectionRef}>
             <div className="flex items-center gap-4 border-b border-white/5 pb-6">
               <Users className="w-8 h-8 text-secondary" />
-              <h2 className="text-3xl font-black italic uppercase tracking-tighter">New Master Arrivals</h2>
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter">New Artists Arrivals</h2>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-              {latestArtists.map((artist) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {paginatedArtists.map((artist) => (
                 <Link key={artist.id} href={`/artists/${artist.id}`}>
-                  <Card className="glass-card border-white/5 hover:border-secondary/40 transition-all overflow-hidden group rounded-[2rem]">
-                    <div className="aspect-square relative overflow-hidden">
+                  <Card className="glass-card border-white/5 hover:border-secondary/40 transition-all overflow-hidden group rounded-[2.5rem]">
+                    <div className="aspect-[4/3] relative overflow-hidden">
                       <Image 
                         src={artist.image} 
                         alt={artist.name} 
@@ -464,17 +477,43 @@ export default function DancerDashboardPage() {
                         className="object-cover group-hover:scale-110 transition-transform duration-700" 
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <Badge variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30 text-[8px] mb-1">
+                      <div className="absolute bottom-6 left-6 right-6">
+                        <Badge variant="secondary" className="bg-secondary/20 text-secondary border-secondary/30 text-[10px] mb-2 uppercase font-black tracking-widest">
                           {artist.style}
                         </Badge>
-                        <h4 className="text-[11px] font-black uppercase italic tracking-tighter text-white truncate">{artist.name}</h4>
+                        <h4 className="text-xl font-black uppercase italic tracking-tighter text-white truncate">{artist.name}</h4>
                       </div>
                     </div>
                   </Card>
                 </Link>
               ))}
             </div>
+            {/* Artists Pagination */}
+            {totalArtistsPages > 1 && (
+              <div className="flex items-center justify-center gap-6 pt-6">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleArtistsPageChange(Math.max(1, currentArtistsPage - 1))}
+                  disabled={currentArtistsPage === 1}
+                  className="h-10 w-10 rounded-xl border-white/10 glass-card"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
+                  Page <span className="text-secondary">{currentArtistsPage}</span> of {totalArtistsPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleArtistsPageChange(Math.min(totalArtistsPages, currentArtistsPage + 1))}
+                  disabled={currentArtistsPage === totalArtistsPages}
+                  className="h-10 w-10 rounded-xl border-white/10 glass-card"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </section>
 
           {/* YOUR BLIPS Section */}
