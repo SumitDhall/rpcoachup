@@ -22,10 +22,9 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -153,7 +152,7 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
       }
       observer.disconnect();
     };
-  }, [blip.videoUrl]);
+  }, [blip.videoUrl, isMuted]);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -407,28 +406,30 @@ export default function BlipsPage() {
         />
       ))}
 
-      {/* Auth Gate Dialog */}
+      {/* Auth Gate Dialog with Multi-Color Border */}
       <Dialog open={showAuthDialog} onOpenChange={(open) => { if (!open) handleAuthRedirect(); }}>
-        <DialogContent className="glass-card border-white/10 bg-black/90 text-white max-w-md rounded-[2.5rem]">
-          <DialogHeader className="space-y-4 text-center items-center pb-6">
-            <div className="h-20 w-20 rounded-[1.5rem] bg-vibrant-gradient flex items-center justify-center shadow-2xl shadow-primary/20 animate-in zoom-in-50 duration-500">
-               <Sparkles className="h-10 w-10 text-white fill-white/20" />
+        <DialogContent className="p-[2px] bg-vibrant-gradient border-none max-w-md rounded-[2.5rem] overflow-hidden">
+          <div className="bg-black/95 text-white p-8 rounded-[calc(2.5rem-2px)] flex flex-col gap-6">
+            <DialogHeader className="space-y-4 text-center items-center">
+              <div className="h-20 w-20 rounded-[1.5rem] bg-vibrant-gradient flex items-center justify-center shadow-2xl shadow-primary/20 animate-in zoom-in-50 duration-500">
+                <Sparkles className="h-10 w-10 text-white fill-white/20" />
+              </div>
+              <DialogTitle className="text-4xl font-black italic uppercase tracking-tighter leading-tight">
+                Sign in Required
+              </DialogTitle>
+              <DialogDescription className="text-sm text-white/60 leading-relaxed font-medium">
+                Join the Dance Realm community to witness these incredible rhythms. Please sign in or register to check the BLIPS and connect with artists worldwide.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-center pt-2">
+              <Button 
+                onClick={handleAuthRedirect}
+                className="w-1/2 h-12 rounded-2xl bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-primary/20 hover:scale-[1.05] transition-all border-none"
+              >
+                Got It
+              </Button>
             </div>
-            <DialogTitle className="text-4xl font-black italic uppercase tracking-tighter leading-tight">
-              Authentication Required
-            </DialogTitle>
-            <DialogDescription className="text-sm text-white/60 leading-relaxed font-medium">
-              Join the Dance Realm community to witness these incredible rhythms. Please sign in or register to check the BLIPS and connect with masters worldwide.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="pt-4">
-            <Button 
-              onClick={handleAuthRedirect}
-              className="w-full h-14 rounded-2xl bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-primary/20 hover:scale-[1.05] transition-all border border-white/20"
-            >
-              Got It
-            </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
