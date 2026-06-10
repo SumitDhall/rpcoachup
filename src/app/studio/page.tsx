@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
@@ -540,7 +539,7 @@ export default function ArtistStudioPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">
-                            {videoCategory === "Blips" ? "Blip Video" : "Primary Video"}
+                            {videoCategory === "Blips" ? "Blip Video" : videoCategory === "Tutorial" ? "Preview" : "Primary Video"}
                           </Label>
                           <div onClick={triggerFileInput} className="border-2 border-dashed border-white/10 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-white/5 cursor-pointer hover:border-primary/50 transition-all group h-[120px]">
                             {selectedFile ? (
@@ -560,6 +559,7 @@ export default function ArtistStudioPage() {
                         <div className="space-y-2">
                           <Label className="text-[10px] uppercase tracking-widest font-black text-secondary/80">Cover Thumbnail</Label>
                           <div onClick={triggerThumbnailInput} className="border-2 border-dashed border-white/10 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-white/5 cursor-pointer hover:border-secondary/50 transition-all group h-[120px]">
+                            <input type="file" ref={thumbnailInputRef} className="hidden" accept="image/*" onChange={handleThumbnailChange} />
                             {thumbnailFile ? (
                               <div className="flex flex-col items-center gap-1">
                                 <span className="text-[10px] font-black text-secondary truncate max-w-[150px]">{thumbnailFile.name}</span>
@@ -863,7 +863,7 @@ export default function ArtistStudioPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-3 sm:gap-4 mt-6">
-            <AlertDialogCancel className="h-12 rounded-xl border-white/10 bg-white/5 font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-colors">
+            <AlertDialogCancel className="h-12 rounded-xl border-white/10 bg-white/5 font-black uppercase tracking widest text-[10px] hover:bg-white/10 transition-colors">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 
