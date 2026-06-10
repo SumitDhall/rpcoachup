@@ -60,7 +60,7 @@ import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 
 const BLIPS_PER_PAGE = 3;
-const WATCHING_PER_PAGE = 5;
+const WATCHING_PER_PAGE = 9;
 
 function DashboardVideo({ url, poster, muted = false }: { url: string; poster?: string; muted?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -224,11 +224,12 @@ export default function DancerDashboardPage() {
   const allWatchingItems = useMemo(() => {
     const base = DANCER_CONTENT.continueWatching;
     const items = [];
-    for(let i = 0; i < 15; i++) {
+    for(let i = 0; i < 20; i++) {
         items.push({
             ...base[i % base.length],
             id: `cw-${i}`,
-            title: `${base[i % base.length].title} Part ${i + 1}`
+            title: `${base[i % base.length].title} Part ${i + 1}`,
+            progress: Math.floor(Math.random() * 90) + 10
         });
     }
     return items;
@@ -396,7 +397,7 @@ export default function DancerDashboardPage() {
             <div className="flex items-center justify-between border-b border-white/5 pb-6">
               <h2 className="text-3xl font-black italic uppercase tracking-tighter">Continue Synchronizing</h2>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {paginatedWatching.map((item) => (
                 <Card key={item.id} className="glass-card border-white/5 hover:border-primary/20 transition-all overflow-hidden group">
                   <div className="aspect-video relative overflow-hidden bg-black">
