@@ -2,12 +2,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X, Volume2, VolumeX, Send, Lock } from "lucide-react";
+import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X, Volume2, VolumeX, Send, Lock, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
-import { useToast } from "@/hooks/use-toast";
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
 import {
@@ -20,6 +19,14 @@ import {
   DrawerOverlay,
   DrawerPortal,
 } from "@/components/ui/drawer";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -331,23 +338,23 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
 export default function BlipsPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const { toast } = useToast();
   const [isMuted, setIsMuted] = useState(true);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
-      toast({
-        title: "Authentication Required",
-        description: "You need to sign in or register first to check the BLIPS.",
-        variant: "destructive"
-      });
-      router.push('/login');
+      setShowAuthDialog(true);
     }
-  }, [user, isLoading, router, toast]);
+  }, [user, isLoading]);
 
   const toggleMute = () => setIsMuted(prev => !prev);
 
-  if (isLoading || !user) {
+  const handleAuthRedirect = () => {
+    setShowAuthDialog(false);
+    router.push('/login');
+  };
+
+  if (isLoading || (!user && !showAuthDialog)) {
     return (
       <div className="h-screen w-full bg-black flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -399,6 +406,31 @@ export default function BlipsPage() {
           onToggleMute={toggleMute}
         />
       ))}
+
+      {/* Auth Gate Dialog */}
+      <Dialog open={showAuthDialog} onOpenChange={(open) => { if (!open) handleAuthRedirect(); }}>
+        <DialogContent className="glass-card border-white/10 bg-black/90 text-white max-w-md rounded-[2.5rem]">
+          <DialogHeader className="space-y-4 text-center items-center pb-6">
+            <div className="h-20 w-20 rounded-[1.5rem] bg-vibrant-gradient flex items-center justify-center shadow-2xl shadow-primary/20 animate-in zoom-in-50 duration-500">
+               <Sparkles className="h-10 w-10 text-white fill-white/20" />
+            </div>
+            <DialogTitle className="text-4xl font-black italic uppercase tracking-tighter leading-tight">
+              Authentication Required
+            </DialogTitle>
+            <DialogDescription className="text-sm text-white/60 leading-relaxed font-medium">
+              Join the Dance Realm community to witness these incredible rhythms. Please sign in or register to check the BLIPS and connect with masters worldwide.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-4">
+            <Button 
+              onClick={handleAuthRedirect}
+              className="w-full h-16 rounded-2xl bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-primary/20 hover:scale-[1.05] transition-all border-none"
+            >
+              Got It
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
