@@ -25,7 +25,9 @@ import {
   Trash2,
   Music2,
   MoreHorizontal,
-  MoreVertical
+  MoreVertical,
+  ImageIcon,
+  Music
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -107,7 +109,7 @@ function StudioVideo({ url, poster }: { url: string; poster?: string }) {
   return (
     <div 
       ref={containerRef} 
-      className="w-full h-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" 
+      className="w-full h-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-contain" 
     />
   );
 }
@@ -124,12 +126,15 @@ export default function ArtistStudioPage() {
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [masterMovesFile, setMasterMovesFile] = useState<File | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [coverImage, setCoverImage] = useState<string | null>(null);
   
   const [videoTitle, setVideoTitle] = useState("");
-  const [videoCategory, setVideoCategory] = useState("Tutorial Preview");
+  const [songName, setSongName] = useState("");
+  const [videoCategory, setVideoCategory] = useState("Tutorial");
+  const [difficultyLevel, setDifficultyLevel] = useState("Intermediate");
   
-  const [filterType, setFilterType] = useState("Tutorial Preview");
+  const [filterType, setFilterType] = useState("Tutorial");
   const [sortBy, setSortBy] = useState("date-desc");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -140,6 +145,7 @@ export default function ArtistStudioPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const masterMovesInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'artist')) {
@@ -150,9 +156,9 @@ export default function ArtistStudioPage() {
   // Initial mock data load
   useEffect(() => {
     const baseMockData = [
-      { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial Preview", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
+      { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
       { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/urban/800/450" },
-      { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial Preview", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
+      { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
       { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/contemp/800/450" },
       { id: "u5", title: "Rhythm & Pulse Podcast #1", date: "Sep 05, 2024", views: "1.5K", status: "Published", type: "Podcast", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/podcast/800/450" },
       { id: "u6", title: "Quick Grooves", date: "Oct 28, 2024", views: "2.1K", status: "Published", type: "Blips", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/blips/800/450" },
@@ -188,6 +194,12 @@ export default function ArtistStudioPage() {
     }
   };
 
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setThumbnailFile(e.target.files[0]);
+    }
+  };
+
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const url = URL.createObjectURL(e.target.files[0]);
@@ -216,7 +228,6 @@ export default function ArtistStudioPage() {
   };
 
   const initiateDelete = (id: string) => {
-    // Delay ensures DropdownMenu has time to clean up focus traps
     setVideoToDelete(id);
     setTimeout(() => {
       setIsConfirmOpen(true);
@@ -233,16 +244,16 @@ export default function ArtistStudioPage() {
 
   const triggerFileInput = () => fileInputRef.current?.click();
   const triggerMasterMovesInput = () => masterMovesInputRef.current?.click();
+  const triggerThumbnailInput = () => thumbnailInputRef.current?.click();
   
   const triggerCoverInput = () => {
-    // Delay ensures DropdownMenu has time to close and release focus
     setTimeout(() => {
       coverInputRef.current?.click();
     }, 100);
   };
 
   const isPublishEnabled = useMemo(() => {
-    if (videoCategory === "Tutorial Preview") {
+    if (videoCategory === "Tutorial") {
       return !!selectedFile && !!masterMovesFile;
     }
     return !!selectedFile;
@@ -285,17 +296,20 @@ export default function ArtistStudioPage() {
         setTimeout(() => {
           const newVideoUrl = URL.createObjectURL(selectedFile);
           const masterMovesUrl = masterMovesFile ? URL.createObjectURL(masterMovesFile) : undefined;
+          const thumbnailPath = thumbnailFile ? URL.createObjectURL(thumbnailFile) : "https://picsum.photos/seed/new-upload/800/450";
           
           const newUpload = {
             id: `u-new-${Date.now()}`,
             title: videoTitle || "Untitled Masterpiece",
+            song: songName,
+            difficulty: videoCategory === "Tutorial" ? difficultyLevel : undefined,
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
             views: "0",
             status: "Published",
             type: videoCategory,
             videoUrl: newVideoUrl,
             masterMovesUrl: masterMovesUrl,
-            thumbnail: "https://picsum.photos/seed/new-upload/800/450"
+            thumbnail: thumbnailPath
           };
 
           setUploads((prev) => [newUpload, ...prev]);
@@ -303,7 +317,9 @@ export default function ArtistStudioPage() {
           setUploadProgress(0);
           setSelectedFile(null);
           setMasterMovesFile(null);
+          setThumbnailFile(null);
           setVideoTitle("");
+          setSongName("");
           setIsDialogOpen(false); 
           setCurrentPage(1);
           
@@ -368,7 +384,7 @@ export default function ArtistStudioPage() {
   return (
     <div className="min-h-screen relative animate-in fade-in duration-700">
       <style jsx global>{`
-        .vjs-tech { object-fit: cover !important; }
+        .vjs-tech { object-fit: contain !important; }
         .video-js.vjs-fill { width: 100%; height: 100%; }
       `}</style>
 
@@ -404,7 +420,7 @@ export default function ArtistStudioPage() {
           
           <div className="absolute inset-0 bg-gradient-to-t from-[#050816]/40 via-transparent to-transparent" />
 
-          {/* More (3 dots) Dropdown - Fixed position in cover photo bottom right */}
+          {/* More (3 dots) Dropdown */}
           <div className="absolute bottom-6 right-6 z-30">
             <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={handleCoverChange} />
             <DropdownMenu>
@@ -432,7 +448,6 @@ export default function ArtistStudioPage() {
         {/* Branding & Action Header Area */}
         <div className="max-w-7xl mx-auto px-8 md:px-12 lg:px-24 pt-8">
           <div className="flex flex-col md:flex-row items-end justify-between gap-8 border-b border-white/5 pb-12">
-            {/* Branding */}
             <div className="space-y-2 text-left">
               <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-gradient leading-[0.85] drop-shadow-2xl">
                 Artist Studio
@@ -442,9 +457,9 @@ export default function ArtistStudioPage() {
               </p>
             </div>
 
-            {/* Primary CTA */}
             <div className="shrink-0">
               <input type="file" ref={fileInputRef} className="hidden" accept="video/*" onChange={handleFileChange} />
+              <input type="file" ref={thumbnailInputRef} className="hidden" accept="image/*" onChange={handleThumbnailChange} />
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="h-14 md:h-16 rounded-full bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] text-[11px] md:text-xs px-10 md:px-12 hover:scale-105 transition-all shadow-lg shadow-primary/20 border-none">
@@ -452,80 +467,154 @@ export default function ArtistStudioPage() {
                     Upload Masterpiece
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="glass-card border-white/10 sm:max-w-md max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">New Masterpiece</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid gap-6 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Title</Label>
-                        <input 
-                          placeholder="Enter title..." 
-                          className="flex h-11 w-full rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
-                          value={videoTitle}
-                          onChange={(e) => setVideoTitle(e.target.value)}
-                        />
+                <DialogContent className="p-[2px] bg-vibrant-gradient border-none max-w-xl rounded-[2.5rem] overflow-hidden">
+                  <div className="bg-[#050816]/95 text-white p-8 rounded-[calc(2.5rem-2px)] flex flex-col gap-6 max-h-[85vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter">New Masterpiece</DialogTitle>
+                      <DialogDescription className="text-[10px] uppercase tracking-widest text-white/40 font-bold">Synchronize your art with the global realm</DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="grid gap-6 py-4">
+                      {/* Basic Info Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80 flex items-center gap-2">
+                            <Sparkles className="w-3 h-3" /> Title
+                          </Label>
+                          <Input 
+                            placeholder="Enter masterpiece title..." 
+                            className="bg-white/5 border-white/10 h-12 focus-visible:ring-primary rounded-xl"
+                            value={videoTitle}
+                            onChange={(e) => setVideoTitle(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] uppercase tracking-widest font-black text-secondary/80 flex items-center gap-2">
+                            <Music className="w-3 h-3" /> Song Name
+                          </Label>
+                          <Input 
+                            placeholder="Song Title / Artist..." 
+                            className="bg-white/5 border-white/10 h-12 focus-visible:ring-secondary rounded-xl"
+                            value={songName}
+                            onChange={(e) => setSongName(e.target.value)}
+                          />
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Type</Label>
-                        <Select value={videoCategory} onValueChange={setVideoCategory}>
-                          <SelectTrigger className="bg-black/20 border-white/10 h-11">
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent className="glass-card border-white/10">
-                            <SelectItem value="Tutorial Preview">Tutorial Preview</SelectItem>
-                            <SelectItem value="Performances">Performances</SelectItem>
-                            <SelectItem value="Podcast">Podcast</SelectItem>
-                            <SelectItem value="Blips">Blips (Max 30s)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">
-                        {videoCategory === "Blips" ? "Blip Video (Max 30s)" : "Main Video File"}
-                      </Label>
-                      <div onClick={triggerFileInput} className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 cursor-pointer hover:border-primary/50 transition-colors">
-                        {selectedFile ? (
-                          <div className="flex flex-col items-center gap-1">
-                            <span className="text-[9px] font-bold text-primary truncate max-w-[200px]">{selectedFile.name}</span>
-                            <span className="text-[8px] opacity-50 uppercase font-black">Ready to Sync</span>
+                      {/* Type & Difficulty Row */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">Category</Label>
+                          <Select value={videoCategory} onValueChange={setVideoCategory}>
+                            <SelectTrigger className="bg-white/5 border-white/10 h-12 rounded-xl text-xs uppercase font-black tracking-widest">
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                            <SelectContent className="glass-card border-white/10">
+                              <SelectItem value="Tutorial">Tutorial</SelectItem>
+                              <SelectItem value="Performances">Performances</SelectItem>
+                              <SelectItem value="Choreography">Choreography</SelectItem>
+                              <SelectItem value="Podcast">Podcast</SelectItem>
+                              <SelectItem value="Blips">Blips (Max 30s)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {videoCategory === "Tutorial" && (
+                          <div className="space-y-2 animate-in fade-in slide-in-from-left-4 duration-300">
+                            <Label className="text-[10px] uppercase tracking-widest font-black text-accent/80">Difficulty Level</Label>
+                            <Select value={difficultyLevel} onValueChange={setDifficultyLevel}>
+                              <SelectTrigger className="bg-white/5 border-white/10 h-12 rounded-xl text-xs uppercase font-black tracking-widest">
+                                <SelectValue placeholder="Select level" />
+                              </SelectTrigger>
+                              <SelectContent className="glass-card border-white/10">
+                                <SelectItem value="Beginner">Beginner</SelectItem>
+                                <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                <SelectItem value="Advanced">Advanced</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
-                        ) : <FileVideo className="h-8 w-8 text-muted-foreground" />}
+                        )}
                       </div>
+
+                      {/* Upload Zones Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] uppercase tracking-widest font-black text-primary/80">
+                            {videoCategory === "Blips" ? "Blip Video" : "Primary Video"}
+                          </Label>
+                          <div onClick={triggerFileInput} className="border-2 border-dashed border-white/10 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-white/5 cursor-pointer hover:border-primary/50 transition-all group h-[120px]">
+                            {selectedFile ? (
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="text-[10px] font-black text-primary truncate max-w-[150px]">{selectedFile.name}</span>
+                                <span className="text-[8px] opacity-40 uppercase font-black">Sync Ready</span>
+                              </div>
+                            ) : (
+                              <>
+                                <FileVideo className="h-6 w-6 text-white/40 group-hover:text-primary transition-colors" />
+                                <span className="text-[9px] font-black uppercase text-white/40 tracking-widest">Select Video</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-[10px] uppercase tracking-widest font-black text-secondary/80">Cover Thumbnail</Label>
+                          <div onClick={triggerThumbnailInput} className="border-2 border-dashed border-white/10 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-white/5 cursor-pointer hover:border-secondary/50 transition-all group h-[120px]">
+                            {thumbnailFile ? (
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="text-[10px] font-black text-secondary truncate max-w-[150px]">{thumbnailFile.name}</span>
+                                <span className="text-[8px] opacity-40 uppercase font-black">Image Linked</span>
+                              </div>
+                            ) : (
+                              <>
+                                <ImageIcon className="h-6 w-6 text-white/40 group-hover:text-secondary transition-colors" />
+                                <span className="text-[9px] font-black uppercase text-white/40 tracking-widest">Select Image</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {videoCategory === "Tutorial" && (
+                        <div className="space-y-2 animate-in fade-in slide-in-from-top-4 duration-500">
+                          <Label className="text-[10px] uppercase tracking-widest font-black text-accent/80">Master the Moves Video</Label>
+                          <div onClick={triggerMasterMovesInput} className="border-2 border-dashed border-white/10 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-white/5 cursor-pointer hover:border-accent/50 transition-all group">
+                            <input type="file" ref={masterMovesInputRef} className="hidden" accept="video/*" onChange={handleMasterMovesChange} />
+                            {masterMovesFile ? (
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="text-[10px] font-black text-accent truncate max-w-[200px]">{masterMovesFile.name}</span>
+                                <span className="text-[8px] opacity-40 uppercase font-black">Linked Loop Ready</span>
+                              </div>
+                            ) : (
+                              <>
+                                <Video className="h-6 w-6 text-white/40 group-hover:text-accent transition-colors" />
+                                <span className="text-[9px] font-black uppercase text-white/40 tracking-widest">Select Instructional Loop</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    {videoCategory === "Tutorial Preview" && (
-                      <div className="space-y-2 animate-in fade-in slide-in-from-top-4">
-                        <Label className="text-[10px] uppercase tracking-widest font-black text-secondary/80">Master the Moves Video</Label>
-                        <div onClick={triggerMasterMovesInput} className="border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-black/10 cursor-pointer hover:border-secondary/50 transition-colors">
-                          <input type="file" ref={masterMovesInputRef} className="hidden" accept="video/*" onChange={handleMasterMovesChange} />
-                          {masterMovesFile ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <span className="text-[9px] font-bold text-secondary truncate max-w-[200px]">{masterMovesFile.name}</span>
-                              <span className="text-[8px] opacity-50 uppercase font-black">Linked Loop Ready</span>
-                            </div>
-                          ) : <FileVideo className="h-8 w-8 text-muted-foreground" />}
+                    <DialogFooter className="flex flex-col gap-4 mt-4">
+                      <Button 
+                        onClick={handleUpload} 
+                        disabled={isUploading || !isPublishEnabled} 
+                        className="w-full bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] text-[11px] h-14 rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all border-none"
+                      >
+                        {isUploading ? "Synchronizing to Realm..." : "Publish to Realm"}
+                      </Button>
+                      {isUploading && (
+                        <div className="w-full space-y-2">
+                          <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-primary">
+                            <span>Synchronizing Data</span>
+                            <span>{uploadProgress}%</span>
+                          </div>
+                          <Progress value={uploadProgress} className="h-1 bg-white/5" />
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </DialogFooter>
                   </div>
-                  <DialogFooter className="flex flex-col gap-2">
-                    <Button onClick={handleUpload} disabled={isUploading || !isPublishEnabled} className="w-full bg-primary text-primary-foreground font-black uppercase tracking-widest text-[11px] h-12 rounded-xl">
-                      {isUploading ? "Syncing to Realm..." : "Publish to Realm"}
-                    </Button>
-                    {isUploading && (
-                      <div className="w-full space-y-1">
-                        <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-primary">
-                          <span>Synchronizing</span>
-                          <span>{uploadProgress}%</span>
-                        </div>
-                        <Progress value={uploadProgress} className="h-1 bg-white/5" />
-                      </div>
-                    )}
-                  </DialogFooter>
                 </DialogContent>
               </Dialog>
             </div>
@@ -561,8 +650,9 @@ export default function ArtistStudioPage() {
                   </SelectTrigger>
                   <SelectContent className="glass-card border-white/10">
                     <SelectItem value="All">All Categories</SelectItem>
-                    <SelectItem value="Tutorial Preview">Tutorial Previews</SelectItem>
+                    <SelectItem value="Tutorial">Tutorials</SelectItem>
                     <SelectItem value="Performances">Performances</SelectItem>
+                    <SelectItem value="Choreography">Choreography</SelectItem>
                     <SelectItem value="Podcast">Podcasts</SelectItem>
                     <SelectItem value="Blips">Blips</SelectItem>
                   </SelectContent>
@@ -601,7 +691,6 @@ export default function ArtistStudioPage() {
             <div className="flex flex-col gap-10">
               {paginatedUploads.map((upload) => (
                 <Card key={upload.id} className="relative glass-card border-white/5 overflow-hidden group shadow-2xl transition-all duration-500 hover:border-primary/30">
-                  {/* Absolute positioned 3-dot vertical menu */}
                   <div className="absolute top-4 right-4 z-30">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -621,13 +710,16 @@ export default function ArtistStudioPage() {
                     </DropdownMenu>
                   </div>
 
-                  {upload.type === "Tutorial Preview" ? (
+                  {upload.type === "Tutorial" ? (
                     <div className="p-8 space-y-8">
                       <div className="flex items-center justify-between border-b border-white/5 pb-6">
                         <div className="space-y-2">
                           <h3 className="text-3xl font-black uppercase italic tracking-tighter group-hover:text-primary transition-colors">{upload.title}</h3>
                           <div className="flex items-center gap-4">
                              <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5 uppercase tracking-widest text-[9px] font-black px-4 py-1.5 rounded-full">{upload.type}</Badge>
+                             {upload.difficulty && (
+                               <Badge variant="secondary" className="bg-accent/20 text-accent border-accent/30 text-[9px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest">{upload.difficulty}</Badge>
+                             )}
                              <div className="flex items-center gap-4 text-[10px] font-bold text-white/40 uppercase tracking-widest">
                                <span className="flex items-center gap-2"><Eye className="w-4 h-4 text-primary" /> {upload.views}</span>
                                <span className="flex items-center gap-2"><Calendar className="w-4 h-4 text-secondary" /> {upload.date}</span>
@@ -670,6 +762,11 @@ export default function ArtistStudioPage() {
                             {upload.type}
                           </Badge>
                           <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white">{upload.title}</h3>
+                          {upload.song && (
+                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 flex items-center gap-2">
+                              <Music className="w-3 h-3 text-secondary" /> {upload.song}
+                            </p>
+                          )}
                         </div>
                         
                         <div className="flex flex-wrap items-center gap-10 pt-6 border-t border-white/5">
@@ -755,7 +852,7 @@ export default function ArtistStudioPage() {
         open={isConfirmOpen} 
         onOpenChange={(open) => {
           setIsConfirmOpen(open);
-          if (!open) setVideoToDelete(null); // Cleanup state when dialog closes
+          if (!open) setVideoToDelete(null); 
         }}
       >
         <AlertDialogContent className="glass-card border-white/10 bg-black/90 backdrop-blur-xl">
