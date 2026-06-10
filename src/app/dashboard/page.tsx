@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
@@ -285,8 +284,8 @@ export default function DancerDashboardPage() {
 
       {/* Page Content */}
       <div className="relative z-20">
-        {/* Cover Photo Section */}
-        <section className="relative h-[45vh] w-full overflow-hidden group">
+        {/* Cover Photo Section - Increased to 65vh to match Studio page */}
+        <section className="relative h-[65vh] w-full overflow-hidden group">
           {coverImage ? (
             <Image src={coverImage} alt="Dashboard Cover" fill className="object-cover" priority />
           ) : (
