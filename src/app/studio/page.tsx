@@ -155,12 +155,12 @@ export default function ArtistStudioPage() {
   // Initial mock data load
   useEffect(() => {
     const baseMockData = [
-      { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial", difficulty: "Advanced", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
-      { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/urban/800/450" },
-      { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial", difficulty: "Beginner", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4", masterMovesUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
-      { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performances", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4", thumbnail: "https://picsum.photos/seed/contemp/800/450" },
-      { id: "u5", title: "Rhythm & Pulse Podcast #1", date: "Sep 05, 2024", views: "1.5K", status: "Published", type: "Podcast", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", thumbnail: "https://picsum.photos/seed/podcast/800/450" },
-      { id: "u6", title: "Quick Grooves", date: "Oct 28, 2024", views: "2.1K", status: "Published", type: "Blips", videoUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4", thumbnail: "https://picsum.photos/seed/blips/800/450" },
+      { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial", difficulty: "Advanced", videoUrl: "/videos/v1.mp4", masterMovesUrl: "/videos/v2.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
+      { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: "/videos/v3.mp4", thumbnail: "https://picsum.photos/seed/urban/800/450" },
+      { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial", difficulty: "Beginner", videoUrl: "/videos/v4.mp4", masterMovesUrl: "/videos/v1.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
+      { id: "u4", title: "Contemporary Expression", date: "Sep 12, 2024", views: "3.2K", status: "Published", type: "Performances", videoUrl: "/videos/v2.mp4", thumbnail: "https://picsum.photos/seed/contemp/800/450" },
+      { id: "u5", title: "Rhythm & Pulse Podcast #1", date: "Sep 05, 2024", views: "1.5K", status: "Published", type: "Podcast", videoUrl: "/videos/v3.mp4", thumbnail: "https://picsum.photos/seed/podcast/800/450" },
+      { id: "u6", title: "Quick Grooves", date: "Oct 28, 2024", views: "2.1K", status: "Published", type: "Blips", videoUrl: "/videos/v1.mp4", thumbnail: "https://picsum.photos/seed/blips/800/450" },
     ];
 
     const expandedMockData = [...baseMockData];

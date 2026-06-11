@@ -1,3 +1,4 @@
+import { Artist, Video, StudioStat, DancerContent } from '@/types';
 
 export const performanceData = [
   { month: 'Jan', performance: 65, attendance: 40 },
@@ -87,12 +88,12 @@ export const activities = [
   },
 ];
 
-const SAMPLE_VIDEO_1 = "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
-const SAMPLE_VIDEO_2 = "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4";
-const SAMPLE_VIDEO_3 = "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-const SAMPLE_VIDEO_4 = "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4";
+const SAMPLE_VIDEO_1 = "/videos/v1.mp4";
+const SAMPLE_VIDEO_2 = "/videos/v2.mp4";
+const SAMPLE_VIDEO_3 = "/videos/v3.mp4";
+const SAMPLE_VIDEO_4 = "/videos/v4.mp4";
 
-export const ARTISTS = [
+export const ARTISTS: Artist[] = [
   { 
     id: "1", 
     name: "Julianne Hough", 
@@ -271,20 +272,14 @@ export const ARTISTS = [
   }
 ];
 
-export const STUDIO_STATS = [
+export const STUDIO_STATS: StudioStat[] = [
   { label: "Total Views", value: "1.2M", change: "+14%", trend: "up" },
   { label: "Subscribers", value: "85.4K", change: "+8%", trend: "up" },
   { label: "Watch Time (Hrs)", value: "45.2K", change: "+22%", trend: "up" },
   { label: "Revenue", value: "$12,450", change: "+5%", trend: "up" },
 ];
 
-export const STUDIO_UPLOADS = [
-  { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial Demo", videoUrl: SAMPLE_VIDEO_1 },
-  { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: SAMPLE_VIDEO_2 },
-  { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial Demo", videoUrl: SAMPLE_VIDEO_3 },
-];
-
-export const DANCER_CONTENT = {
+export const DANCER_CONTENT: DancerContent = {
   continueWatching: [
     { id: "cw1", title: "Advanced Salsa Patterns", artist: "Derek Hough", progress: 65, thumbnail: "https://picsum.photos/seed/salsa/400/225", videoUrl: SAMPLE_VIDEO_1 },
     { id: "cw2", title: "Hip Hop Fundamentals", artist: "Les Twins", progress: 30, thumbnail: "https://picsum.photos/seed/hiphop/400/225", videoUrl: SAMPLE_VIDEO_2 },

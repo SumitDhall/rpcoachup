@@ -145,7 +145,7 @@ export default function DancerDashboardPage() {
       id: `blip-${i}`,
       title: `Rhythm Session #${i + 1}`,
       date: "Oct 24, 2024",
-      url: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      url: "/videos/v1.mp4",
       thumbnail: `https://picsum.photos/seed/blip${i}/400/225`
     }));
     setBlips(mockBlips);
