@@ -1,0 +1,2 @@
+// Feature: Artist
+export {};
