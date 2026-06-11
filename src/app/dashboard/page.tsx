@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useRef, useState, useMemo } from "react";
@@ -5,9 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
-  Plus, 
   Music2, 
-  ChevronRight,
   Flame,
   Lock,
   MoreHorizontal,
@@ -16,6 +15,7 @@ import {
   Trash2,
   FileVideo,
   ChevronLeft,
+  ChevronRight,
   LayoutGrid,
   Users
 } from "lucide-react";
@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { DANCER_CONTENT, ARTISTS } from "@/lib/mock-data";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/context/auth-context";
+import { VideoPlayer } from "@/features/video/components/VideoPlayer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,55 +55,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
-// Video.js imports
-import videojs from 'video.js';
-import 'video.js/dist/video-js.css';
-
 const BLIPS_PER_PAGE = 3;
 const WATCHING_PER_PAGE = 9;
 const ARTISTS_PER_PAGE = 6;
-
-function DashboardVideo({ url, poster, muted = false }: { url: string; poster?: string; muted?: boolean }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const playerRef = useRef<any>(null);
-
-  useEffect(() => {
-    if (!containerRef.current || !url) return;
-
-    containerRef.current.innerHTML = '';
-    const videoElement = document.createElement("video-js");
-    videoElement.classList.add('vjs-fill', 'vjs-big-play-centered');
-    containerRef.current.appendChild(videoElement);
-
-    const player = playerRef.current = videojs(videoElement, {
-      autoplay: false,
-      controls: true,
-      responsive: true,
-      fluid: false, 
-      loop: false,
-      muted: muted,
-      preload: 'metadata',
-      poster: poster,
-      sources: [{
-        src: url,
-        type: 'video/mp4'
-      }]
-    });
-
-    return () => {
-      if (player) {
-        player.dispose();
-      }
-    };
-  }, [url, poster, muted]);
-
-  return (
-    <div 
-      ref={containerRef} 
-      className="w-full h-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" 
-    />
-  );
-}
 
 export default function DancerDashboardPage() {
   const { user, isLoading } = useAuth();
@@ -117,7 +72,6 @@ export default function DancerDashboardPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [blipTitle, setBlipTitle] = useState("");
   
-  // Pagination States
   const [currentBlipPage, setCurrentBlipPage] = useState(1);
   const [currentWatchingPage, setCurrentWatchingPage] = useState(1);
   const [currentArtistsPage, setCurrentArtistsPage] = useState(1);
@@ -128,7 +82,6 @@ export default function DancerDashboardPage() {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const blipInputRef = useRef<HTMLInputElement>(null);
   
-  // Refs for scroll behavior
   const blipsSectionRef = useRef<HTMLDivElement>(null);
   const watchingSectionRef = useRef<HTMLDivElement>(null);
   const artistsSectionRef = useRef<HTMLDivElement>(null);
@@ -139,7 +92,6 @@ export default function DancerDashboardPage() {
     }
   }, [user, isLoading, router]);
 
-  // Initial mock blips
   useEffect(() => {
     const mockBlips = Array.from({ length: 12 }).map((_, i) => ({
       id: `blip-${i}`,
@@ -172,7 +124,6 @@ export default function DancerDashboardPage() {
 
   const handleUploadBlip = async () => {
     if (!selectedFile) return;
-
     setIsUploading(true);
     let progress = 0;
     const interval = setInterval(() => {
@@ -214,7 +165,6 @@ export default function DancerDashboardPage() {
     }
   };
 
-  // Pagination Calculations
   const paginatedBlips = useMemo(() => {
     const start = (currentBlipPage - 1) * BLIPS_PER_PAGE;
     return blips.slice(start, start + BLIPS_PER_PAGE);
@@ -222,7 +172,6 @@ export default function DancerDashboardPage() {
 
   const totalBlipPages = Math.ceil(blips.length / BLIPS_PER_PAGE);
 
-  // Extend mock watching data for pagination demo
   const allWatchingItems = useMemo(() => {
     const base = DANCER_CONTENT.continueWatching;
     const items = [];
@@ -277,12 +226,6 @@ export default function DancerDashboardPage() {
 
   return (
     <div className="min-h-screen relative pb-20 animate-in fade-in duration-700">
-      <style jsx global>{`
-        .vjs-tech { object-fit: cover !important; }
-        .video-js.vjs-fill { width: 100%; height: 100%; }
-      `}</style>
-
-      {/* Persistent Background */}
       <div className="fixed inset-0 z-0">
         <Image
           src="/images/dance-realm_background_image_without_dancers.png"
@@ -295,9 +238,7 @@ export default function DancerDashboardPage() {
       </div>
       <div className="fixed inset-0 z-10 bg-[#050816]/75 pointer-events-none" />
 
-      {/* Page Content */}
       <div className="relative z-20">
-        {/* Cover Photo Section */}
         <section className="relative h-[65vh] w-full overflow-hidden group">
           {coverImage ? (
             <Image src={coverImage} alt="Dashboard Cover" fill className="object-cover" priority />
@@ -338,7 +279,6 @@ export default function DancerDashboardPage() {
           </div>
         </section>
 
-        {/* Identity & Add Blips Header Area */}
         <div className="max-w-7xl mx-auto px-8 md:px-12 pt-8">
           <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8 border-b border-white/5 pb-12">
             <div className="space-y-3 text-left">
@@ -400,10 +340,7 @@ export default function DancerDashboardPage() {
           </div>
         </div>
 
-        {/* Dashboard Content Grid */}
         <div className="max-w-7xl mx-auto px-8 md:px-12 py-16 space-y-24">
-          
-          {/* Continue Watching Section */}
           <section className="space-y-8" ref={watchingSectionRef}>
             <div className="flex items-center justify-between border-b border-white/5 pb-6">
               <h2 className="text-3xl font-black italic uppercase tracking-tighter">Continue Synchronizing</h2>
@@ -412,7 +349,7 @@ export default function DancerDashboardPage() {
               {paginatedWatching.map((item) => (
                 <Card key={item.id} className="glass-card border-white/5 hover:border-primary/20 transition-all overflow-hidden group">
                   <div className="aspect-video relative overflow-hidden bg-black">
-                    <DashboardVideo url={item.videoUrl} poster={item.thumbnail} muted />
+                    <VideoPlayer url={item.videoUrl} poster={item.thumbnail} muted className="w-full h-full" />
                   </div>
                   <CardContent className="p-4 space-y-4">
                     <div className="space-y-1">
@@ -430,7 +367,6 @@ export default function DancerDashboardPage() {
                 </Card>
               ))}
             </div>
-            {/* Watching Pagination */}
             {totalWatchingPages > 1 && (
               <div className="flex items-center justify-center gap-6 pt-6">
                 <Button
@@ -458,7 +394,6 @@ export default function DancerDashboardPage() {
             )}
           </section>
 
-          {/* New Artists Arrivals */}
           <section className="space-y-8" ref={artistsSectionRef}>
             <div className="flex items-center gap-4 border-b border-white/5 pb-6">
               <Users className="w-8 h-8 text-secondary" />
@@ -487,7 +422,6 @@ export default function DancerDashboardPage() {
                 </Link>
               ))}
             </div>
-            {/* Artists Pagination */}
             {totalArtistsPages > 1 && (
               <div className="flex items-center justify-center gap-6 pt-6">
                 <Button
@@ -515,13 +449,11 @@ export default function DancerDashboardPage() {
             )}
           </section>
 
-          {/* YOUR BLIPS Section */}
           <section className="space-y-10" ref={blipsSectionRef}>
             <div className="flex items-center gap-4 border-b border-white/5 pb-8">
               <LayoutGrid className="w-8 h-8 text-primary" />
               <h2 className="text-4xl font-black italic uppercase tracking-tighter">Your Blips</h2>
             </div>
-            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {paginatedBlips.map((blip) => (
                 <div key={blip.id} className="relative group glass-card rounded-[2.5rem] overflow-hidden border-white/5 hover:border-primary/30 transition-all shadow-2xl">
@@ -541,7 +473,7 @@ export default function DancerDashboardPage() {
                     </DropdownMenu>
                   </div>
                   <div className="aspect-video relative bg-black">
-                    <DashboardVideo url={blip.url} poster={blip.thumbnail} muted />
+                    <VideoPlayer url={blip.url} poster={blip.thumbnail} muted className="w-full h-full" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />
                     <div className="absolute bottom-6 left-6 right-6 pointer-events-none">
                       <h4 className="text-lg font-black uppercase italic tracking-tighter text-white truncate">{blip.title}</h4>
@@ -550,15 +482,7 @@ export default function DancerDashboardPage() {
                   </div>
                 </div>
               ))}
-              
-              {blips.length === 0 && (
-                <div className="col-span-full py-20 text-center glass-card rounded-[3rem] border-dashed">
-                    <p className="text-muted-foreground font-black uppercase tracking-widest text-sm">No blips uploaded yet</p>
-                </div>
-              )}
             </div>
-
-            {/* Blips Pagination */}
             {totalBlipPages > 1 && (
               <div className="flex items-center justify-center gap-6 pt-12">
                 <Button
@@ -585,43 +509,9 @@ export default function DancerDashboardPage() {
               </div>
             )}
           </section>
-
-          {/* Activity Section */}
-          <section className="space-y-8 pb-20">
-            <h2 className="text-3xl font-black italic uppercase tracking-tighter">Platform Pulse</h2>
-            <Card className="glass-card border-white/5">
-              <CardContent className="p-10">
-                <div className="flex flex-col lg:flex-row gap-12 items-center justify-between">
-                  <div className="flex flex-wrap justify-center gap-12">
-                    <div className="text-center">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Rhythm Points</p>
-                      <p className="text-4xl font-black tracking-tighter text-gradient">2,450</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Total Syncs</p>
-                      <p className="text-4xl font-black tracking-tighter">142</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Realm Rank</p>
-                      <p className="text-4xl font-black tracking-tighter">#842</p>
-                    </div>
-                  </div>
-                  <div className="h-20 w-px bg-white/5 hidden lg:block" />
-                  <div className="flex flex-col items-center lg:items-end gap-3 text-right">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-primary">Next Rank: Vanguard</p>
-                    <div className="w-64">
-                      <Progress value={60} className="h-2 bg-white/5" />
-                    </div>
-                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">500 pts until level up</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
         </div>
       </div>
 
-      {/* Confirmation Dialog */}
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <AlertDialogContent className="glass-card border-white/10 bg-black/90 backdrop-blur-xl">
           <AlertDialogHeader>

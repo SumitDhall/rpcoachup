@@ -1,14 +1,14 @@
+
 'use client';
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X, Volume2, VolumeX, Send, Lock, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
-import videojs from 'video.js';
-import 'video.js/dist/video-js.css';
+import { VideoPlayer } from "@/features/video/components/VideoPlayer";
 import {
   Drawer,
   DrawerContent,
@@ -93,92 +93,34 @@ interface ReelItemProps {
 }
 
 function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const playerRef = useRef<any>(null);
-  const [isIntersecting, setIsIntersecting] = useState(false);
-  const [isFollowing, setIsFollowing] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
-  
+  const [isFollowing, setIsFollowing] = useState(false);
   const [comments, setComments] = useState(MOCK_COMMENTS);
   const [newComment, setNewComment] = useState("");
+  const [player, setPlayer] = useState<any>(null);
 
   const handleAddComment = () => {
     if (!newComment.trim()) return;
-    
     const comment = {
       id: Date.now(),
       user: "You",
       text: newComment,
       time: "Just now"
     };
-    
     setComments([comment, ...comments]);
     setNewComment("");
   };
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const videoElement = document.createElement("video-js");
-    videoElement.classList.add('vjs-fill', 'vjs-big-play-centered');
-    containerRef.current.appendChild(videoElement);
-
-    const player = playerRef.current = videojs(videoElement, {
-      autoplay: false,
-      controls: false,
-      responsive: true,
-      fluid: false, 
-      loop: true,
-      muted: isMuted,
-      preload: 'metadata',
-      sources: [{
-        src: blip.videoUrl,
-        type: 'video/mp4'
-      }]
-    });
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsIntersecting(entry.isIntersecting);
-      },
-      { threshold: 0.6 }
-    );
-
-    observer.observe(containerRef.current);
-
-    return () => {
-      if (player) {
-        player.dispose();
-      }
-      observer.disconnect();
-    };
-  }, [blip.videoUrl, isMuted]);
-
-  useEffect(() => {
-    const player = playerRef.current;
-    if (player) {
-      player.ready(() => {
-        if (isIntersecting) {
-          player.play().catch(() => {});
-        } else {
-          player.pause();
-        }
-      });
-    }
-  }, [isIntersecting]);
-
-  useEffect(() => {
-    const player = playerRef.current;
-    if (player) {
-      player.muted(isMuted);
-    }
-  }, [isMuted]);
-
   return (
     <div className="h-screen w-full snap-start relative bg-black flex items-center justify-center overflow-hidden">
-      <div 
-        ref={containerRef} 
-        className="absolute inset-0 h-full w-full [&_.video-js]:h-full [&_.video-js]:w-full [&_video]:object-cover" 
+      <VideoPlayer
+        url={blip.videoUrl}
+        muted={isMuted}
+        loop
+        autoplay
+        controls={false}
+        className="absolute inset-0 h-full w-full"
+        onReady={(p) => setPlayer(p)}
       />
       
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none z-10" />
@@ -388,13 +330,6 @@ export default function BlipsPage() {
         .animate-spin-slow {
           animation: spin-slow 8s linear infinite;
         }
-        .vjs-tech {
-          object-fit: cover !important;
-        }
-        .video-js.vjs-fill {
-           width: 100%;
-           height: 100%;
-        }
       `}</style>
       
       {MOCK_BLIPS.map((blip) => (
@@ -406,7 +341,6 @@ export default function BlipsPage() {
         />
       ))}
 
-      {/* Auth Gate Dialog with Multi-Color Border */}
       <Dialog open={showAuthDialog} onOpenChange={(open) => { if (!open) handleAuthRedirect(); }}>
         <DialogContent className="p-[2px] bg-vibrant-gradient border-none max-w-md rounded-[2.5rem] overflow-hidden">
           <div className="bg-black/95 text-white p-8 rounded-[calc(2.5rem-2px)] flex flex-col gap-6">
