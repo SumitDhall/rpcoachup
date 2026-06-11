@@ -11,3 +11,4 @@ export interface Artist {
   image: string;
   videos: Video[];
 }
+
