@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from "react";
-import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X, Volume2, VolumeX, Send, Sparkles } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X, Volume2, VolumeX, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +13,8 @@ import {
   DrawerTitle,
   DrawerTrigger,
   DrawerClose,
-  DrawerOverlay,
   DrawerPortal,
+  DrawerOverlay
 } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -87,6 +87,23 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [comments, setComments] = useState(MOCK_COMMENTS);
   const [newComment, setNewComment] = useState("");
+  const [isInView, setIsInView] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { threshold: 0.6 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleAddComment = () => {
     if (!newComment.trim()) return;
@@ -101,12 +118,15 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
   };
 
   return (
-    <div className="h-screen w-full snap-start relative bg-black flex items-center justify-center overflow-hidden">
+    <div 
+      ref={containerRef}
+      className="h-screen w-full snap-start relative bg-black flex items-center justify-center overflow-hidden"
+    >
       <VideoPlayer
         url={blip.videoUrl}
         muted={isMuted}
         loop
-        autoplay
+        isPlaying={isInView}
         controls={false}
         className="absolute inset-0 h-full w-full"
       />
