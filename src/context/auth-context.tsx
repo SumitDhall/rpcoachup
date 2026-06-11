@@ -2,20 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-export type UserRole = 'dancer' | 'artist';
-
-interface User {
-  name: string;
-  role: UserRole;
-}
-
-interface AuthContextType {
-  user: User | null;
-  login: (role: UserRole) => void;
-  logout: () => void;
-  isLoading: boolean;
-}
+import { User, UserRole } from '@/types/user';
+import { AuthContextType } from '@/types/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -34,7 +22,7 @@ export function MockAuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = (role: UserRole) => {
-    const mockUser = {
+    const mockUser: User = {
       name: role === 'dancer' ? 'Demo Dancer' : 'Demo Artist',
       role: role
     };
