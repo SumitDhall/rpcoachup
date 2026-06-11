@@ -7,7 +7,8 @@ import {
   Eye,
   Calendar,
   Camera,
-  Music
+  Filter,
+  CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -60,6 +61,7 @@ export default function ArtistStudio() {
       { id: "u1", title: "Midnight Samba Masterclass", date: "Oct 24, 2024", views: "12.5K", status: "Published", type: "Tutorial", difficulty: "Advanced", videoUrl: "/videos/v1.mp4", masterMovesUrl: "/videos/v2.mp4", thumbnail: "https://picsum.photos/seed/samba/800/450" },
       { id: "u2", title: "Urban Flow Choreography", date: "Oct 20, 2024", views: "45.2K", status: "Published", type: "Performances", videoUrl: "/videos/v3.mp4", thumbnail: "https://picsum.photos/seed/urban/800/450" },
       { id: "u3", title: "Ballet Basics: The Plie", date: "Oct 15, 2024", views: "8.9K", status: "Review", type: "Tutorial", difficulty: "Beginner", videoUrl: "/videos/v4.mp4", masterMovesUrl: "/videos/v1.mp4", thumbnail: "https://picsum.photos/seed/ballet/800/450" },
+      { id: "u4", title: "Hip Hop Fusion Session", date: "Oct 12, 2024", views: "22.1K", status: "Published", type: "Choreography", videoUrl: "/videos/v2.mp4", thumbnail: "https://picsum.photos/seed/hiphop/800/450" },
     ];
     setUploads(baseMockData);
   }, []);
@@ -140,7 +142,7 @@ export default function ArtistStudio() {
             <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-gradient leading-[0.85]">Artist Studio</h1>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="h-14 md:h-16 rounded-full bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] px-10">
+                <Button className="h-14 md:h-16 rounded-full bg-vibrant-gradient text-white font-black uppercase tracking-[0.2em] px-10 shadow-xl shadow-primary/20">
                   <Upload className="w-5 h-5 mr-3" /> Upload Masterpiece
                 </Button>
               </DialogTrigger>
@@ -158,8 +160,10 @@ export default function ArtistStudio() {
                     <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase tracking-widest text-primary/80">Category</Label>
                       <Select value={videoCategory} onValueChange={setVideoCategory}>
-                        <SelectTrigger className="bg-white/5"><SelectValue /></SelectTrigger>
-                        <SelectContent>
+                        <SelectTrigger className="bg-white/5 border-white/10 rounded-xl h-12">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="glass-card border-white/10">
                           <SelectItem value="Tutorial">Tutorial</SelectItem>
                           <SelectItem value="Performances">Performances</SelectItem>
                           <SelectItem value="Choreography">Choreography</SelectItem>
@@ -176,8 +180,10 @@ export default function ArtistStudio() {
                       <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-primary/80">Difficulty</Label>
                         <Select value={difficultyLevel} onValueChange={setDifficultyLevel}>
-                          <SelectTrigger className="bg-white/5"><SelectValue /></SelectTrigger>
-                          <SelectContent>
+                          <SelectTrigger className="bg-white/5 border-white/10 rounded-xl h-12">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="glass-card border-white/10">
                             <SelectItem value="Beginner">Beginner</SelectItem>
                             <SelectItem value="Intermediate">Intermediate</SelectItem>
                             <SelectItem value="Advanced">Advanced</SelectItem>
@@ -217,31 +223,80 @@ export default function ArtistStudio() {
         <div className="max-w-7xl mx-auto px-8 md:px-12 py-16 space-y-16">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {STUDIO_STATS.map((stat, idx) => (
-              <Card key={idx} className="glass-card p-6">
-                <p className="text-[10px] uppercase font-black opacity-50">{stat.label}</p>
-                <h4 className="text-3xl font-black">{stat.value}</h4>
+              <Card key={idx} className="glass-card p-6 border-white/5">
+                <p className="text-[10px] uppercase font-black opacity-50 tracking-widest mb-1">{stat.label}</p>
+                <div className="flex items-end gap-2">
+                  <h4 className="text-3xl font-black">{stat.value}</h4>
+                  <span className="text-[10px] font-black text-primary mb-1">{stat.change}</span>
+                </div>
               </Card>
             ))}
           </div>
 
           <div className="space-y-10">
-            {processedUploads.map((upload) => (
-              <Card key={upload.id} className="glass-card overflow-hidden">
-                <div className="flex flex-col md:flex-row">
-                  <div className="w-full md:w-[400px] aspect-video relative bg-black shrink-0">
-                    <VideoPlayer url={upload.videoUrl} poster={upload.thumbnail} muted className="w-full h-full" />
-                  </div>
-                  <div className="p-8 space-y-4 flex-1">
-                    <Badge className="bg-primary/20 text-primary">{upload.type}</Badge>
-                    <h3 className="text-3xl font-black italic uppercase tracking-tighter">{upload.title}</h3>
-                    <div className="flex gap-6 text-[10px] font-black opacity-40">
-                      <span className="flex items-center gap-2"><Eye className="w-3 h-3" /> {upload.views}</span>
-                      <span className="flex items-center gap-2"><Calendar className="w-3 h-3" /> {upload.date}</span>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-black/40 backdrop-blur-md p-6 rounded-3xl border border-white/5">
+              <div className="flex items-center gap-3">
+                <Filter className="w-5 h-5 text-primary" />
+                <h3 className="text-xl font-black italic uppercase tracking-tighter">Your Catalog</h3>
+              </div>
+              <div className="w-full md:w-64">
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger className="bg-white/5 border-white/10 rounded-xl h-12">
+                    <SelectValue placeholder="Filter by Type" />
+                  </SelectTrigger>
+                  <SelectContent className="glass-card border-white/10">
+                    <SelectItem value="All">All Masterpieces</SelectItem>
+                    <SelectItem value="Tutorial">Tutorials</SelectItem>
+                    <SelectItem value="Performances">Performances</SelectItem>
+                    <SelectItem value="Choreography">Choreography</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid gap-8">
+              {processedUploads.length > 0 ? (
+                processedUploads.map((upload) => (
+                  <Card key={upload.id} className="glass-card overflow-hidden border-white/5 group hover:border-primary/20 transition-all">
+                    <div className="flex flex-col md:flex-row">
+                      <div className="w-full md:w-[400px] aspect-video relative bg-black shrink-0 overflow-hidden">
+                        <VideoPlayer url={upload.videoUrl} poster={upload.thumbnail} muted className="w-full h-full" />
+                        <div className="absolute top-4 left-4">
+                          <Badge className="bg-black/60 backdrop-blur-md border-white/10 text-[10px] uppercase font-black tracking-widest">{upload.type}</Badge>
+                        </div>
+                      </div>
+                      <div className="p-8 space-y-6 flex-1 flex flex-col justify-between">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-3xl font-black italic uppercase tracking-tighter group-hover:text-primary transition-colors">{upload.title}</h3>
+                            <Badge variant="outline" className="border-primary/40 text-primary text-[10px] font-black uppercase">
+                              <CheckCircle2 className="w-3 h-3 mr-1" /> {upload.status}
+                            </Badge>
+                          </div>
+                          <div className="flex gap-6 text-[10px] font-black opacity-40 uppercase tracking-widest">
+                            <span className="flex items-center gap-2"><Eye className="w-3 h-3" /> {upload.views} Views</span>
+                            <span className="flex items-center gap-2"><Calendar className="w-3 h-3" /> {upload.date}</span>
+                            {upload.difficulty && <span className="text-primary">{upload.difficulty}</span>}
+                          </div>
+                        </div>
+                        <div className="flex gap-4">
+                          <Button variant="outline" size="sm" className="rounded-xl border-white/10 hover:border-primary/40 h-10 px-6 text-[10px] font-black uppercase tracking-widest">
+                            Edit Metadata
+                          </Button>
+                          <Button variant="outline" size="sm" className="rounded-xl border-white/10 hover:border-secondary/40 h-10 px-6 text-[10px] font-black uppercase tracking-widest">
+                            Analytics
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-center py-20 glass-card rounded-[2.5rem] border-dashed border-white/10">
+                  <p className="text-white/40 font-black uppercase tracking-widest text-sm">No masterpieces found in this category.</p>
                 </div>
-              </Card>
-            ))}
+              )}
+            </div>
           </div>
         </div>
       </div>

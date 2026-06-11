@@ -14,7 +14,8 @@ import {
   ChevronLeft,
   ChevronRight,
   LayoutGrid,
-  Users
+  Users,
+  Filter
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -50,6 +51,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 const BLIPS_PER_PAGE = 3;
@@ -74,6 +76,8 @@ export default function DancerDashboard() {
   
   const [blipToDelete, setBlipToDelete] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  
+  const [blipFilter, setBlipFilter] = useState("All");
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const blipInputRef = useRef<HTMLInputElement>(null);
@@ -85,7 +89,8 @@ export default function DancerDashboard() {
   useEffect(() => {
     const mockBlips = Array.from({ length: 12 }).map((_, i) => ({
       id: `blip-${i}`,
-      title: `Rhythm Session #${i + 1}`,
+      title: i % 2 === 0 ? `Rhythm Session #${i + 1}` : `Freestyle Flow #${i + 1}`,
+      type: i % 2 === 0 ? "Session" : "Freestyle",
       date: "Oct 24, 2024",
       url: "/videos/v1.mp4",
       thumbnail: `https://picsum.photos/seed/blip${i}/400/225`
@@ -125,6 +130,7 @@ export default function DancerDashboard() {
           const newBlip = {
             id: `blip-new-${Date.now()}`,
             title: blipTitle || "My New Rhythm",
+            type: "Freestyle",
             date: "Just Now",
             url: URL.createObjectURL(selectedFile),
             thumbnail: "https://picsum.photos/seed/newblip/400/225"
@@ -155,12 +161,17 @@ export default function DancerDashboard() {
     }
   };
 
+  const filteredBlips = useMemo(() => {
+    if (blipFilter === "All") return blips;
+    return blips.filter(b => b.type === blipFilter);
+  }, [blips, blipFilter]);
+
   const paginatedBlips = useMemo(() => {
     const start = (currentBlipPage - 1) * BLIPS_PER_PAGE;
-    return blips.slice(start, start + BLIPS_PER_PAGE);
-  }, [blips, currentBlipPage]);
+    return filteredBlips.slice(start, start + BLIPS_PER_PAGE);
+  }, [filteredBlips, currentBlipPage]);
 
-  const totalBlipPages = Math.ceil(blips.length / BLIPS_PER_PAGE);
+  const totalBlipPages = Math.ceil(filteredBlips.length / BLIPS_PER_PAGE);
 
   const allWatchingItems = useMemo(() => {
     const base = DANCER_CONTENT.continueWatching;
@@ -433,38 +444,65 @@ export default function DancerDashboard() {
           </section>
 
           <section className="space-y-10" ref={blipsSectionRef}>
-            <div className="flex items-center gap-4 border-b border-white/5 pb-8">
-              <LayoutGrid className="w-8 h-8 text-primary" />
-              <h2 className="text-4xl font-black italic uppercase tracking-tighter">Your Blips</h2>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-8">
+              <div className="flex items-center gap-4">
+                <LayoutGrid className="w-8 h-8 text-primary" />
+                <h2 className="text-4xl font-black italic uppercase tracking-tighter">Your Blips</h2>
+              </div>
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <Filter className="w-4 h-4 text-primary" />
+                <div className="w-full md:w-48">
+                  <Select value={blipFilter} onValueChange={(v) => { setBlipFilter(v); setCurrentBlipPage(1); }}>
+                    <SelectTrigger className="bg-white/5 border-white/10 rounded-xl h-12">
+                      <SelectValue placeholder="All Rhythms" />
+                    </SelectTrigger>
+                    <SelectContent className="glass-card border-white/10">
+                      <SelectItem value="All">All Blips</SelectItem>
+                      <SelectItem value="Session">Sessions</SelectItem>
+                      <SelectItem value="Freestyle">Freestyle</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {paginatedBlips.map((blip) => (
-                <div key={blip.id} className="relative group glass-card rounded-[2.5rem] overflow-hidden border-white/5 hover:border-primary/30 transition-all shadow-2xl">
-                  <div className="absolute top-4 right-4 z-30">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white">
-                          <MoreVertical className="h-5 w-5" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="glass-card border-white/10">
-                        <DropdownMenuItem onSelect={() => initiateDelete(blip.id)} className="gap-3 cursor-pointer text-red-400">
-                          <Trash2 className="h-4 w-4" />
-                          <span>Delete Blip</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  <div className="aspect-video relative bg-black">
-                    <VideoPlayer url={blip.url} poster={blip.thumbnail} muted className="w-full h-full" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />
-                    <div className="absolute bottom-6 left-6 right-6 pointer-events-none">
-                      <h4 className="text-lg font-black uppercase italic tracking-tighter text-white truncate">{blip.title}</h4>
-                      <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest">{blip.date}</p>
+              {paginatedBlips.length > 0 ? (
+                paginatedBlips.map((blip) => (
+                  <div key={blip.id} className="relative group glass-card rounded-[2.5rem] overflow-hidden border-white/5 hover:border-primary/30 transition-all shadow-2xl">
+                    <div className="absolute top-4 right-4 z-30">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white">
+                            <MoreVertical className="h-5 w-5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="glass-card border-white/10">
+                          <DropdownMenuItem onSelect={() => initiateDelete(blip.id)} className="gap-3 cursor-pointer text-red-400">
+                            <Trash2 className="h-4 w-4" />
+                            <span>Delete Blip</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <div className="aspect-video relative bg-black">
+                      <VideoPlayer url={blip.url} poster={blip.thumbnail} muted className="w-full h-full" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute top-4 left-4">
+                        <Badge className="bg-primary/20 text-primary border-primary/30 text-[9px] uppercase font-black">{blip.type}</Badge>
+                      </div>
+                      <div className="absolute bottom-6 left-6 right-6 pointer-events-none">
+                        <h4 className="text-lg font-black uppercase italic tracking-tighter text-white truncate">{blip.title}</h4>
+                        <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest">{blip.date}</p>
+                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="col-span-full py-20 text-center glass-card rounded-[2.5rem] border-dashed border-white/10">
+                  <p className="text-white/40 font-black uppercase tracking-widest text-sm">No blips found for this filter.</p>
                 </div>
-              ))}
+              )}
             </div>
             {totalBlipPages > 1 && (
               <div className="flex items-center justify-center gap-6 pt-12">
