@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { SiteFooter } from "@/components/site-footer";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { useAuth } from "@/context/auth-context";
+import { useAuth } from "@/providers/AuthProvider";
 import { navStyles } from "@/lib/nav-styles";
 
 export function NavigationShell({ children }: { children: React.ReactNode }) {
@@ -299,4 +299,3 @@ export function NavigationShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
- 
