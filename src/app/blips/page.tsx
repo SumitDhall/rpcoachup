@@ -7,7 +7,7 @@ import { MapPin, Clock, Music2, Share2, Heart, MessageCircle, X, Volume2, Volume
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/context/auth-context";
+import { useAuth } from "@/providers/AuthProvider";
 import { VideoPlayer } from "@/features/video/components/VideoPlayer";
 import {
   Drawer,
@@ -97,7 +97,6 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [comments, setComments] = useState(MOCK_COMMENTS);
   const [newComment, setNewComment] = useState("");
-  const [player, setPlayer] = useState<any>(null);
 
   const handleAddComment = () => {
     if (!newComment.trim()) return;
@@ -120,7 +119,6 @@ function ReelItem({ blip, isMuted, onToggleMute }: ReelItemProps) {
         autoplay
         controls={false}
         className="absolute inset-0 h-full w-full"
-        onReady={(p) => setPlayer(p)}
       />
       
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none z-10" />

@@ -86,7 +86,7 @@ export function VideoPlayer({
     <div className={className} data-vjs-player>
       <video
         ref={videoRef}
-        className="video-js vjs-big-play-centered vjs-theme-city"
+        className="video-js vjs-big-play-centered vjs-theme-city w-full h-full"
         playsInline
       />
       <style jsx global>{`
