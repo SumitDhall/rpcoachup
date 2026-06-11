@@ -1,5 +1,5 @@
-
-import { Artist, Video, StudioStat, DancerContent } from '@/types';
+import { Artist, StudioStat, DancerContent } from '@/types';
+import { Video } from '@/types/video';
 
 export const performanceData = [
   { month: 'Jan', performance: 65, attendance: 40 },

@@ -3,18 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
-
-interface VideoPlayerProps {
-  url: string;
-  poster?: string;
-  autoplay?: boolean;
-  controls?: boolean;
-  loop?: boolean;
-  muted?: boolean;
-  isPlaying?: boolean;
-  className?: string;
-  onReady?: (player: any) => void;
-}
+import { VideoPlayerProps } from '@/types/video';
 
 /**
  * A centralized, robust VideoPlayer component for the Dance Realm.
